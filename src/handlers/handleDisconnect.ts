@@ -1,4 +1,5 @@
 import { CustomSocket } from "../../types";
+import { getListener } from "../lib/utils";
 import Room from "../models/roomModel";
 import RoomUser from "../models/roomUsers";
 
@@ -12,8 +13,11 @@ export async function handleDisconnect(socket: CustomSocket) {
         active: false,
       }
     ).populate("userId");
+    const listeners = await getListener(roomInfo._id);
     if (roomInfo.roomId && data?.userId) {
-      socket.to(roomInfo.roomId).emit("userLeftRoom", data?.userId);
+      socket
+        .to(roomInfo.roomId)
+        .emit("userLeftRoom", { user: data?.userId, listeners });
     }
   } catch (error) {
     console.log(error);

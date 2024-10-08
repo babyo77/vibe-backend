@@ -5,6 +5,7 @@ import RoomUser from "../models/roomUsers";
 import User from "../models/userModel";
 import { errorHandler } from "./error";
 import mongoose from "mongoose";
+import { getListener } from "../lib/utils";
 
 export async function handleJoinRoom(socket: CustomSocket) {
   try {
@@ -40,35 +41,17 @@ export async function handleJoinRoom(socket: CustomSocket) {
     }
 
     socket.join(roomInfo.roomId);
-    const roomUsers = await RoomUser.find({
-      roomId: roomInfo._id,
-      active: true,
-    })
-      .populate("userId")
-      .limit(5);
-
-    const totalListeners = await RoomUser.countDocuments({
-      roomId: roomInfo._id,
-      active: true,
-    });
+    const listeners = await getListener(roomInfo._id);
     socket.emit("joinedRoom", {
       user: {
         ...addedUser.toObject(),
       },
-      listeners: {
-        totalUsers: totalListeners,
-        currentPage: 1,
-        roomUsers,
-      },
+      listeners,
     });
 
     socket.to(roomInfo.roomId).emit("userJoinedRoom", {
       user,
-      listeners: {
-        totalUsers: totalListeners,
-        currentPage: 1,
-        roomUsers,
-      },
+      listeners,
     });
   } catch (error: any) {
     console.log("JOIN ERROR:", error.message);

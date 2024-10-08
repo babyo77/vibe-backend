@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Vote from "../models/voteModel";
 import Queue from "../models/queueModel";
+import RoomUser from "../models/roomUsers";
 
 export const parseCookies = (cookieHeader?: string) => {
   const cookies: any = {};
@@ -60,4 +61,24 @@ export const getVotesArray = async (roomId: string, userId?: string) => {
   if (!userId) return;
   const votedArray = await Vote.find({ roomId: roomId, userId });
   return votedArray;
+};
+
+export const getListener = async (roomId: string) => {
+  const roomUsers = await RoomUser.find({
+    roomId: roomId,
+    active: true,
+  })
+    .populate("userId")
+    .limit(5);
+
+  const totalListeners = await RoomUser.countDocuments({
+    roomId: roomId,
+    active: true,
+  });
+
+  return {
+    totalUsers: totalListeners,
+    currentPage: 1,
+    roomUsers,
+  };
 };
