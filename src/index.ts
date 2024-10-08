@@ -15,6 +15,7 @@ import Room from "./models/roomModel";
 import RoomUser from "./models/roomUsers";
 import upVote from "./handlers/upVote";
 import Vote from "./models/voteModel";
+import deleteSong from "./handlers/deleteSong";
 const app = express();
 const server = createServer(app);
 
@@ -83,6 +84,9 @@ io.on("connection", (socket: CustomSocket) => {
   });
   socket.on("addToQueue", (data) => {
     addQueue(socket, data);
+  });
+  socket.on("deleteSong", (data) => {
+    deleteSong(socket, data);
   });
   socket.on("upVote", (data) => {
     upVote(socket, data);
