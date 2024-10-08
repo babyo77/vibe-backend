@@ -31,7 +31,7 @@ export async function handleJoinRoom(socket: CustomSocket) {
           totalUsers == 0 ? "admin" : socket.role ? socket.role : "listener",
       },
       { upsert: true, new: true }
-    ).populate("userId");
+    );
 
     if (!addedUser) {
       throw new Error("Unable to join room");
@@ -42,7 +42,7 @@ export async function handleJoinRoom(socket: CustomSocket) {
     socket.emit("joinedRoom", {
       user: {
         ...addedUser.toObject(),
-        ...addedUser.toObject().userId,
+        ...user.toObject(),
       },
       listeners,
     });
@@ -50,7 +50,7 @@ export async function handleJoinRoom(socket: CustomSocket) {
     socket.to(roomInfo.roomId).emit("userJoinedRoom", {
       user: {
         ...addedUser.toObject(),
-        ...addedUser.toObject().userId,
+        ...user.toObject(),
       },
       listeners,
     });
