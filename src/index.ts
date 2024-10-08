@@ -99,7 +99,7 @@ io.on("connection", (socket: CustomSocket) => {
       queueId: data.queueId,
       roomId: roomInfo._id,
     });
-    const queue = await getSongsWithVoteCounts(roomInfo._id);
+    const queue = await getSongsWithVoteCounts(roomInfo._id, true);
 
     const votes = await getVotesArray(roomInfo._id, userId);
     const mostVotedSongCount = Math.max(...queue.map((song) => song.voteCount));
