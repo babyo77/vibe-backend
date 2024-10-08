@@ -1,10 +1,7 @@
-import { log } from "console";
-import { CustomSocket, joinRoom } from "../../types";
-import Room from "../models/roomModel";
+import { CustomSocket } from "../../types";
 import RoomUser from "../models/roomUsers";
 import User from "../models/userModel";
 import { errorHandler } from "./error";
-import mongoose from "mongoose";
 import { getListener } from "../lib/utils";
 
 export async function handleJoinRoom(socket: CustomSocket) {

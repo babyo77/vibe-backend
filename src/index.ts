@@ -8,11 +8,7 @@ import { nextSong } from "./handlers/nextSong";
 import { handleJoinRoom } from "./handlers/handleJoinRoom";
 import { handleDisconnect } from "./handlers/handleDisconnect";
 import addQueue from "./handlers/addQueue";
-import {
-  getVotesArray,
-  getSongsWithVoteCounts,
-  parseCookies,
-} from "./lib/utils";
+import { getVotesArray, getSongsWithVoteCounts } from "./lib/utils";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import User from "./models/userModel";
 import Room from "./models/roomModel";
@@ -93,39 +89,45 @@ io.on("connection", (socket: CustomSocket) => {
   });
 
   socket.on("songEnded", async (data: searchResults) => {
-    const { roomInfo, userId } = socket;
-    if (!roomInfo) return;
-    await Vote.deleteMany({
-      queueId: data.queueId,
-      roomId: roomInfo._id,
-    });
-    const queue = await getSongsWithVoteCounts(roomInfo._id, true);
-    let nextSong = queue[0];
-    const currentSongIndex = queue.findIndex((song) => song.id === data.id); // Assuming data.id contains the ID of the ended song
+    try {
+      const { roomInfo, userId } = socket;
+      if (!roomInfo) return;
+      await Vote.deleteMany({
+        queueId: data.queueId,
+        roomId: roomInfo._id,
+      });
+      const queue = await getSongsWithVoteCounts(roomInfo._id, true);
+      let nextSong = queue[0];
+      const currentSongIndex = queue.findIndex((song) => song.id === data.id); // Assuming data.id contains the ID of the ended song
 
-    // Handle edge cases (ended song not found in queue)
-    if (currentSongIndex === -1) {
-      nextSong = queue[0];
+      // Handle edge cases (ended song not found in queue)
+      if (currentSongIndex === -1) {
+        nextSong = queue[0];
+      }
+
+      // Calculate the index of the next song
+      const nextSongIndex = (currentSongIndex + 1) % queue.length; // Wrap around to the beginning if it's the last song
+
+      // Get the next song based on the calculated index
+      nextSong = queue[nextSongIndex];
+
+      const votes = await getVotesArray(roomInfo._id, userId);
+      const mostVotedSongCount = Math.max(
+        ...queue.map((song) => song.voteCount)
+      );
+      const payload = {
+        play:
+          mostVotedSongCount == 0
+            ? nextSong
+            : queue.find((song) => song.voteCount === mostVotedSongCount),
+        queue,
+        votes,
+      };
+
+      io.to(roomInfo.roomId).emit("songEnded", payload);
+    } catch (error: any) {
+      console.log("SONGEND ERROR:", error.message);
     }
-
-    // Calculate the index of the next song
-    const nextSongIndex = (currentSongIndex + 1) % queue.length; // Wrap around to the beginning if it's the last song
-
-    // Get the next song based on the calculated index
-    nextSong = queue[nextSongIndex];
-
-    const votes = await getVotesArray(roomInfo._id, userId);
-    const mostVotedSongCount = Math.max(...queue.map((song) => song.voteCount));
-    const payload = {
-      play:
-        mostVotedSongCount == 0
-          ? nextSong
-          : queue.find((song) => song.voteCount === mostVotedSongCount),
-      queue,
-      votes,
-    };
-
-    io.to(roomInfo.roomId).emit("songEnded", payload);
   });
 
   socket.on("disconnect", () => {
