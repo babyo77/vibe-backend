@@ -35,14 +35,21 @@ export const getSongsWithVoteCounts = async (roomId: string, sort = false) => {
         $project: {
           _id: 0, // Exclude the _id field from the result
           songData: 1, // Include only the songData field
+          createdAt: 1, // Include the createdAt field for sorting
         },
       },
       {
         $replaceRoot: { newRoot: "$songData" }, // Replace the root with songData
       },
+      {
+        $sort: {
+          voteCount: sort ? -1 : 1, // Sort by voteCount in descending order (most votes first)
+          createdAt: -1, // Then sort by createdAt in descending order (latest first)
+        },
+      },
     ]);
 
-    return songsWithVoteCounts; // Return only the array of songData
+    return songsWithVoteCounts; // Return the sorted array of songData
   } catch (error) {
     console.error("Error fetching songs with vote counts:", error);
     throw error; // Propagate the error for handling by the caller
