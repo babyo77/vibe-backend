@@ -59,7 +59,7 @@ export const getSongsWithVoteCounts = async (roomId: string, sort = false) => {
 
 export const getVotesArray = async (roomId: string, userId?: string) => {
   if (!userId) return;
-  const votedArray = await Vote.find({ roomId: roomId, userId });
+  const votedArray = await Vote.find({ roomId: roomId, userId: userId });
   return votedArray;
 };
 
