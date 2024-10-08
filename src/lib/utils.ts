@@ -69,7 +69,7 @@ export const getListener = async (roomId: string) => {
     active: true,
   })
     .populate("userId")
-    .limit(5);
+    .limit(4);
 
   const totalListeners = await RoomUser.countDocuments({
     roomId: roomId,
