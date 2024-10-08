@@ -11,11 +11,6 @@ const roomUserSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-
-    socketId: {
-      type: String,
-      required: true,
-    },
     roomId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Room",
@@ -27,9 +22,10 @@ const roomUserSchema = new mongoose.Schema(
       default: "listener",
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-const RoomUser = mongoose.model("RoomUsers", roomUserSchema);
+const RoomUser =
+  mongoose.models?.RoomUsers || mongoose.model("RoomUsers", roomUserSchema);
 
 export default RoomUser;

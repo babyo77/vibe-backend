@@ -27,7 +27,7 @@ export async function handleJoinRoom(socket: CustomSocket) {
     const addedUser = await RoomUser.findOneAndUpdate(
       { userId, roomId: roomInfo._id },
       {
-        isActive: true,
+        active: true,
         socketid: socket.id,
         role:
           totalUsers == 0 ? "admin" : socket.role ? socket.role : "listener",
@@ -40,15 +40,35 @@ export async function handleJoinRoom(socket: CustomSocket) {
     }
 
     socket.join(roomInfo.roomId);
+    const roomUsers = await RoomUser.find({
+      roomId: roomInfo._id,
+      active: true,
+    })
+      .populate("userId")
+      .limit(5);
 
+    const totalListeners = await RoomUser.countDocuments({
+      roomId: roomInfo._id,
+      active: true,
+    });
     socket.emit("joinedRoom", {
       user: {
         ...addedUser.toObject(),
+      },
+      listeners: {
+        totalUsers: totalListeners,
+        currentPage: 1,
+        roomUsers,
       },
     });
 
     socket.to(roomInfo.roomId).emit("userJoinedRoom", {
       user,
+      listeners: {
+        totalUsers: totalListeners,
+        currentPage: 1,
+        roomUsers,
+      },
     });
   } catch (error: any) {
     console.log("JOIN ERROR:", error.message);

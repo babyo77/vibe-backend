@@ -18,7 +18,6 @@ export default async function upVote(
 
     // If no data provided, fetch votes and queue
     if (!data) {
-      console.log("No data provided. Fetching votes and queue.");
       const votes = await getVotesArray(roomInfo._id, userId);
       const queue = await getSongsWithVoteCounts(roomInfo._id);
 
