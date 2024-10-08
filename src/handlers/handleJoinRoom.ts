@@ -39,7 +39,7 @@ export async function handleJoinRoom(socket: CustomSocket) {
       throw new Error("Unable to join room");
     }
 
-    socket.join(roomInfo.roomId.toString());
+    socket.join(roomInfo.roomId);
 
     socket.emit("joinedRoom", {
       user: {
@@ -47,7 +47,7 @@ export async function handleJoinRoom(socket: CustomSocket) {
       },
     });
 
-    socket.to(roomInfo.roomId.toString()).emit("userJoinedRoom", {
+    socket.to(roomInfo.roomId).emit("userJoinedRoom", {
       user,
     });
   } catch (error: any) {

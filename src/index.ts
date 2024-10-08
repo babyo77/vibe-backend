@@ -53,7 +53,10 @@ io.use(async (socket: CustomSocket, next) => {
           roomId: room._id,
           userId: user?.id,
         });
-        socket.roomInfo = { _id: room._id, roomId: room.roomId.toString() };
+        socket.roomInfo = {
+          _id: room._id.toString(),
+          roomId: room.roomId.toString(),
+        };
         if (role) {
           socket.role = role.role.toString();
         }
