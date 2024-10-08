@@ -7,10 +7,6 @@ const queueSchema = new mongoose.Schema(
       ref: "Room",
       required: true,
     },
-    playing: {
-      type: Boolean,
-      default: false,
-    },
     songData: {
       type: mongoose.Schema.Types.Mixed,
       required: true,
