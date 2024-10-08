@@ -33,6 +33,7 @@ io.use(async (socket: CustomSocket, next) => {
   try {
     const token = parseCookies(socket.handshake.headers.cookie)?.vibeId;
     const roomId = parseCookies(socket.handshake.headers.cookie)?.room;
+    if (!token) throw new Error("unauthorized");
     if (token) {
       const decoded = jwt.verify(
         token,
