@@ -70,9 +70,7 @@ io.use(async (socket: CustomSocket, next) => {
 });
 
 io.on("connection", (socket: CustomSocket) => {
-  socket.on("joinRoom", () => {
-    handleJoinRoom(socket);
-  });
+  handleJoinRoom(socket);
 
   socket.on("nextSong", (data) => {
     nextSong(socket, data);
