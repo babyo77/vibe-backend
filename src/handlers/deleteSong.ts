@@ -1,6 +1,7 @@
 import { CustomSocket, searchResults } from "../../types";
 import { getSongsWithVoteCounts } from "../lib/utils";
 import Queue from "../models/queueModel";
+import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
 
 export default async function deleteSong(
@@ -12,8 +13,11 @@ export default async function deleteSong(
     if (!roomInfo) return;
     if (!data) return;
     if (role === "admin" || data?.addedBy === userId) {
-      await Queue.deleteOne({ roomId: roomInfo?._id, songData: data });
-
+      await Queue.deleteOne({
+        roomId: roomInfo?._id,
+        "songData.queueId": data.queueId,
+      });
+      await Vote.deleteMany({ queueId: data.queueId });
       const queue = await getSongsWithVoteCounts(roomInfo._id, true);
 
       if (queue) {
