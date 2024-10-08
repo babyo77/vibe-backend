@@ -41,7 +41,7 @@ export const getSongsWithVoteCounts = async (roomId: string, sort = false) => {
         $replaceRoot: { newRoot: "$songData" }, // Replace the root with songData
       },
       {
-        $sort: { voteCount: sort ? -1 : 1 }, // Sort by voteCount in descending order (most upvotes first)
+        $sort: { voteCount: -1 }, // Sort by voteCount in descending order (most upvotes first)
       },
     ]);
 
