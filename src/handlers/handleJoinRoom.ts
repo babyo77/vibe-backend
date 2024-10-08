@@ -42,6 +42,7 @@ export async function handleJoinRoom(socket: CustomSocket) {
     socket.emit("joinedRoom", {
       user: {
         ...addedUser.toObject(),
+        ...addedUser.toObject().userId,
       },
       listeners,
     });
@@ -49,6 +50,7 @@ export async function handleJoinRoom(socket: CustomSocket) {
     socket.to(roomInfo.roomId).emit("userJoinedRoom", {
       user: {
         ...addedUser.toObject(),
+        ...addedUser.toObject().userId,
       },
       listeners,
     });
