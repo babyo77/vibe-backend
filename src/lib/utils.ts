@@ -28,8 +28,52 @@ export const getSongsWithVoteCounts = async (roomId: string, sort = false) => {
         },
       },
       {
+        $lookup: {
+          from: "users", // Name of the users collection
+          let: { addedBy: "$songData.addedBy" }, // Pass the addedBy string
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] }, // Match users using ObjectId
+              },
+            },
+          ],
+          as: "addedByUser", // Alias for the resulting user data
+        },
+      },
+      {
+        $unwind: {
+          path: "$addedByUser", // Unwind the addedByUser array
+          preserveNullAndEmptyArrays: true, // Keep the song even if no user is found
+        },
+      },
+      {
         $addFields: {
           "songData.voteCount": { $size: "$votes" }, // Add voteCount directly to songData
+          "songData.addedByUser": "$addedByUser", // Add user details to songData
+          "songData.topVoterIds": {
+            $slice: [
+              {
+                $map: {
+                  input: {
+                    $sortArray: { input: "$votes", sortBy: { createdAt: -1 } }, // Sort votes by createdAt (latest first)
+                  },
+                  as: "vote",
+                  in: "$$vote.userId", // Extract the userId from each vote
+                },
+              },
+              3, // Limit to top 3 users
+            ],
+          },
+        },
+      },
+      // Lookup the top voters from the users collection
+      {
+        $lookup: {
+          from: "users", // Name of the users collection
+          localField: "songData.topVoterIds", // Match with topVoterIds
+          foreignField: "_id", // Field from the users collection
+          as: "songData.topVoters", // Alias for the top voters details
         },
       },
       {
@@ -44,8 +88,8 @@ export const getSongsWithVoteCounts = async (roomId: string, sort = false) => {
       },
       {
         $sort: {
-          voteCount: sort ? -1 : 1, // Sort by voteCount in descending order (most votes first)
-          createdAt: -1, // Then sort by createdAt in descending order (latest first)
+          voteCount: sort ? -1 : 1, // Sort by voteCount (desc or asc)
+          createdAt: -1, // Then sort by createdAt (latest first)
         },
       },
     ]);
