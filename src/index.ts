@@ -104,7 +104,10 @@ io.on("connection", (socket: CustomSocket) => {
     const votes = await getVotesArray(roomInfo._id, userId);
     const mostVotedSongCount = Math.max(...queue.map((song) => song.voteCount));
     const payload = {
-      play: queue.find((song) => song.voteCount === mostVotedSongCount),
+      play:
+        mostVotedSongCount == 0
+          ? queue[0]
+          : queue.find((song) => song.voteCount === mostVotedSongCount),
       queue,
       votes,
     };
