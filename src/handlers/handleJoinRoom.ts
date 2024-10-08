@@ -27,7 +27,7 @@ export async function handleJoinRoom(socket: CustomSocket) {
     const addedUser = await RoomUser.findOneAndUpdate(
       { userId, roomId: roomInfo._id },
       {
-        active: true,
+        isActive: true,
         socketid: socket.id,
         role:
           totalUsers == 0 ? "admin" : socket.role ? socket.role : "listener",

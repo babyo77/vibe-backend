@@ -8,7 +8,7 @@ const roomSchema = new mongoose.Schema(
       unique: true,
       maxLength: 8,
     },
-    active: {
+    isActive: {
       type: Boolean,
       required: true,
       default: false,

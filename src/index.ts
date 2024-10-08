@@ -44,7 +44,7 @@ io.use(async (socket: CustomSocket, next) => {
         socket.userId = user?._id.toString();
         const room = await Room.findOneAndUpdate(
           { roomId },
-          { active: true },
+          { isActive: true },
           { upsert: true, new: true }
         );
         const role = await RoomUser.findOne({
@@ -59,7 +59,7 @@ io.use(async (socket: CustomSocket, next) => {
     }
     next();
   } catch (error: any) {
-    console.log(error);
+    console.log("MIDDLEWARE ERROR:", error.message);
     return next(new Error(error?.message || "Invalid token"));
   }
 });
