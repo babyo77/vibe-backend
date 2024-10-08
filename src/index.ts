@@ -100,13 +100,26 @@ io.on("connection", (socket: CustomSocket) => {
       roomId: roomInfo._id,
     });
     const queue = await getSongsWithVoteCounts(roomInfo._id, true);
+    let nextSong = queue[0];
+    const currentSongIndex = queue.findIndex((song) => song.id === data.id); // Assuming data.id contains the ID of the ended song
+
+    // Handle edge cases (ended song not found in queue)
+    if (currentSongIndex === -1) {
+      nextSong = queue[0];
+    }
+
+    // Calculate the index of the next song
+    const nextSongIndex = (currentSongIndex + 1) % queue.length; // Wrap around to the beginning if it's the last song
+
+    // Get the next song based on the calculated index
+    nextSong = queue[nextSongIndex];
 
     const votes = await getVotesArray(roomInfo._id, userId);
     const mostVotedSongCount = Math.max(...queue.map((song) => song.voteCount));
     const payload = {
       play:
         mostVotedSongCount == 0
-          ? queue[0]
+          ? nextSong
           : queue.find((song) => song.voteCount === mostVotedSongCount),
       queue,
       votes,
