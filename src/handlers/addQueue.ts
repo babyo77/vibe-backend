@@ -12,7 +12,10 @@ export default async function addQueue(
     if (!roomInfo) return;
 
     if (data) {
-      const isAlready = await Queue.findOne({ "songData.id": data.id });
+      const isAlready = await Queue.findOne({
+        "songData.id": data.id,
+        roomId: roomInfo._id,
+      });
       if (isAlready) {
         throw new Error("Song already exists in queue");
       }
