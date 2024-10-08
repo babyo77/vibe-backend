@@ -13,6 +13,7 @@ export interface prevSong {
 
 export interface nextSong {
   nextSong: {};
+  callback?: boolean;
   roomId: string;
 }
 

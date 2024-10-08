@@ -47,7 +47,9 @@ export async function handleJoinRoom(socket: CustomSocket) {
     });
 
     socket.to(roomInfo.roomId).emit("userJoinedRoom", {
-      user,
+      user: {
+        ...addedUser.toObject(),
+      },
       listeners,
     });
   } catch (error: any) {
