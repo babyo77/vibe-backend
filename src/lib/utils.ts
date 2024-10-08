@@ -12,7 +12,7 @@ export const parseCookies = (cookieHeader?: string) => {
   return cookies;
 };
 
-export const getSongsWithVoteCounts = async (roomId: string) => {
+export const getSongsWithVoteCounts = async (roomId: string, sort = false) => {
   try {
     const songsWithVoteCounts = await Queue.aggregate([
       {
@@ -39,6 +39,9 @@ export const getSongsWithVoteCounts = async (roomId: string) => {
       },
       {
         $replaceRoot: { newRoot: "$songData" }, // Replace the root with songData
+      },
+      {
+        $sort: { voteCount: sort ? -1 : 1 }, // Sort by voteCount in descending order (most upvotes first)
       },
     ]);
 

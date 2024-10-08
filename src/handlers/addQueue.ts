@@ -29,7 +29,7 @@ export default async function addQueue(
       });
     }
 
-    const queue = await getSongsWithVoteCounts(roomInfo._id);
+    const queue = await getSongsWithVoteCounts(roomInfo._id, true);
 
     if (queue) {
       socket.emit("songQueue", queue);
