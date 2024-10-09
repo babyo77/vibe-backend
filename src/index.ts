@@ -16,6 +16,7 @@ import RoomUser from "./models/roomUsers";
 import upVote from "./handlers/upVote";
 import Vote from "./models/voteModel";
 import deleteSong from "./handlers/deleteSong";
+import { errorHandler } from "./handlers/error";
 const app = express();
 const server = createServer(app);
 
@@ -80,6 +81,8 @@ io.on("connection", (socket: CustomSocket) => {
     if (!roomInfo) return;
     if (role === "admin" && roomInfo.roomId) {
       socket.to(roomInfo.roomId).emit("seek", { seek, role, userId });
+    } else {
+      errorHandler(socket, "only admin can seek");
     }
   });
   socket.on("addToQueue", (data) => {

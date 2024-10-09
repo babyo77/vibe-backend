@@ -7,13 +7,12 @@ export interface CustomSocket extends Socket {
 }
 
 export interface prevSong {
-  prevSong: {};
+  prevSong: searchResults;
   roomId: string;
 }
 
 export interface nextSong {
-  nextSong: {};
-  callback?: boolean;
+  nextSong: searchResults;
   roomId: string;
 }
 

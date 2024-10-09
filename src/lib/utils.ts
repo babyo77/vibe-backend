@@ -104,6 +104,7 @@ export const getSongsWithVoteCounts = async (roomId: string, sort = false) => {
 export const getVotesArray = async (roomId: string, userId?: string) => {
   if (!userId) return;
   const votedArray = await Vote.find({ roomId: roomId, userId: userId });
+
   return votedArray;
 };
 
@@ -113,7 +114,7 @@ export const getListener = async (roomId: string) => {
     active: true,
   })
     .populate("userId")
-    .limit(4);
+    .limit(5);
 
   const totalListeners = await RoomUser.countDocuments({
     roomId: roomId,
