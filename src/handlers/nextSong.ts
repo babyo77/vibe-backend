@@ -7,6 +7,7 @@ export async function nextSong(socket: CustomSocket, data: nextSong) {
   const { role, roomInfo, userId } = socket;
   if (!roomInfo) return;
   if (!userId) return;
+  if (!data) return;
   if (role === "admin" && roomInfo.roomId) {
     const { nextSong, callback } = data;
     await Queue.updateMany({ roomId: roomInfo._id }, { isPlaying: false });

@@ -7,6 +7,7 @@ export async function prevSong(socket: CustomSocket, data: prevSong) {
   const { role, roomInfo, userId } = socket;
   if (!roomInfo) return;
   if (!userId) return;
+  if (!data) return;
   if (role === "admin" && roomInfo.roomId) {
     const { prevSong } = data;
     await Queue.updateMany({ roomId: roomInfo._id }, { isPlaying: false });
