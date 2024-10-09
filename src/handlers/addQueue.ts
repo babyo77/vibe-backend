@@ -31,6 +31,7 @@ export default async function addQueue(
     }
 
     socket.emit("songQueue");
+    socket.to(roomInfo.roomId).emit("songQueue");
   } catch (error: any) {
     console.log("ADDING TO QUEUE ERROR:", error.message);
     errorHandler(socket, error.message || "An unexpected error occurred");
