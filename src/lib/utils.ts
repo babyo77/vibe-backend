@@ -13,7 +13,11 @@ export const parseCookies = (cookieHeader?: string) => {
   return cookies;
 };
 
-export const getSongsWithVoteCounts = async (roomId: string, sort = false) => {
+export const getSongsWithVoteCounts = async (
+  roomId: string,
+  userId: string,
+  sort = false
+) => {
   try {
     const songsWithVoteCounts = await Queue.aggregate([
       {
@@ -65,9 +69,36 @@ export const getSongsWithVoteCounts = async (roomId: string, sort = false) => {
               3, // Limit to top 3 users
             ],
           },
+          // Check if the current user has voted
+          "songData.isVoted": {
+            $cond: {
+              if: {
+                $gt: [
+                  {
+                    $size: {
+                      $filter: {
+                        input: "$votes",
+                        as: "vote",
+                        cond: {
+                          $eq: [
+                            "$$vote.userId",
+                            new mongoose.Types.ObjectId(userId),
+                          ],
+                        },
+                      },
+                    },
+                  },
+                  0,
+                ],
+              },
+              then: true,
+              else: false,
+            },
+          },
+          // Include isPlaying directly for sorting
+          isPlaying: "$isPlaying", // Keep isPlaying for sorting
         },
       },
-      // Lookup the top voters from the users collection
       {
         $lookup: {
           from: "users", // Name of the users collection
@@ -80,6 +111,7 @@ export const getSongsWithVoteCounts = async (roomId: string, sort = false) => {
         $project: {
           _id: 0, // Exclude the _id field from the result
           songData: 1, // Include only the songData field
+          isPlaying: 1, // Include isPlaying for sorting
           createdAt: 1, // Include the createdAt field for sorting
         },
       },
@@ -87,9 +119,9 @@ export const getSongsWithVoteCounts = async (roomId: string, sort = false) => {
         $replaceRoot: { newRoot: "$songData" }, // Replace the root with songData
       },
       {
+        // Sort by isPlaying first (true first), then by createdAt (latest first)
         $sort: {
-          voteCount: sort ? -1 : 1, // Sort by voteCount (desc or asc)
-          createdAt: -1, // Then sort by createdAt (latest first)
+          isPlaying: -1, // Sort so isPlaying: true comes first
         },
       },
     ]);
@@ -103,9 +135,8 @@ export const getSongsWithVoteCounts = async (roomId: string, sort = false) => {
 
 export const getVotesArray = async (roomId: string, userId?: string) => {
   if (!userId) return;
-  const votedArray = await Vote.find({ roomId: roomId, userId: userId });
 
-  return votedArray;
+  return [];
 };
 
 export const getListener = async (roomId: string) => {

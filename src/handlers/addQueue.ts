@@ -9,7 +9,7 @@ export default async function addQueue(
 ) {
   try {
     const { roomInfo, userId } = socket;
-    if (!roomInfo) return;
+    if (!roomInfo || !userId) throw new Error("Login to play");
 
     if (data) {
       const isAlready = await Queue.findOne({
@@ -19,25 +19,18 @@ export default async function addQueue(
       if (isAlready) {
         throw new Error("Song already exists in queue");
       }
+      const totalQues = await Queue.countDocuments({ roomId: roomInfo._id });
       const song = await Queue.create({
         roomId: roomInfo._id,
         songData: { ...data, addedBy: userId },
-        playing: true,
+        isPlaying: totalQues == 0 ? true : false,
       });
       await Queue.findByIdAndUpdate(song._id, {
         songData: { ...song.songData, queueId: song._id.toString() },
       });
     }
 
-    const queue = await getSongsWithVoteCounts(roomInfo._id, true);
-
-    if (queue) {
-      socket.emit("songQueue", queue);
-
-      if (data) {
-        socket.to(roomInfo.roomId).emit("songQueue", queue);
-      }
-    }
+    socket.emit("songQueue");
   } catch (error: any) {
     console.log("ADDING TO QUEUE ERROR:", error.message);
     errorHandler(socket, error.message || "An unexpected error occurred");

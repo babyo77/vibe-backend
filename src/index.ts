@@ -17,6 +17,7 @@ import upVote from "./handlers/upVote";
 import Vote from "./models/voteModel";
 import deleteSong from "./handlers/deleteSong";
 import { errorHandler } from "./handlers/error";
+import Queue from "./models/queueModel";
 const app = express();
 const server = createServer(app);
 
@@ -81,8 +82,6 @@ io.on("connection", (socket: CustomSocket) => {
     if (!roomInfo) return;
     if (role === "admin" && roomInfo.roomId) {
       socket.to(roomInfo.roomId).emit("seek", { seek, role, userId });
-    } else {
-      errorHandler(socket, "only admin can seek");
     }
   });
   socket.on("addToQueue", (data) => {
@@ -94,16 +93,22 @@ io.on("connection", (socket: CustomSocket) => {
   socket.on("upVote", (data) => {
     upVote(socket, data);
   });
-
+  socket.on("getSongQueue", async () => {
+    const { roomInfo, userId } = socket;
+    if (!roomInfo || !userId) throw new Error("Login to play");
+    const queue = await getSongsWithVoteCounts(roomInfo._id, userId);
+    socket.emit("queueList", queue);
+  });
   socket.on("songEnded", async (data: searchResults) => {
     try {
       const { roomInfo, userId } = socket;
-      if (!roomInfo) return;
+      if (!roomInfo || !userId) throw new Error("Login to play");
+
       await Vote.deleteMany({
         queueId: data.queueId,
         roomId: roomInfo._id,
       });
-      const queue = await getSongsWithVoteCounts(roomInfo._id, true);
+      const queue = await getSongsWithVoteCounts(roomInfo._id, userId, true);
       let nextSong = queue[0];
       const currentSongIndex = queue.findIndex((song) => song.id === data.id); // Assuming data.id contains the ID of the ended song
 
@@ -122,11 +127,20 @@ io.on("connection", (socket: CustomSocket) => {
       const mostVotedSongCount = Math.max(
         ...queue.map((song) => song.voteCount)
       );
+      nextSong =
+        mostVotedSongCount == 0
+          ? nextSong
+          : queue.find((song) => song.voteCount === mostVotedSongCount);
+      await Queue.updateMany({ roomId: roomInfo._id }, { isPlaying: false });
+      await Queue.updateOne(
+        {
+          roomId: roomInfo._id,
+          "songData.id": nextSong.id,
+        },
+        { isPlaying: true }
+      );
       const payload = {
-        play:
-          mostVotedSongCount == 0
-            ? nextSong
-            : queue.find((song) => song.voteCount === mostVotedSongCount),
+        play: nextSong,
         queue,
         votes,
       };
@@ -134,6 +148,7 @@ io.on("connection", (socket: CustomSocket) => {
       io.to(roomInfo.roomId).emit("songEnded", payload);
     } catch (error: any) {
       console.log("SONGEND ERROR:", error.message);
+      errorHandler(socket, error.message);
     }
   });
 

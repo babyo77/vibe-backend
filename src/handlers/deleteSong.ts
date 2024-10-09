@@ -10,7 +10,7 @@ export default async function deleteSong(
 ) {
   try {
     const { roomInfo, userId, role } = socket;
-    if (!roomInfo) return;
+    if (!roomInfo || !userId) throw new Error("Login to play");
     if (!data) return;
     if (role === "admin" || data?.addedBy === userId) {
       await Queue.deleteOne({
@@ -18,7 +18,7 @@ export default async function deleteSong(
         "songData.queueId": data.queueId,
       });
       await Vote.deleteMany({ queueId: data.queueId });
-      const queue = await getSongsWithVoteCounts(roomInfo._id, true);
+      const queue = await getSongsWithVoteCounts(roomInfo._id, userId, true);
 
       if (queue) {
         socket.emit("songQueue", queue);

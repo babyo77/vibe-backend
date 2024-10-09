@@ -1,13 +1,23 @@
 import { CustomSocket, prevSong } from "../../types";
 import { getSongsWithVoteCounts } from "../lib/utils";
+import Queue from "../models/queueModel";
 import { errorHandler } from "./error";
 
 export async function prevSong(socket: CustomSocket, data: prevSong) {
-  const { role, roomInfo } = socket;
+  const { role, roomInfo, userId } = socket;
   if (!roomInfo) return;
+  if (!userId) return;
   if (role === "admin" && roomInfo.roomId) {
     const { prevSong } = data;
-    const queue = await getSongsWithVoteCounts(roomInfo._id, true);
+    await Queue.updateMany({ roomId: roomInfo._id }, { isPlaying: false });
+    await Queue.updateOne(
+      {
+        roomId: roomInfo._id,
+        "songData.id": prevSong.id,
+      },
+      { isPlaying: true }
+    );
+    const queue = await getSongsWithVoteCounts(roomInfo._id, userId, true);
     let nextSong = queue[0];
     const currentSongIndex = queue.findIndex((song) => song.id === prevSong.id); // Assuming data.id contains the ID of the ended song
 
