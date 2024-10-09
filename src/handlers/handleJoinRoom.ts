@@ -20,7 +20,6 @@ export async function handleJoinRoom(socket: CustomSocket) {
 
     // Find the total number of documents for pagination metadata
     const totalUsers = await RoomUser.countDocuments({ roomId: roomInfo._id });
-    console.log(socket.role);
 
     // Update or create room user entry
     const addedUser = await RoomUser.findOneAndUpdate(
