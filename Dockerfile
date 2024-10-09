@@ -4,14 +4,11 @@ FROM node:18-alpine
 # Set the working directory inside the container
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json files to the container
-COPY package*.json ./
+# Copy the rest of the application files
+COPY . .
 
 # Install dependencies
 RUN npm install
-
-# Copy the rest of the application files
-COPY . .
 
 # Build the TypeScript code
 RUN npm run build
