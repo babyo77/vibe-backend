@@ -28,7 +28,7 @@ export default async function deleteSong(
         }
       }
     } else {
-      throw new Error("Permission denied");
+      throw new Error("Admin an user who added this song can delete this song");
     }
   } catch (error: any) {
     console.log("DELETE ERROR:", error.message);
