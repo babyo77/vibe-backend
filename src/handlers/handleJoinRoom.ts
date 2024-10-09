@@ -8,18 +8,14 @@ export async function handleJoinRoom(socket: CustomSocket) {
   try {
     const { userId, roomInfo } = socket;
 
-    // Find the user
+    // Validate user and roomInfo in a single query
     const user = await User.findById(userId);
     if (!user) {
       throw new Error("User not found");
     }
-
     if (!roomInfo) {
       throw new Error("Room not found");
     }
-
-    // Find the total number of documents for pagination metadata
-    const totalUsers = await RoomUser.countDocuments({ roomId: roomInfo._id });
 
     // Update or create room user entry
     const addedUser = await RoomUser.findOneAndUpdate(
@@ -28,7 +24,9 @@ export async function handleJoinRoom(socket: CustomSocket) {
         active: true,
         socketid: socket.id,
         role:
-          totalUsers == 0 ? "admin" : socket.role ? socket.role : "listener",
+          (await RoomUser.countDocuments({ roomId: roomInfo._id })) === 0
+            ? "admin"
+            : socket.role || "listener",
       },
       { upsert: true, new: true }
     );
@@ -38,24 +36,23 @@ export async function handleJoinRoom(socket: CustomSocket) {
     }
 
     socket.join(roomInfo.roomId);
-    const listeners = await getListener(roomInfo._id);
-    socket.emit("joinedRoom", {
-      user: {
-        ...addedUser.toObject(),
-        ...user.toObject(),
-      },
-      listeners,
-    });
 
-    socket.to(roomInfo.roomId).emit("userJoinedRoom", {
-      user: {
-        ...addedUser.toObject(),
-        ...user.toObject(),
-      },
-      listeners,
-    });
+    // Fetch listeners and prepare response data
+    const listeners = await getListener(roomInfo._id);
+    const userData = {
+      ...addedUser.toObject(),
+      ...user.toObject(),
+    };
+
+    // Emit to the current socket
+    socket.emit("joinedRoom", { user: userData, listeners });
+
+    // Emit to other sockets in the room
+    socket
+      .to(roomInfo.roomId)
+      .emit("userJoinedRoom", { user: userData, listeners });
   } catch (error: any) {
-    console.log("JOIN ERROR:", error.message);
+    console.error("JOIN ERROR:", error.message);
     errorHandler(socket, error.message || "An unexpected error occurred");
   }
 }

@@ -18,6 +18,7 @@ import Vote from "./models/voteModel";
 import deleteSong from "./handlers/deleteSong";
 import { errorHandler } from "./handlers/error";
 import Queue from "./models/queueModel";
+import { sendMessage } from "./handlers/sendMessage";
 const app = express();
 const server = createServer(app);
 
@@ -92,6 +93,9 @@ io.on("connection", (socket: CustomSocket) => {
   });
   socket.on("upVote", (data) => {
     upVote(socket, data);
+  });
+  socket.on("message", (message) => {
+    sendMessage(socket, message);
   });
   socket.on("getSongQueue", async () => {
     const { roomInfo, userId } = socket;
