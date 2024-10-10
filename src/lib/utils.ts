@@ -66,7 +66,7 @@ export const getSongsWithVoteCounts = async (
                   in: "$$vote.userId", // Extract the userId from each vote
                 },
               },
-              3, // Limit to top 3 users
+              4, // Limit to top 2 users
             ],
           },
           // Check if the current user has voted
@@ -116,13 +116,14 @@ export const getSongsWithVoteCounts = async (
         },
       },
       {
-        $replaceRoot: { newRoot: "$songData" }, // Replace the root with songData
+        // Move the $sort stage here to prioritize isPlaying
+        $sort: {
+          // Sort by vote count in descending order (most voted first)
+          isPlaying: -1, // Still prioritize songs that are currently playing
+        },
       },
       {
-        // Sort by isPlaying first (true first), then by createdAt (latest first)
-        $sort: {
-          isPlaying: -1, // Sort so isPlaying: true comes first
-        },
+        $replaceRoot: { newRoot: "$songData" }, // Replace the root with songData
       },
     ]);
 

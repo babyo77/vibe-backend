@@ -18,10 +18,9 @@ export default async function upVote(
     if (!userId) return;
     // If no data provided, fetch votes and queue
     if (!data) {
-      const votes = await getVotesArray(roomInfo._id, userId);
       const queue = await getSongsWithVoteCounts(roomInfo._id, userId);
 
-      socket.emit("votes", { votes, queue });
+      socket.emit("votes", { queue });
       return;
     }
 
@@ -57,11 +56,10 @@ export default async function upVote(
     }
 
     // Fetch updated votes and queue
-    const votes = await getVotesArray(roomInfo._id, userId);
     const queue = await getSongsWithVoteCounts(roomInfo._id, userId, true);
 
     // Emit the updated votes and queue to the user
-    socket.emit("votes", { votes, queue });
+    socket.emit("votes", { queue });
 
     // Emit updated votes to everyone else in the room
     socket.to(roomInfo.roomId).emit("getVotes");
