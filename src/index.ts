@@ -29,6 +29,9 @@ const io = new Server(server, {
   },
 });
 
+app.get("/", (_req, res) => {
+  res.json({ live: true });
+});
 io.use(async (socket: CustomSocket, next) => {
   try {
     const token = socket.handshake.headers["authorization"];
