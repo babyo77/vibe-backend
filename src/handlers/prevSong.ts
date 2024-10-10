@@ -11,13 +11,7 @@ export async function prevSong(socket: CustomSocket, data: prevSong) {
   if (role === "admin" && roomInfo.roomId) {
     const { prevSong } = data;
     await Queue.updateMany({ roomId: roomInfo._id }, { isPlaying: false });
-    await Queue.updateOne(
-      {
-        roomId: roomInfo._id,
-        "songData.id": prevSong.id,
-      },
-      { isPlaying: true }
-    );
+
     const queue = await getSongsWithVoteCounts(roomInfo._id, userId, true);
     let nextSong = queue[0];
     const currentSongIndex = queue.findIndex((song) => song.id === prevSong.id); // Assuming data.id contains the ID of the ended song
@@ -32,6 +26,14 @@ export async function prevSong(socket: CustomSocket, data: prevSong) {
 
     // Get the next song based on the calculated index
     nextSong = queue[nextSongIndex];
+
+    await Queue.updateOne(
+      {
+        roomId: roomInfo._id,
+        "songData.id": nextSong.id,
+      },
+      { isPlaying: true }
+    );
 
     socket.emit("prevSong", nextSong);
 
