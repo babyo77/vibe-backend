@@ -17,6 +17,7 @@ export async function handleJoinRoom(socket: CustomSocket) {
       throw new Error("Room not found");
     }
 
+    const totalUsers = await RoomUser.countDocuments({ roomId: roomInfo._id });
     // Update or create room user entry
     const addedUser = await RoomUser.findOneAndUpdate(
       { userId, roomId: roomInfo._id },
@@ -24,9 +25,7 @@ export async function handleJoinRoom(socket: CustomSocket) {
         active: true,
         socketid: socket.id,
         role:
-          (await RoomUser.countDocuments({ roomId: roomInfo._id })) === 0
-            ? "admin"
-            : socket.role || "listener",
+          totalUsers == 0 ? "admin" : socket.role ? socket.role : "listener",
       },
       { upsert: true, new: true }
     );
