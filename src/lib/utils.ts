@@ -119,8 +119,8 @@ export const getSongsWithVoteCounts = async (
         // Move the $sort stage here to prioritize isPlaying
         $sort: {
           // Sort by vote count in descending order (most voted first)
-          "songData.voteCount": sort ? -1 : 1, // Still prioritize songs that are currently playing
           isPlaying: -1,
+          // Still prioritize songs that are currently playing
         },
       },
       {
