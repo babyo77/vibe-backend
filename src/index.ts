@@ -62,15 +62,6 @@ io.use(async (socket: CustomSocket, next) => {
           roomId: room.roomId.toString(),
         };
         if (role) {
-          await RoomUser.findOneAndUpdate(
-            {
-              roomId: room._id,
-              userId: user?.id,
-            },
-            {
-              active: true,
-            }
-          );
           socket.role = role.role.toString();
         }
       }
