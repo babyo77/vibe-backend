@@ -23,7 +23,7 @@ const queueSchema = new mongoose.Schema(
             role: { type: String, required: false },
             image: { type: [String], required: false }, // Array of image URLs
             type: { type: String, enum: ["artist"], required: false },
-            url: { type: String, required: true },
+            url: { type: String, required: false },
           },
         ],
       },
