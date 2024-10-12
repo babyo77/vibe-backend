@@ -18,25 +18,25 @@ const queueSchema = new mongoose.Schema(
       artists: {
         primary: [
           {
-            id: { type: Number, required: true },
-            name: { type: String, required: true },
-            role: { type: String, required: true },
-            image: { type: [String], required: true }, // Array of image URLs
-            type: { type: String, enum: ["artist"], required: true },
+            id: { type: Number, required: false },
+            name: { type: String, required: false },
+            role: { type: String, required: false },
+            image: { type: [String], required: false }, // Array of image URLs
+            type: { type: String, enum: ["artist"], required: false },
             url: { type: String, required: true },
           },
         ],
       },
       image: [
         {
-          quality: { type: String, required: true },
-          url: { type: String, required: true },
+          quality: { type: String, required: false },
+          url: { type: String, required: false },
         },
       ],
       downloadUrl: [
         {
-          quality: { type: String, required: true },
-          url: { type: String, required: true },
+          quality: { type: String, required: false },
+          url: { type: String, required: false },
         },
       ],
       addedBy: { type: String, required: false },
