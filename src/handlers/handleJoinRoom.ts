@@ -37,7 +37,7 @@ export async function handleJoinRoom(socket: CustomSocket) {
     socket.join(roomInfo.roomId);
 
     // Fetch listeners and prepare response data
-    const listeners = await getListener(roomInfo._id);
+    const listeners = await getListener(addedUser.roomId);
     const userData = {
       ...addedUser.toObject(),
       ...user.toObject(),
