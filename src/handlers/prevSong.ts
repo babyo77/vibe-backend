@@ -1,9 +1,9 @@
-import { CustomSocket, prevSong } from "../../types";
+import { CustomSocket, prevSongT } from "../../types";
 import { getSongsWithVoteCounts } from "../lib/utils";
 import Queue from "../models/queueModel";
 import { errorHandler } from "./error";
 
-export async function prevSong(socket: CustomSocket, data: prevSong) {
+export async function prevSong(socket: CustomSocket, data: prevSongT) {
   const { role, roomInfo, userId } = socket;
   if (!roomInfo) return;
   if (!userId) return;

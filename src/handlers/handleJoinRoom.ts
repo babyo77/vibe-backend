@@ -52,6 +52,6 @@ export async function handleJoinRoom(socket: CustomSocket) {
       .emit("userJoinedRoom", { user: userData, listeners });
   } catch (error: any) {
     console.error("JOIN ERROR:", error.message);
-    errorHandler(socket, error.message || "An unexpected error occurred");
+    errorHandler(socket, error.message);
   }
 }

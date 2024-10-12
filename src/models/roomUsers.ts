@@ -7,6 +7,10 @@ const roomUserSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    socketid: {
+      type: String,
+      required: true,
+    },
     active: {
       type: Boolean,
       default: true,

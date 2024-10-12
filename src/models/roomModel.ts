@@ -13,6 +13,10 @@ const roomSchema = new mongoose.Schema(
       required: true,
       default: false,
     },
+    progress: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

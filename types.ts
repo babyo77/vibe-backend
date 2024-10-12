@@ -4,14 +4,15 @@ export interface CustomSocket extends Socket {
   userId?: string; // Optional property
   roomInfo?: { roomId: string; _id: string }; // Optional property
   role?: "admin" | "listener" | string;
+  progress?: number;
 }
 
-export interface prevSong {
+export interface prevSongT {
   prevSong: searchResults;
   roomId: string;
 }
 
-export interface nextSong {
+export interface nextSongT {
   nextSong: searchResults;
   callback?: boolean;
   roomId: string;

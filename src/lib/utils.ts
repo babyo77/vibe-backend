@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import Vote from "../models/voteModel";
 import Queue from "../models/queueModel";
 import RoomUser from "../models/roomUsers";
 
@@ -39,6 +38,15 @@ export const getSongsWithVoteCounts = async (
             {
               $match: {
                 $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] }, // Match users using ObjectId
+              },
+            },
+            {
+              $project: {
+                // Only include the fields you need
+                name: 1, // Include the user's name
+                imageUrl: 1, // Include the user's image
+                username: 1, // Include the user's username
+                _id: 0, // Exclude the _id field (optional)
               },
             },
           ],
@@ -126,6 +134,9 @@ export const getSongsWithVoteCounts = async (
       {
         $replaceRoot: { newRoot: "$songData" }, // Replace the root with songData
       },
+      {
+        $limit: 117,
+      },
     ]);
 
     return songsWithVoteCounts; // Return the sorted array of songData
@@ -146,8 +157,11 @@ export const getListener = async (roomId: string) => {
     roomId: roomId,
     active: true,
   })
-    .populate("userId")
-    .limit(5);
+    .populate({
+      path: "userId", // The path to populate
+      select: "name username imageUrl", // Only select the 'name' and 'username' fields
+    })
+    .limit(17);
 
   const totalListeners = await RoomUser.countDocuments({
     roomId: roomId,
@@ -159,4 +173,19 @@ export const getListener = async (roomId: string) => {
     currentPage: 1,
     roomUsers,
   };
+};
+
+export const homeResponse = {
+  live: true,
+  about: {
+    description:
+      "A real-time music streaming application built using Node.js, Express, Socket.IO, and MongoDB",
+    github: "https://github.com/babyo77/vibe-backend",
+    website: "https://vibe-drx.vercel.app",
+  },
+};
+
+export const cors = {
+  origin: process.env.ALLOWED_URL,
+  credentials: true,
 };
