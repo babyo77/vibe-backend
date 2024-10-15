@@ -14,10 +14,11 @@ export async function handleDisconnect(socket: CustomSocket) {
       }
     ).populate("userId");
     const listeners = await getListener(roomInfo._id);
-    if (roomInfo.roomId && data?.userId) {
-      socket
-        .to(roomInfo.roomId)
-        .emit("userLeftRoom", { user: data?.userId, listeners });
+    if (roomInfo.roomId) {
+      socket.to(roomInfo.roomId).emit("userLeftRoom", {
+        user: data?.userId || { username: "Someone" },
+        listeners,
+      });
     }
   } catch (error) {
     console.log(error);

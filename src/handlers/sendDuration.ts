@@ -2,7 +2,7 @@ import { CustomSocket } from "../../types";
 
 import { errorHandler } from "./error";
 
-export async function sendDuration(socket: CustomSocket) {
+export async function sendProgress(socket: CustomSocket) {
   try {
     const { progress } = socket;
     if (!progress) return;

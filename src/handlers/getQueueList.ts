@@ -5,7 +5,7 @@ import { errorHandler } from "./error";
 export async function getQueueList(socket: CustomSocket) {
   try {
     const { roomInfo, userId } = socket;
-    if (!roomInfo || !userId) throw new Error("Login to play");
+    if (!roomInfo || !userId) throw new Error("Login to Required");
     const queue = await getSongsWithVoteCounts(roomInfo._id, userId);
     socket.emit("queueList", queue);
   } catch (error: any) {

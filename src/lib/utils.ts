@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Queue from "../models/queueModel";
 import RoomUser from "../models/roomUsers";
+import { CustomSocket } from "../../types";
 
 export const parseCookies = (cookieHeader?: string) => {
   const cookies: any = {};
@@ -14,7 +15,7 @@ export const parseCookies = (cookieHeader?: string) => {
 
 export const getSongsWithVoteCounts = async (
   roomId: string,
-  userId: string,
+  userId?: string,
   sort = false
 ) => {
   try {
@@ -81,6 +82,12 @@ export const getSongsWithVoteCounts = async (
           "songData.isVoted": {
             $cond: {
               if: {
+                $and: [
+                  { $gt: [{ $size: "$votes" }, 0] }, // Ensure there are votes
+                  { $ifNull: [userId, false] }, // Ensure userId exists
+                ],
+              },
+              then: {
                 $gt: [
                   {
                     $size: {
@@ -99,8 +106,7 @@ export const getSongsWithVoteCounts = async (
                   0,
                 ],
               },
-              then: true,
-              else: false,
+              else: false, // If no userId is present or no votes, set isVoted to false
             },
           },
           // Include isPlaying directly for sorting
@@ -148,7 +154,6 @@ export const getSongsWithVoteCounts = async (
 
 export const getVotesArray = async (roomId: string, userId?: string) => {
   if (!userId) return;
-
   return [];
 };
 

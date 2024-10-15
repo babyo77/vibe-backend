@@ -7,7 +7,7 @@ import { getListener } from "../lib/utils";
 export async function handleJoinRoom(socket: CustomSocket) {
   try {
     const { userId, roomInfo } = socket;
-
+    if (!userId) return;
     // Validate user and roomInfo in a single query
     const user = await User.findById(userId);
     if (!user) {

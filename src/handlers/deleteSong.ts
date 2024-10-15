@@ -10,7 +10,7 @@ export default async function deleteSong(
 ) {
   try {
     const { roomInfo, userId, role } = socket;
-    if (!roomInfo || !userId) throw new Error("Login to play");
+    if (!roomInfo || !userId) throw new Error("Login Required");
     if (!data) return;
     if (role === "admin" || data?.addedBy === userId) {
       await Queue.deleteOne({

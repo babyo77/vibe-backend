@@ -14,10 +14,14 @@ import { sendMessage } from "./handlers/sendMessage";
 import { songEnded } from "./handlers/songEnded";
 import { getQueueList } from "./handlers/getQueueList";
 import { handleSeek } from "./handlers/handleSeek";
-import { sendDuration } from "./handlers/sendDuration";
+import { sendProgress } from "./handlers/sendDuration";
 import { middleware } from "./handlers/middleware";
 import { cors, homeResponse } from "./lib/utils";
 import { handleProgress } from "./handlers/handleProgress";
+import { handleGuestUser } from "./handlers/handleGuestUser";
+import { sendHeart } from "./handlers/sendHeart";
+import { handleLoop } from "./handlers/handleLoop";
+
 const app = express();
 const server = createServer(app);
 
@@ -29,11 +33,16 @@ app.get("/", (_req, res) => {
   res.json(homeResponse);
 });
 io.use(async (socket: CustomSocket, next) => {
-  middleware(socket, next);
+  await middleware(socket, next);
+});
+
+io.use(async (socket: CustomSocket, next) => {
+  await handleGuestUser(socket, next);
 });
 
 io.on("connection", (socket: CustomSocket) => {
   // Initial setup for the socket connection
+
   handleJoinRoom(socket);
 
   // Socket event handlers mapping
@@ -41,7 +50,7 @@ io.on("connection", (socket: CustomSocket) => {
     nextSong: async (data: nextSongT) => nextSong(socket, data),
     prevSong: async (data: prevSongT) => prevSong(socket, data),
     seek: async (seek: number) => handleSeek(socket, seek),
-    getProgress: async () => sendDuration(socket),
+    getProgress: async () => sendProgress(socket),
     progress: async (progress: number) => handleProgress(socket, progress),
     addToQueue: async (data: searchResults) => addQueue(socket, data),
     deleteSong: async (data: searchResults) => deleteSong(socket, data),
@@ -49,6 +58,8 @@ io.on("connection", (socket: CustomSocket) => {
     message: async (message: string) => sendMessage(socket, message),
     getSongQueue: async () => getQueueList(socket),
     songEnded: async (data: searchResults) => songEnded(io, socket, data),
+    heart: async (data: any) => sendHeart(io, socket, data),
+    loop: async (looped: boolean) => handleLoop(io, socket, looped),
   };
 
   // Registering all socket event handlers

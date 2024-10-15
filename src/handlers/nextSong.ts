@@ -36,6 +36,7 @@ export async function nextSong(socket: CustomSocket, data: nextSongT) {
         },
         { isPlaying: true }
       );
+
       socket.emit("nextSong", nextSong);
       socket.to(roomInfo.roomId).emit("nextSong", nextSong);
       return;
@@ -48,10 +49,11 @@ export async function nextSong(socket: CustomSocket, data: nextSongT) {
       },
       { isPlaying: true }
     );
+
     socket.emit("nextSong", prevSong);
 
     socket.to(roomInfo.roomId).emit("nextSong", prevSong);
   } else {
-    errorHandler(socket, "only admin can play nextSong");
+    errorHandler(socket, "only admin can do this");
   }
 }

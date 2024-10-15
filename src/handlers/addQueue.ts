@@ -1,5 +1,4 @@
 import { CustomSocket, searchResults } from "../../types";
-import { getSongsWithVoteCounts } from "../lib/utils";
 import Queue from "../models/queueModel";
 import { errorHandler } from "./error";
 
@@ -9,7 +8,7 @@ export default async function addQueue(
 ) {
   try {
     const { roomInfo, userId } = socket;
-    if (!roomInfo || !userId) throw new Error("Login to play");
+    if (!roomInfo || !userId) throw new Error("Login Required");
 
     if (data) {
       const isAlready = await Queue.findOne({

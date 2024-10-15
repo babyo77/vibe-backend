@@ -11,13 +11,16 @@ export async function middleware(
   try {
     const token = socket.handshake.headers["authorization"];
     const roomId = socket.handshake.headers["room"];
-    if (!token) throw new Error("unauthorized");
+    if (typeof roomId == "string" && roomId.trim() !== "") {
+    } else {
+      throw new Error("Invalid roomId: " + roomId);
+    }
     if (!roomId) throw new Error("roomId not provided");
-    if (token) {
-      const decoded = jwt.verify(
+    if (token && token !== "undefined") {
+      const decoded = (await jwt.verify(
         token,
         process.env.JWT_SECRET || ""
-      ) as JwtPayload;
+      )) as JwtPayload;
       if (decoded && typeof decoded.userId === "string") {
         const user = await User.findById(decoded?.userId);
         if (!user) throw new Error("Could not find user");
@@ -27,11 +30,11 @@ export async function middleware(
           { isActive: true },
           { upsert: true, new: true }
         );
+        if (!room) throw new Error("Could not find room");
         const role = await RoomUser.findOne({
           roomId: room._id,
           userId: user?.id,
         });
-
         socket.roomInfo = {
           _id: room._id.toString(),
           roomId: room.roomId.toString(),
@@ -41,10 +44,18 @@ export async function middleware(
           socket.role = role.role.toString();
         }
       }
+    } else {
+      const room = await Room.findOne({ roomId });
+      socket.roomInfo = {
+        _id: room._id.toString(),
+        roomId: room.roomId.toString(),
+      };
+      socket.progress = room.progress;
     }
     next();
   } catch (error: any) {
     console.log("MIDDLEWARE ERROR:", error.message);
+    if (error.message === "jwt malformed") return;
     return next(new Error(error?.message || "Invalid token"));
   }
 }

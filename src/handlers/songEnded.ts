@@ -13,7 +13,7 @@ export async function songEnded(
   try {
     const { roomInfo, userId } = socket;
     if (!data) return;
-    if (!roomInfo || !userId) throw new Error("Login to play");
+    if (!roomInfo || !userId) throw new Error("Login Required");
 
     await Vote.deleteMany({
       queueId: data.queueId,
