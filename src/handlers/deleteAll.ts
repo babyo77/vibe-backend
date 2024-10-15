@@ -18,7 +18,7 @@ export async function deleteAll(socket: CustomSocket) {
       }),
     ]);
 
-    socket.to(roomInfo.roomId).emit("addToQueue");
+    socket.to(roomInfo.roomId).emit("songQueue");
   } catch (error: any) {
     console.log("DELETE ALL ERROR:", error);
     errorHandler(socket, error.message);
