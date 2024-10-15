@@ -32,7 +32,6 @@ export async function handleGuestUser(
     }
     next();
   } catch (error: any) {
-    console.log("GUEST USER MIDDLEWARE ERROR:", error.message);
     if (error.message === "jwt malformed") return;
     return next(new Error(error?.message || "Invalid token"));
   }
