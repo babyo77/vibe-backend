@@ -141,7 +141,7 @@ export const getSongsWithVoteCounts = async (
         $replaceRoot: { newRoot: "$songData" }, // Replace the root with songData
       },
       {
-        $limit: 117,
+        $limit: 200,
       },
     ]);
 
