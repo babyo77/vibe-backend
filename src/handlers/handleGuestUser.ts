@@ -8,7 +8,7 @@ export async function handleGuestUser(
 ) {
   try {
     const { roomInfo, progress, userId } = socket;
-    if (!roomInfo) return;
+    if (!roomInfo) return next();
     socket.join(roomInfo.roomId);
     if (!userId) {
       const [queue, listeners] = await Promise.all([
@@ -30,7 +30,7 @@ export async function handleGuestUser(
         })
       );
     }
-    next();
+    return next();
   } catch (error: any) {
     if (error.message === "jwt malformed") return;
     return next(new Error(error?.message || "Invalid token"));

@@ -32,7 +32,7 @@ export async function middleware(
         );
         if (!room) throw new Error("Could not find room");
         const role = await RoomUser.findOne({
-          roomId: room._id,
+          roomId: room?._id,
           userId: user?.id,
         });
         socket.roomInfo = {
@@ -52,7 +52,7 @@ export async function middleware(
       };
       socket.progress = room.progress;
     }
-    next();
+    return next();
   } catch (error: any) {
     console.log("MIDDLEWARE ERROR:", error.message);
     if (error.message === "jwt malformed") return;
