@@ -38,6 +38,7 @@ export interface downloadUrl {
 }
 
 export interface searchResults {
+  _id: string;
   id: string;
   name: string;
   artists: { primary: artists[] };

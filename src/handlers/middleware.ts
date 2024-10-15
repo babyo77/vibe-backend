@@ -52,6 +52,7 @@ export async function middleware(
       };
       socket.progress = room.progress;
     }
+    socket.compress(true);
     return next();
   } catch (error: any) {
     console.log("MIDDLEWARE ERROR:", error.message);

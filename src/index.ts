@@ -21,6 +21,8 @@ import { handleProgress } from "./handlers/handleProgress";
 import { handleGuestUser } from "./handlers/handleGuestUser";
 import { sendHeart } from "./handlers/sendHeart";
 import { handleLoop } from "./handlers/handleLoop";
+import { deleteAll } from "./handlers/deleteAll";
+import { bulkDelete } from "./handlers/bulkDelete";
 
 const app = express();
 const server = createServer(app);
@@ -60,6 +62,8 @@ io.on("connection", (socket: CustomSocket) => {
     songEnded: async (data: searchResults) => songEnded(io, socket, data),
     heart: async (data: any) => sendHeart(socket, data),
     loop: async (looped: boolean) => handleLoop(io, socket, looped),
+    deleteAll: async () => deleteAll(socket),
+    bulkDelete: async (data: searchResults[]) => bulkDelete(socket, data),
   };
 
   // Registering all socket event handlers
