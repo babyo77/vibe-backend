@@ -8,7 +8,7 @@ export async function handleGuestUser(
 ) {
   try {
     const { roomInfo, progress, userId } = socket;
-    if (!roomInfo) return next();
+    if (!roomInfo) throw new Error("Invalid room");
     socket.join(roomInfo.roomId);
     if (!userId) {
       const [queue, listeners] = await Promise.all([
