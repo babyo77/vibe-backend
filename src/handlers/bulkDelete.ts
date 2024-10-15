@@ -22,6 +22,7 @@ export async function bulkDelete(socket: CustomSocket, data: searchResults[]) {
         queueId: { $in: queueIds }, // If queueId refers to songData _id
       }),
     ]);
+    socket.emit("songQueue");
     socket.to(roomInfo.roomId).emit("songQueue");
   } catch (error: any) {
     console.log("BULK DELETE ERROR", error);

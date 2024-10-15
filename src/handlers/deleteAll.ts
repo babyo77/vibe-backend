@@ -17,7 +17,7 @@ export async function deleteAll(socket: CustomSocket) {
         roomId: roomInfo._id,
       }),
     ]);
-
+    socket.emit("songQueue");
     socket.to(roomInfo.roomId).emit("songQueue");
   } catch (error: any) {
     console.log("DELETE ALL ERROR:", error);
