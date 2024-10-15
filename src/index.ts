@@ -58,7 +58,7 @@ io.on("connection", (socket: CustomSocket) => {
     message: async (message: string) => sendMessage(socket, message),
     getSongQueue: async () => getQueueList(socket),
     songEnded: async (data: searchResults) => songEnded(io, socket, data),
-    heart: async (data: any) => sendHeart(io, socket, data),
+    heart: async (data: any) => sendHeart(socket, data),
     loop: async (looped: boolean) => handleLoop(io, socket, looped),
   };
 
