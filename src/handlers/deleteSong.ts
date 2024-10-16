@@ -28,7 +28,7 @@ export default async function deleteSong(
         }
       }
     } else {
-      throw new Error("Admin an user who added this song can delete this song");
+      throw new Error("Only admin and user who added this song can delete it");
     }
   } catch (error: any) {
     console.log("DELETE ERROR:", error.message);
