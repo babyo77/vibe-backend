@@ -12,8 +12,7 @@ export default async function upVote(
 
     // Check if roomInfo is available
     if (!roomInfo) {
-      console.error("Room info is missing.");
-      return;
+      throw new Error("Room info is missing.");
     }
     if (!userId) return;
     // If no data provided, fetch votes and queue
@@ -26,8 +25,7 @@ export default async function upVote(
 
     // Ensure queueId is present
     if (!data.queueId) {
-      console.error("Queue ID is missing in the data.");
-      return;
+      throw new Error("Queue ID is missing in the data.");
     }
 
     // Check if the user has already voted
