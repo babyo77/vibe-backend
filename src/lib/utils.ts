@@ -24,7 +24,6 @@ export const getSongsWithVoteCounts = async (
       {
         $match: { roomId: new mongoose.Types.ObjectId(roomId) }, // Match songs in the specified room
       },
-      ...(shuffle ? [{ $sample: { size: 117 } }] : []),
       {
         $lookup: {
           from: "votes", // Name of the votes collection
@@ -145,6 +144,7 @@ export const getSongsWithVoteCounts = async (
       {
         $limit: 117,
       },
+      ...(shuffle ? [{ $sample: { size: 117 } }] : []),
     ]);
 
     return songsWithVoteCounts; // Return the sorted array of songData
