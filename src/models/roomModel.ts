@@ -13,6 +13,9 @@ const roomSchema = new mongoose.Schema(
       required: true,
       default: false,
     },
+    looped: {
+      type: Boolean,
+    },
     progress: {
       type: Number,
       default: 0,

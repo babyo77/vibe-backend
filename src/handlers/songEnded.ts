@@ -5,6 +5,7 @@ import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { Server } from "socket.io";
+import Room from "../models/roomModel";
 export async function songEnded(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
   socket: CustomSocket,
@@ -20,6 +21,8 @@ export async function songEnded(
       roomId: roomInfo._id,
     });
     await Queue.updateMany({ roomId: roomInfo._id }, { isPlaying: false });
+
+    const room = await Room.findById(roomInfo._id);
 
     const queue = await getSongsWithVoteCounts(roomInfo._id, userId, true);
     let nextSong = queue[0];
@@ -51,7 +54,7 @@ export async function songEnded(
       { isPlaying: true }
     );
     const payload = {
-      play: nextSong,
+      play: room.looped ? data : nextSong,
       queue,
       votes,
     };
