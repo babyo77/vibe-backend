@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Queue from "../models/queueModel";
 import RoomUser from "../models/roomUsers";
-import { CustomSocket } from "../../types";
+import { CustomSocket, searchResults } from "../../types";
 
 export const parseCookies = (cookieHeader?: string) => {
   const cookies: any = {};
@@ -193,4 +193,12 @@ export const homeResponse = {
 export const cors = {
   origin: true,
   credentials: true,
+};
+
+export const shuffleArray = (queue: searchResults[]) => {
+  for (let i = queue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [queue[i], queue[j]] = [queue[j], queue[i]];
+  }
+  return queue;
 };
