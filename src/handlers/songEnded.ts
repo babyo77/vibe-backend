@@ -24,7 +24,12 @@ export async function songEnded(
 
     const room = await Room.findById(roomInfo._id);
 
-    const queue = await getSongsWithVoteCounts(roomInfo._id, userId, true);
+    const queue = await getSongsWithVoteCounts(
+      roomInfo._id,
+      userId,
+      true,
+      room.shuffled
+    );
     let nextSong = queue[0];
     const currentSongIndex = queue.findIndex((song) => song.id === data.id); // Assuming data.id contains the ID of the ended song
 

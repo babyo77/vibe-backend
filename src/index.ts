@@ -59,12 +59,12 @@ io.on("connection", (socket: CustomSocket) => {
     deleteSong: async (data: searchResults) => deleteSong(socket, data),
     upVote: async (data: searchResults) => upVote(socket, data),
     message: async (message: string) => sendMessage(socket, message),
-    getSongQueue: async (shuffle: boolean) => getQueueList(socket, shuffle),
+    getSongQueue: async () => getQueueList(socket),
     songEnded: async (data: searchResults) => songEnded(io, socket, data),
     heart: async (data: any) => sendHeart(socket, data),
     loop: async (looped: boolean) => handleLoop(io, socket, looped),
     deleteAll: async () => deleteAll(socket),
-    shuffle: async () => shuffle(socket),
+    shuffle: async (shu: boolean) => shuffle(io, socket, shu),
     bulkDelete: async (data: searchResults[]) => bulkDelete(socket, data),
   };
 
