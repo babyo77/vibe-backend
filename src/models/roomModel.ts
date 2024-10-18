@@ -15,9 +15,11 @@ const roomSchema = new mongoose.Schema(
     },
     looped: {
       type: Boolean,
+      default: false,
     },
     shuffled: {
       type: Boolean,
+      default: false,
     },
     progress: {
       type: Number,

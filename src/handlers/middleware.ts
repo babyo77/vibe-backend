@@ -50,6 +50,8 @@ export async function middleware(
         _id: room._id.toString(),
         roomId: room.roomId.toString(),
       };
+      socket.loop = room.lopped;
+      socket.shuffle = room.shuffled;
       socket.progress = room.progress;
     }
     socket.compress(true);

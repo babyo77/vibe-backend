@@ -4,7 +4,7 @@ import Queue from "../models/queueModel";
 import { errorHandler } from "./error";
 
 export async function nextSong(socket: CustomSocket, data: nextSongT) {
-  const { role, roomInfo, userId } = socket;
+  const { role, roomInfo, userId, shuffle } = socket;
   if (!roomInfo) return;
   if (!userId) return;
   if (!data) return;

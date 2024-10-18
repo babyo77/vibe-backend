@@ -5,6 +5,8 @@ export interface CustomSocket extends Socket {
   roomInfo?: { roomId: string; _id: string }; // Optional property
   role?: "admin" | "listener" | string;
   progress?: number;
+  loop?: boolean;
+  shuffle?: boolean;
 }
 
 export interface prevSongT {

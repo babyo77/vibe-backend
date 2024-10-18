@@ -12,7 +12,7 @@ export async function songEnded(
   data?: searchResults
 ) {
   try {
-    const { roomInfo, userId } = socket;
+    const { roomInfo, userId, loop, shuffle } = socket;
     if (!data) return;
     if (!roomInfo || !userId) throw new Error("Login Required");
 
@@ -22,13 +22,11 @@ export async function songEnded(
     });
     await Queue.updateMany({ roomId: roomInfo._id }, { isPlaying: false });
 
-    const room = await Room.findById(roomInfo._id);
-
     const queue = await getSongsWithVoteCounts(
       roomInfo._id,
       userId,
       true,
-      room.shuffled
+      shuffle
     );
     let nextSong = queue[0];
     const currentSongIndex = queue.findIndex((song) => song.id === data.id); // Assuming data.id contains the ID of the ended song
@@ -59,7 +57,7 @@ export async function songEnded(
       { isPlaying: true }
     );
     const payload = {
-      play: room.looped ? data : nextSong,
+      play: loop ? data : nextSong,
       queue,
       votes,
     };
