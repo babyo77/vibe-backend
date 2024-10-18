@@ -16,13 +16,15 @@ export const parseCookies = (cookieHeader?: string) => {
 export const getSongsWithVoteCounts = async (
   roomId: string,
   userId?: string,
-  sort = false
+  sort = false,
+  shuffle = false
 ) => {
   try {
     const songsWithVoteCounts = await Queue.aggregate([
       {
         $match: { roomId: new mongoose.Types.ObjectId(roomId) }, // Match songs in the specified room
       },
+      ...(shuffle ? [{ $sample: { size: 117 } }] : []),
       {
         $lookup: {
           from: "votes", // Name of the votes collection
@@ -69,7 +71,7 @@ export const getSongsWithVoteCounts = async (
               {
                 $map: {
                   input: {
-                    $sortArray: { input: "$votes", sortBy: { createdAt: -1 } }, // Sort votes by createdAt (latest first)
+                    $sortArray: { input: "$votes", sortBy: { createdAt: -1 } },
                   },
                   as: "vote",
                   in: "$$vote.userId", // Extract the userId from each vote

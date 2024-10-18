@@ -7,12 +7,9 @@ export async function shuffle(socket: CustomSocket) {
     const { roomInfo, role } = socket;
     if (!roomInfo) throw new Error("Invalid room");
     if (role !== "admin") throw new Error("Only admin can shuffle");
-    const queue = await getSongsWithVoteCounts(roomInfo._id);
 
-    const shuffleQueue = shuffleArray(queue);
-
-    socket.emit("shuffle", shuffleQueue);
-    socket.to(roomInfo.roomId).emit("shuffle", shuffleQueue);
+    socket.emit("shuffle");
+    socket.to(roomInfo.roomId).emit("shuffle");
   } catch (error: any) {
     console.log("Failed to shuffle", error.message);
     errorHandler(socket, error.message);
