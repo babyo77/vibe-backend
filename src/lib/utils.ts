@@ -69,7 +69,7 @@ export const getSongsWithVoteCounts = async (
               {
                 $map: {
                   input: {
-                    $sortArray: { input: "$votes", sortBy: { createdAt: 1 } }, // Sort votes by createdAt (latest first)
+                    $sortArray: { input: "$votes", sortBy: { createdAt: -1 } }, // Sort votes by createdAt (latest first)
                   },
                   as: "vote",
                   in: "$$vote.userId", // Extract the userId from each vote
