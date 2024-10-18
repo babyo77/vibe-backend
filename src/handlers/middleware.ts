@@ -57,6 +57,6 @@ export async function middleware(
   } catch (error: any) {
     console.log("MIDDLEWARE ERROR:", error.message);
     if (error.message === "jwt malformed") return;
-    return next(new Error(error?.message || "Invalid token"));
+    return next(new Error("Something went wrong try Login"));
   }
 }
