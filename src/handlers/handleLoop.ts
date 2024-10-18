@@ -6,7 +6,7 @@ import Room from "../models/roomModel";
 export async function handleLoop(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
   socket: CustomSocket,
-  looped: boolean
+  looped = false
 ) {
   try {
     const { roomInfo, role } = socket;

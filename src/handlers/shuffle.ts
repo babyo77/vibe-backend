@@ -7,11 +7,11 @@ import { DefaultEventsMap } from "socket.io/dist/typed-events";
 export async function shuffle(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
   socket: CustomSocket,
-  shu: boolean
+  shu = false
 ) {
   try {
     const { roomInfo, role } = socket;
-    if (!shu) throw new Error("Invalid request");
+
     if (!roomInfo) throw new Error("Invalid room");
     if (role !== "admin") throw new Error("Only admin can shuffle");
 
