@@ -144,9 +144,10 @@ export const getSongsWithVoteCounts = async (
       {
         $limit: 117,
       },
-      { $sample: { size: shuffle ? 117 : 0 } },
     ]);
-
+    if (shuffle) {
+      songsWithVoteCounts.push({ $sample: { size: 117 } });
+    }
     return songsWithVoteCounts; // Return the sorted array of songData
   } catch (error) {
     console.error("Error fetching songs with vote counts:", error);
