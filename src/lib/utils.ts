@@ -20,7 +20,7 @@ export const getSongsWithVoteCounts = async (
   shuffle = false
 ) => {
   try {
-    const songsWithVoteCounts = await Queue.aggregate([
+    const pipeline: any[] = [
       {
         $match: { roomId: new mongoose.Types.ObjectId(roomId) }, // Match songs in the specified room
       },
@@ -144,11 +144,11 @@ export const getSongsWithVoteCounts = async (
       {
         $limit: 117,
       },
-    ]);
+    ];
     if (shuffle) {
-      songsWithVoteCounts.push({ $sample: { size: 117 } });
+      pipeline.push({ $sample: { size: 117 } });
     }
-    return songsWithVoteCounts; // Return the sorted array of songData
+    return await Queue.aggregate(pipeline); // Return the sorted array of songData
   } catch (error) {
     console.error("Error fetching songs with vote counts:", error);
     throw error; // Propagate the error for handling by the caller
