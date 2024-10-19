@@ -12,7 +12,6 @@ export async function getQueueList(socket: CustomSocket) {
       false,
       shuffle
     );
-    console.log(shuffle);
 
     socket.emit("queueList", queue);
   } catch (error: any) {

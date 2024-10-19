@@ -144,7 +144,7 @@ export const getSongsWithVoteCounts = async (
       {
         $limit: 117,
       },
-      ...(shuffle ? [{ $sample: { size: 117 } }] : []),
+      { $sample: { size: shuffle ? 117 : 0 } },
     ]);
 
     return songsWithVoteCounts; // Return the sorted array of songData
