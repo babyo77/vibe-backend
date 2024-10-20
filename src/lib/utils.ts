@@ -255,7 +255,6 @@ export const getMostVotedSongs = async (roomId: string) => {
       {
         $sort: {
           voteCount: -1, // Sort by vote count in descending order
-          order: 1, // If vote counts are equal, sort by order ascending
         },
       },
 
