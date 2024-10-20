@@ -43,9 +43,11 @@ export interface searchResults {
   _id: string;
   id: string;
   name: string;
+  order: number;
   artists: { primary: artists[] };
   image: downloadUrl[];
   downloadUrl: downloadUrl[];
   addedBy?: string;
   queueId?: string;
+  voteCount: number;
 }

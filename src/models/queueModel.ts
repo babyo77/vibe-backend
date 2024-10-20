@@ -1,58 +1,3 @@
-// import mongoose from "mongoose";
-
-// // Define the queue schema
-// const queueSchema = new mongoose.Schema(
-//   {
-//     roomId: {
-//       type: mongoose.Schema.Types.ObjectId,
-//       ref: "Room",
-//       required: true,
-//     },
-//     isPlaying: {
-//       type: Boolean,
-//       default: false,
-//     },
-//     songData: {
-//       id: { type: String, required: true },
-//       name: { type: String, required: true },
-//       artists: {
-//         primary: [
-//           {
-//             id: { type: Number, required: false },
-//             name: { type: String, required: false },
-//             role: { type: String, required: false },
-//             image: { type: [String], required: false }, // Array of image URLs
-//             type: { type: String, enum: ["artist"], required: false },
-//             url: { type: String, required: false },
-//           },
-//         ],
-//       },
-//       image: [
-//         {
-//           quality: { type: String, required: false },
-//           url: { type: String, required: false },
-//         },
-//       ],
-//       downloadUrl: [
-//         {
-//           quality: { type: String, required: false },
-//           url: { type: String, required: false },
-//         },
-//       ],
-//       addedBy: { type: String, required: false },
-//       queueId: { type: String, required: false },
-//       voteCount: { type: Number, required: true, default: 0 },
-//       topVoters: { type: [String], required: false }, // Array of user IDs
-//       isVoted: { type: Boolean, required: false, default: false },
-//     },
-//   },
-//   { timestamps: true }
-// );
-
-// // Create or use the Queue model
-// const Queue = mongoose.models?.Queue || mongoose.model("Queue", queueSchema);
-// export default Queue;
-
 import mongoose from "mongoose";
 
 const queueSchema = new mongoose.Schema(
@@ -70,9 +15,13 @@ const queueSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       required: true,
     },
+    order: {
+      type: Number,
+      required: true,
+    },
   },
   { timestamps: true }
 );
-
+queueSchema.index({ roomId: 1, order: 1 }); // Index on roomId and order for efficient sorting
 const Queue = mongoose.models?.Queue || mongoose.model("Queue", queueSchema);
 export default Queue;
