@@ -33,6 +33,8 @@ export async function nextSong(socket: CustomSocket, data: nextSongT) {
       );
       socket.emit("nextSong", nextSong);
       socket.to(roomInfo.roomId).emit("nextSong", nextSong);
+      socket.to(roomInfo.roomId).emit("songQueue");
+      socket.emit("songQueue");
       return;
     }
 
