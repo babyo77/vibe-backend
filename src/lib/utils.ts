@@ -212,6 +212,7 @@ export const getTime = () => {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true, // Use 12-hour format with AM/PM
+    timeZone: "Asia/Kolkata", // Set the time zone to IST
   };
   const timestamp = now.toLocaleTimeString("en-US", options); // Get the time in 'hh:mm AM/PM' format
   return timestamp;
