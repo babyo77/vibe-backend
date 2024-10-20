@@ -205,3 +205,14 @@ export const shuffleArray = (queue: searchResults[]) => {
   }
   return queue;
 };
+
+export const getTime = () => {
+  const now = new Date();
+  const options: Intl.DateTimeFormatOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true, // Use 12-hour format with AM/PM
+  };
+  const timestamp = now.toLocaleTimeString("en-US", options); // Get the time in 'hh:mm AM/PM' format
+  return timestamp;
+};

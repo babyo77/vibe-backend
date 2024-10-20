@@ -5,7 +5,6 @@ import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { Server } from "socket.io";
-import Room from "../models/roomModel";
 export async function songEnded(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
   socket: CustomSocket,
