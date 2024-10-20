@@ -18,6 +18,11 @@ export async function nextSong(socket: CustomSocket, data: nextSongT) {
         isPlaying: false,
       }
     );
+    await Vote.deleteMany({
+      queueId: nextSong.queueId,
+      roomId: roomInfo._id,
+    });
+
     if (callback) {
       await Queue.updateOne(
         {
@@ -30,11 +35,6 @@ export async function nextSong(socket: CustomSocket, data: nextSongT) {
       socket.to(roomInfo.roomId).emit("nextSong", nextSong);
       return;
     }
-
-    await Vote.deleteMany({
-      queueId: nextSong.queueId,
-      roomId: roomInfo._id,
-    });
 
     const song = await getMostVotedSongs(roomInfo._id);
 
