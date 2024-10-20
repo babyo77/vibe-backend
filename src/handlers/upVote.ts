@@ -54,7 +54,7 @@ export default async function upVote(
     }
 
     // Fetch updated votes and queue
-    const queue = await getSongsWithVoteCounts(roomInfo._id, userId, true);
+    const queue = await getSongsWithVoteCounts(roomInfo._id, userId);
 
     // Emit the updated votes and queue to the user
     socket.emit("votes", { queue });

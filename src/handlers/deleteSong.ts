@@ -18,7 +18,7 @@ export default async function deleteSong(
         "songData.queueId": data.queueId,
       });
       await Vote.deleteMany({ queueId: data.queueId });
-      const queue = await getSongsWithVoteCounts(roomInfo._id, userId, true);
+      const queue = await getSongsWithVoteCounts(roomInfo._id, userId);
 
       if (queue) {
         socket.emit("songQueue", queue);

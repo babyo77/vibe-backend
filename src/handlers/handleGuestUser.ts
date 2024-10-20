@@ -12,7 +12,7 @@ export async function handleGuestUser(
     socket.join(roomInfo.roomId);
     if (!userId) {
       const [queue, listeners] = await Promise.all([
-        await getSongsWithVoteCounts(roomInfo?._id, undefined, false),
+        await getSongsWithVoteCounts(roomInfo?._id, undefined),
         await getListener(roomInfo?._id),
       ]);
 
