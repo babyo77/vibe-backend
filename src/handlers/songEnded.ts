@@ -13,7 +13,7 @@ export async function songEnded(socket: CustomSocket, data?: searchResults) {
       roomId: roomInfo._id,
     });
 
-    nextSong(socket, { nextSong: data, roomId: roomInfo._id });
+    nextSong(socket, { nextSong: data, mostVoted: true });
   } catch (error: any) {
     console.log("SONGEND ERROR:", error.message);
     errorHandler(socket, error.message);

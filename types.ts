@@ -17,7 +17,7 @@ export interface prevSongT {
 export interface nextSongT {
   nextSong: searchResults;
   callback?: boolean;
-  roomId: string;
+  mostVoted: boolean;
 }
 
 export interface joinRoom {

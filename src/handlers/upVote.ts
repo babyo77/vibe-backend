@@ -1,5 +1,5 @@
 import { CustomSocket, searchResults } from "../../types";
-import { getVotesArray, getSongsWithVoteCounts } from "../lib/utils";
+import { getSongsWithVoteCounts } from "../lib/utils";
 import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
 

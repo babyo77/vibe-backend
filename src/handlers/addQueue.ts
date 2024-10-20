@@ -26,7 +26,16 @@ export default async function addQueue(
         order: existingSongs.length + index + 1, // Maintain order based on existing songs
       }));
 
-      await Queue.insertMany(newSongs);
+      const insertedSongs = await Queue.insertMany(newSongs);
+      const updates = insertedSongs.map((song) => ({
+        updateOne: {
+          filter: { _id: song._id },
+          update: { "songData.queueId": song._id.toString() },
+        },
+      }));
+      if (updates.length > 0) {
+        await Queue.bulkWrite(updates);
+      }
     }
 
     socket.emit("songQueue");

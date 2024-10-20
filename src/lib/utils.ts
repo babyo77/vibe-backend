@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Queue from "../models/queueModel";
 import RoomUser from "../models/roomUsers";
-import { CustomSocket, searchResults } from "../../types";
+import { searchResults } from "../../types";
 
 export const parseCookies = (cookieHeader?: string) => {
   const cookies: any = {};
@@ -170,10 +170,6 @@ export const getSongsWithVoteCounts = async (
     throw error; // Propagate the error
   }
 };
-export const getVotesArray = async (roomId: string, userId?: string) => {
-  if (!userId) return;
-  return [];
-};
 
 export const getListener = async (roomId: string) => {
   const roomUsers = await RoomUser.find({
@@ -231,4 +227,46 @@ export const getTime = () => {
   };
   const timestamp = now.toLocaleTimeString("en-US", options); // Get the time in 'hh:mm AM/PM' format
   return timestamp;
+};
+
+export const getMostVotedSongs = async (roomId: string) => {
+  try {
+    const pipeline: any[] = [
+      {
+        $match: {
+          roomId: new mongoose.Types.ObjectId(roomId),
+        },
+      },
+      {
+        $lookup: {
+          from: "votes",
+          localField: "_id",
+          foreignField: "queueId",
+          as: "votes",
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          order: 1,
+          voteCount: { $size: "$votes" },
+        },
+      },
+      {
+        $sort: {
+          voteCount: -1, // Sort by vote count in descending order
+          order: 1, // If vote counts are equal, sort by order ascending
+        },
+      },
+
+      { $limit: 1 },
+    ];
+
+    const songs = await Queue.aggregate(pipeline);
+
+    return songs as { order: 1; voteCount: 0 }[];
+  } catch (error) {
+    console.error("Error fetching songs with vote counts:", error);
+    throw error;
+  }
 };
