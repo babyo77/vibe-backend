@@ -131,6 +131,11 @@ export const getSongsWithVoteCounts = async (
         },
       },
       {
+        $sort: {
+          isPlaying: -1, // Sort by currently playing songs first
+        },
+      },
+      {
         $replaceRoot: { newRoot: "$songData" }, // Replace the root with songData
       },
     ];
@@ -140,18 +145,7 @@ export const getSongsWithVoteCounts = async (
     }
 
     if (upNextSong) {
-      pipeline.push({
-        $sort: {
-          "songData.voteCount": -1,
-        },
-      });
       pipeline.push({ $limit: 3 });
-    } else {
-      pipeline.push({
-        $sort: {
-          isPlaying: -1, // Sort by currently playing songs first
-        },
-      });
     }
     // Fetch the songs based on the pipeline
     const songs = await Queue.aggregate(pipeline);
