@@ -17,7 +17,8 @@ export const getSongsWithVoteCounts = async (
   roomId: string,
   userId?: string,
   shuffle = false,
-  order?: number // Optional order parameter
+  order?: number, // Optional order parameter
+  upNextSong = false
 ) => {
   try {
     const pipeline: any[] = [
@@ -143,6 +144,9 @@ export const getSongsWithVoteCounts = async (
       // Shuffle logic if needed
     }
 
+    if (upNextSong) {
+      pipeline.push({ $limit: 3 });
+    }
     // Fetch the songs based on the pipeline
     const songs = await Queue.aggregate(pipeline);
 
@@ -254,11 +258,13 @@ export const getMostVotedSongs = async (roomId: string) => {
       },
       {
         $sort: {
+          createdAt: -1,
           voteCount: -1, // Sort by vote count in descending order
         },
       },
-
-      { $limit: 1 },
+      {
+        $limit: 3,
+      },
     ];
 
     const songs = await Queue.aggregate(pipeline);

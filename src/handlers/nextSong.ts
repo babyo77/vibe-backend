@@ -32,6 +32,8 @@ export async function nextSong(socket: CustomSocket, data: nextSongT) {
         { isPlaying: true }
       );
       socket.emit("nextSong", nextSong);
+      socket.emit("updateUpNextSongs");
+      socket.to(roomInfo.roomId).emit("updateUpNextSongs");
       socket.to(roomInfo.roomId).emit("nextSong", nextSong);
       socket.to(roomInfo.roomId).emit("songQueue");
       socket.emit("songQueue");
@@ -68,7 +70,8 @@ export async function nextSong(socket: CustomSocket, data: nextSongT) {
     );
 
     socket.emit("nextSong", nextSongDb);
-
+    socket.emit("updateUpNextSongs");
+    socket.to(roomInfo.roomId).emit("updateUpNextSongs");
     socket.to(roomInfo.roomId).emit("nextSong", nextSongDb);
     socket.to(roomInfo.roomId).emit("songQueue");
     socket.emit("songQueue");

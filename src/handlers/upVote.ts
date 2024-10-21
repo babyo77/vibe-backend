@@ -58,7 +58,8 @@ export default async function upVote(
 
     // Emit the updated votes and queue to the user
     socket.emit("votes", { queue });
-
+    socket.emit("updateUpNextSongs");
+    socket.to(roomInfo.roomId).emit("updateUpNextSongs");
     // Emit updated votes to everyone else in the room
     socket.to(roomInfo.roomId).emit("getVotes");
   } catch (error: any) {

@@ -24,6 +24,7 @@ import { handleLoop } from "./handlers/handleLoop";
 import { deleteAll } from "./handlers/deleteAll";
 import { bulkDelete } from "./handlers/bulkDelete";
 import { shuffle } from "./handlers/shuffle";
+import { getUpNextSongs } from "./handlers/getUpNextSongs";
 
 const app = express();
 const server = createServer(app);
@@ -60,6 +61,7 @@ io.on("connection", (socket: CustomSocket) => {
     upVote: async (data: searchResults) => upVote(socket, data),
     message: async (message: string) => sendMessage(socket, message),
     getSongQueue: async () => getQueueList(socket),
+    getUpNextSongs: async () => getUpNextSongs(socket),
     songEnded: async (data: searchResults) => songEnded(socket, data),
     heart: async (data: any) => sendHeart(socket, data),
     loop: async (looped: boolean) => handleLoop(io, socket, looped),

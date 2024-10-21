@@ -1,6 +1,7 @@
 import { CustomSocket, prevSongT } from "../../types";
 import { getSongsWithVoteCounts } from "../lib/utils";
 import Queue from "../models/queueModel";
+import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
 
 export async function prevSong(socket: CustomSocket, data: prevSongT) {
@@ -16,7 +17,10 @@ export async function prevSong(socket: CustomSocket, data: prevSongT) {
         isPlaying: false,
       }
     );
-
+    await Vote.deleteMany({
+      queueId: prevSong.queueId,
+      roomId: roomInfo._id,
+    });
     const nextSongDb = (
       await getSongsWithVoteCounts(
         roomInfo._id,
@@ -35,7 +39,8 @@ export async function prevSong(socket: CustomSocket, data: prevSongT) {
     );
 
     socket.emit("nextSong", nextSongDb);
-
+    socket.emit("updateUpNextSongs");
+    socket.to(roomInfo.roomId).emit("updateUpNextSongs");
     socket.to(roomInfo.roomId).emit("nextSong", nextSongDb);
   } catch (error: any) {
     console.log("PREV SONG ERROR: " + error.message);

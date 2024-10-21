@@ -2,7 +2,7 @@ import { CustomSocket } from "../../types";
 import RoomUser from "../models/roomUsers";
 import User from "../models/userModel";
 import { errorHandler } from "./error";
-import { getListener } from "../lib/utils";
+import { getListener, getMostVotedSongs } from "../lib/utils";
 
 export async function handleJoinRoom(socket: CustomSocket) {
   try {
