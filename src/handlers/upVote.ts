@@ -1,9 +1,12 @@
+import { Server } from "socket.io";
 import { CustomSocket, searchResults } from "../../types";
 import { getSongsWithVoteCounts } from "../lib/utils";
 import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 
 export default async function upVote(
+  io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
   socket: CustomSocket,
   data?: searchResults
 ) {
@@ -18,8 +21,8 @@ export default async function upVote(
     // If no data provided, fetch votes and queue
     if (!data) {
       const queue = await getSongsWithVoteCounts(roomInfo._id, userId);
-
-      socket.emit("votes", { queue });
+      socket.emit("votes", queue);
+      io.to(roomInfo.roomId).emit("updateUpNextSongs");
       return;
     }
 
@@ -53,15 +56,8 @@ export default async function upVote(
       });
     }
 
-    // Fetch updated votes and queue
-    const queue = await getSongsWithVoteCounts(roomInfo._id, userId);
-
-    // Emit the updated votes and queue to the user
-    socket.emit("votes", { queue });
-    socket.emit("updateUpNextSongs");
-    socket.to(roomInfo.roomId).emit("updateUpNextSongs");
     // Emit updated votes to everyone else in the room
-    socket.to(roomInfo.roomId).emit("getVotes");
+    io.to(roomInfo.roomId).emit("getVotes");
   } catch (error: any) {
     console.log("UPVOTE ERROR:", error.message);
 
