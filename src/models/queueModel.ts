@@ -12,16 +12,53 @@ const queueSchema = new mongoose.Schema(
       default: false,
     },
     songData: {
-      type: mongoose.Schema.Types.Mixed,
+      type: {
+        id: {
+          type: String,
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        artists: {
+          type: {
+            primary: [
+              {
+                name: {
+                  type: String,
+                },
+              },
+            ],
+          },
+        },
+        image: {
+          type: mongoose.Schema.Types.Mixed,
+        },
+        source: {
+          type: String,
+        },
+        downloadUrl: {
+          type: mongoose.Schema.Types.Mixed,
+        },
+        addedBy: {
+          type: String,
+          ref: "Users",
+        },
+        queueId: {
+          type: String,
+        },
+      },
       required: true,
     },
     order: {
       type: Number,
+      unique: true,
       required: true,
     },
   },
   { timestamps: true }
 );
-queueSchema.index({ roomId: 1, order: 1 }); // Index on roomId and order for efficient sorting
+queueSchema.index({ roomId: 1, order: 1 });
 const Queue = mongoose.models?.Queue || mongoose.model("Queue", queueSchema);
 export default Queue;

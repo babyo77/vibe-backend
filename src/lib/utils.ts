@@ -13,81 +13,79 @@ export const parseCookies = (cookieHeader?: string) => {
   return cookies;
 };
 
-export const getSongsWithVoteCounts = async (
+export const getCurrentlyPlaying = async (
   roomId: string,
   userId?: string,
-  shuffle = false,
-  order?: number, // Optional order parameter
-  upNextSong = false
+  isPlaying: boolean = true
 ) => {
   try {
     const pipeline: any[] = [
       {
         $match: {
           roomId: new mongoose.Types.ObjectId(roomId),
-          ...(order !== undefined && { order }), // Match songs with specified order if provided
         },
       },
       {
         $lookup: {
-          from: "votes", // Lookup votes related to the song
-          localField: "_id", // Queue field
-          foreignField: "queueId", // Vote field to match
-          as: "votes", // Alias the votes array
+          from: "votes",
+          localField: "_id",
+          foreignField: "queueId",
+          as: "votes",
         },
       },
       {
         $lookup: {
-          from: "users", // Lookup for users who added songs
-          let: { addedBy: "$songData.addedBy" }, // Reference to addedBy field in songData
+          from: "users",
+          let: { addedBy: "$songData.addedBy" },
           pipeline: [
             {
               $match: {
-                $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] }, // Match ObjectId of the user who added the song
+                $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] },
               },
             },
             {
               $project: {
-                name: 1, // Include name
-                imageUrl: 1, // Include image URL
-                username: 1, // Include username
+                _id: 0,
+                name: 1,
+                imageUrl: 1,
+                username: 1,
               },
             },
           ],
-          as: "addedByUser", // Alias for the user who added the song
+          as: "addedByUser",
         },
       },
       {
         $unwind: {
-          path: "$addedByUser", // Unwind the addedByUser array to get a single user object
-          preserveNullAndEmptyArrays: true, // If no user is found, still keep the song
+          path: "$addedByUser",
+          preserveNullAndEmptyArrays: true,
         },
       },
       {
         $addFields: {
-          "songData.voteCount": { $size: "$votes" }, // Add the number of votes as voteCount
-          "songData.addedByUser": "$addedByUser", // Add user info to songData
-          "songData.order": "$order", // Add the song's order
+          "songData.voteCount": { $size: "$votes" },
+          "songData.addedByUser": "$addedByUser",
+          "songData.order": "$order",
           "songData.topVoterIds": {
             $slice: [
               {
                 $map: {
                   input: {
-                    $sortArray: { input: "$votes", sortBy: { createdAt: -1 } }, // Sort votes by most recent
+                    $sortArray: { input: "$votes", sortBy: { createdAt: -1 } },
                   },
                   as: "vote",
-                  in: "$$vote.userId", // Extract userId from each vote
+                  in: "$$vote.userId",
                 },
               },
-              2, // Limit to top 2 users
+              2,
             ],
           },
           "songData.isVoted": {
             $cond: {
               if: {
                 $and: [
-                  { $gt: [{ $size: "$votes" }, 0] }, // Ensure there are votes
-                  { $ifNull: [userId, false] }, // Ensure userId exists
+                  { $gt: [{ $size: "$votes" }, 0] },
+                  { $ifNull: [userId, false] },
                 ],
               },
               then: {
@@ -109,69 +107,79 @@ export const getSongsWithVoteCounts = async (
                   0,
                 ],
               },
-              else: false, // If no userId or no votes, set isVoted to false
+              else: false,
             },
           },
-          isPlaying: "$isPlaying", // Keep isPlaying for sorting
+          isPlaying: "$isPlaying",
+          lastVoteTime: { $max: "$votes.createdAt" }, // Capture the latest vote timestamp
         },
       },
       {
         $lookup: {
-          from: "users", // Lookup for users based on topVoterIds
-          localField: "songData.topVoterIds", // Match with topVoterIds
-          foreignField: "_id", // Field from the users collection
-          as: "songData.topVoters", // Alias for the top voters details
+          from: "users",
+          localField: "songData.topVoterIds",
+          foreignField: "_id",
+          as: "songData.topVoters",
+        },
+      },
+      {
+        $addFields: {
+          "songData.topVoters": {
+            $map: {
+              input: "$songData.topVoters",
+              as: "voter",
+              in: {
+                name: "$$voter.name",
+                username: "$$voter.username",
+                imageUrl: "$$voter.imageUrl",
+              },
+            },
+          },
         },
       },
       {
         $project: {
-          _id: 0, // Exclude the _id field from the result
-          songData: 1, // Include only the songData field
-          isPlaying: 1, // Include isPlaying for sorting
+          _id: 0,
+          songData: 1,
+          isPlaying: 1,
+          lastVoteTime: 1, // Include lastVoteTime for sorting
         },
-      },
-      {
-        $sort: {
-          isPlaying: -1, // Sort by currently playing songs first
-        },
-      },
-      {
-        $replaceRoot: { newRoot: "$songData" }, // Replace the root with songData
       },
     ];
 
-    if (shuffle) {
-      // Shuffle logic if needed
-    }
-
-    if (upNextSong) {
-      pipeline.push({ $limit: 3 });
-    }
-    // Fetch the songs based on the pipeline
-    const songs = await Queue.aggregate(pipeline);
-
-    // If no song with the specified order is found, fetch the song with the lowest order
-    if (!songs.length && order !== undefined) {
-      const fallbackPipeline: any[] = [
+    if (isPlaying) {
+      pipeline.push({
+        $sort: {
+          isPlaying: -1,
+        },
+      });
+    } else {
+      pipeline.push(
         {
           $match: {
-            roomId: new mongoose.Types.ObjectId(roomId),
+            "songData.voteCount": { $gt: 0 },
           },
         },
         {
-          $sort: { order: 1 }, // Sort by lowest order
-        },
-        { $limit: 1 }, // Limit to the lowest order song
-        ...pipeline.slice(1), // Use the rest of the pipeline logic for lookup and fields
-      ];
-
-      return (await Queue.aggregate(fallbackPipeline)) as searchResults[]; // Return fallback song
+          $sort: {
+            "songData.voteCount": -1, // Primary sort by vote count
+            lastVoteTime: -1, // Secondary sort by latest vote time
+          },
+        }
+      );
     }
 
-    return songs as searchResults[]; // Return the result
+    pipeline.push(
+      { $limit: 1 },
+      { $replaceRoot: { newRoot: "$songData" } },
+      { $project: { topVoterIds: 0 } }
+    );
+
+    const songs = await Queue.aggregate(pipeline);
+    return songs as searchResults[];
   } catch (error) {
     console.error("Error fetching songs with vote counts:", error);
-    throw error; // Propagate the error
+    throw error;
   }
 };
 
@@ -199,13 +207,9 @@ export const getListener = async (roomId: string) => {
 };
 
 export const homeResponse = {
-  live: true,
-  about: {
-    description:
-      "A real-time music streaming application built using Node.js, Express, Socket.IO, and MongoDB",
-    github: "https://github.com/babyo77/vibe-backend",
-    website: "https://vibe-drx.vercel.app",
-  },
+  info: "@babyo7_",
+  code: "777",
+  bio: "cursed",
 };
 
 export const cors = {
@@ -233,14 +237,22 @@ export const getTime = () => {
   return timestamp;
 };
 
-export const getMostVotedSongs = async (roomId: string) => {
+export const getSongByOrder = async (
+  roomId: string,
+  order: number,
+  userId?: string
+) => {
   try {
-    const pipeline: any[] = [
+    // Primary pipeline to find the next song in ascending order
+    const primaryPipeline: any[] = [
       {
         $match: {
           roomId: new mongoose.Types.ObjectId(roomId),
+          order: { $gt: order }, // Only songs with order greater than the specified order
         },
       },
+      { $sort: { order: 1 } }, // Ascending to get the next song
+      { $limit: 1 }, // Get only the next song
       {
         $lookup: {
           from: "votes",
@@ -250,28 +262,441 @@ export const getMostVotedSongs = async (roomId: string) => {
         },
       },
       {
+        $lookup: {
+          from: "users",
+          let: { addedBy: "$songData.addedBy" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                name: 1,
+                imageUrl: 1,
+                username: 1,
+              },
+            },
+          ],
+          as: "addedByUser",
+        },
+      },
+      {
+        $unwind: {
+          path: "$addedByUser",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          "songData.voteCount": { $size: "$votes" },
+          "songData.order": "$order",
+          "songData.addedByUser": "$addedByUser",
+          "songData.topVoterIds": {
+            $slice: [
+              {
+                $map: {
+                  input: {
+                    $sortArray: { input: "$votes", sortBy: { createdAt: -1 } },
+                  },
+                  as: "vote",
+                  in: "$$vote.userId",
+                },
+              },
+              2, // Top 2 users
+            ],
+          },
+          "songData.isVoted": {
+            $cond: {
+              if: {
+                $and: [
+                  { $gt: [{ $size: "$votes" }, 0] },
+                  { $ifNull: [userId, false] },
+                ],
+              },
+              then: {
+                $gt: [
+                  {
+                    $size: {
+                      $filter: {
+                        input: "$votes",
+                        as: "vote",
+                        cond: {
+                          $eq: [
+                            "$$vote.userId",
+                            new mongoose.Types.ObjectId(userId),
+                          ],
+                        },
+                      },
+                    },
+                  },
+                  0,
+                ],
+              },
+              else: false,
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "songData.topVoterIds",
+          foreignField: "_id",
+          as: "songData.topVoters",
+        },
+      },
+      {
+        $addFields: {
+          "songData.topVoters": {
+            $map: {
+              input: "$songData.topVoters",
+              as: "voter",
+              in: {
+                name: "$$voter.name",
+                username: "$$voter.username",
+                imageUrl: "$$voter.imageUrl",
+              },
+            },
+          },
+        },
+      },
+      {
         $project: {
           _id: 0,
-          order: 1,
-          voteCount: { $size: "$votes" },
+          songData: 1,
         },
       },
-      {
-        $sort: {
-          createdAt: -1,
-          voteCount: -1, // Sort by vote count in descending order
-        },
-      },
-      {
-        $limit: 3,
-      },
+      { $replaceRoot: { newRoot: "$songData" } },
     ];
 
-    const songs = await Queue.aggregate(pipeline);
+    // Execute primary pipeline to get the next song
+    let songs = await Queue.aggregate(primaryPipeline);
 
-    return songs as { order: 1; voteCount: 0 }[];
+    // If no song is found, use fallback pipeline for the lowest order song
+    if (songs.length === 0) {
+      const fallbackPipeline: any[] = [
+        {
+          $match: { roomId: new mongoose.Types.ObjectId(roomId) },
+        },
+        { $sort: { order: 1 } }, // Ascending order for the lowest order song
+        { $limit: 1 },
+        {
+          $lookup: {
+            from: "votes",
+            localField: "_id",
+            foreignField: "queueId",
+            as: "votes",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            let: { addedBy: "$songData.addedBy" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] },
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  name: 1,
+                  imageUrl: 1,
+                  username: 1,
+                },
+              },
+            ],
+            as: "addedByUser",
+          },
+        },
+        {
+          $unwind: {
+            path: "$addedByUser",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $addFields: {
+            "songData.voteCount": { $size: "$votes" },
+            "songData.order": "$order",
+            "songData.addedByUser": "$addedByUser",
+            "songData.isVoted": {
+              $cond: {
+                if: {
+                  $and: [
+                    { $gt: [{ $size: "$votes" }, 0] },
+                    { $ifNull: [userId, false] },
+                  ],
+                },
+                then: {
+                  $gt: [
+                    {
+                      $size: {
+                        $filter: {
+                          input: "$votes",
+                          as: "vote",
+                          cond: {
+                            $eq: [
+                              "$$vote.userId",
+                              new mongoose.Types.ObjectId(userId),
+                            ],
+                          },
+                        },
+                      },
+                    },
+                    0,
+                  ],
+                },
+                else: false,
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            songData: 1,
+          },
+        },
+        { $replaceRoot: { newRoot: "$songData" } },
+      ];
+
+      // Execute fallback pipeline to get the lowest order song
+      songs = await Queue.aggregate(fallbackPipeline);
+    }
+
+    return songs.length > 0 ? songs : []; // Return the song or null if none found
   } catch (error) {
-    console.error("Error fetching songs with vote counts:", error);
+    console.error("Error fetching the next song by order:", error);
+    throw error;
+  }
+};
+
+export const getPreviousSongByOrder = async (
+  roomId: string,
+  order: number,
+  userId?: string
+) => {
+  try {
+    // Primary pipeline to find the previous song in descending order
+    const primaryPipeline: any[] = [
+      {
+        $match: {
+          roomId: new mongoose.Types.ObjectId(roomId),
+          order: { $lt: order }, // Only songs with order less than the specified order
+        },
+      },
+      { $sort: { order: -1 } }, // Descending to get the previous song
+      { $limit: 1 }, // Get only the previous song
+      {
+        $lookup: {
+          from: "votes",
+          localField: "_id",
+          foreignField: "queueId",
+          as: "votes",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { addedBy: "$songData.addedBy" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                name: 1,
+                imageUrl: 1,
+                username: 1,
+              },
+            },
+          ],
+          as: "addedByUser",
+        },
+      },
+      {
+        $unwind: {
+          path: "$addedByUser",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          "songData.voteCount": { $size: "$votes" },
+          "songData.order": "$order",
+          "songData.addedByUser": "$addedByUser",
+          "songData.isVoted": {
+            $cond: {
+              if: {
+                $and: [
+                  { $gt: [{ $size: "$votes" }, 0] },
+                  { $ifNull: [userId, false] },
+                ],
+              },
+              then: {
+                $gt: [
+                  {
+                    $size: {
+                      $filter: {
+                        input: "$votes",
+                        as: "vote",
+                        cond: {
+                          $eq: [
+                            "$$vote.userId",
+                            new mongoose.Types.ObjectId(userId),
+                          ],
+                        },
+                      },
+                    },
+                  },
+                  0,
+                ],
+              },
+              else: false,
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "songData.topVoterIds",
+          foreignField: "_id",
+          as: "songData.topVoters",
+        },
+      },
+      {
+        $addFields: {
+          "songData.topVoters": {
+            $map: {
+              input: "$songData.topVoters",
+              as: "voter",
+              in: {
+                name: "$$voter.name",
+                username: "$$voter.username",
+                imageUrl: "$$voter.imageUrl",
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          songData: 1,
+        },
+      },
+      { $replaceRoot: { newRoot: "$songData" } },
+    ];
+
+    // Execute primary pipeline to get the previous song
+    let songs = await Queue.aggregate(primaryPipeline);
+
+    // If no previous song is found, use fallback pipeline for the highest order song
+    if (songs.length === 0) {
+      const fallbackPipeline: any[] = [
+        {
+          $match: { roomId: new mongoose.Types.ObjectId(roomId) },
+        },
+        { $sort: { order: -1 } }, // Descending to get the highest order song
+        { $limit: 1 },
+        {
+          $lookup: {
+            from: "votes",
+            localField: "_id",
+            foreignField: "queueId",
+            as: "votes",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            let: { addedBy: "$songData.addedBy" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] },
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  name: 1,
+                  imageUrl: 1,
+                  username: 1,
+                },
+              },
+            ],
+            as: "addedByUser",
+          },
+        },
+        {
+          $unwind: {
+            path: "$addedByUser",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $addFields: {
+            "songData.voteCount": { $size: "$votes" },
+            "songData.order": "$order",
+            "songData.addedByUser": "$addedByUser",
+            "songData.isVoted": {
+              $cond: {
+                if: {
+                  $and: [
+                    { $gt: [{ $size: "$votes" }, 0] },
+                    { $ifNull: [userId, false] },
+                  ],
+                },
+                then: {
+                  $gt: [
+                    {
+                      $size: {
+                        $filter: {
+                          input: "$votes",
+                          as: "vote",
+                          cond: {
+                            $eq: [
+                              "$$vote.userId",
+                              new mongoose.Types.ObjectId(userId),
+                            ],
+                          },
+                        },
+                      },
+                    },
+                    0,
+                  ],
+                },
+                else: false,
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            songData: 1,
+          },
+        },
+        { $replaceRoot: { newRoot: "$songData" } },
+      ];
+
+      // Execute fallback pipeline to get the highest order song
+      songs = await Queue.aggregate(fallbackPipeline);
+    }
+
+    return songs.length > 0 ? songs : []; // Return the song or null if none found
+  } catch (error) {
+    console.error("Error fetching the previous song by order:", error);
     throw error;
   }
 };

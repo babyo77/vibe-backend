@@ -1,67 +1,101 @@
+// using in new
+
 import { CustomSocket } from "../../types";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import User from "../models/userModel";
-import Room from "../models/roomModel";
-import RoomUser from "../models/roomUsers";
 import { ExtendedError } from "socket.io/dist/namespace";
+import { errorHandler } from "./error";
+import Room from "../models/roomModel";
+import jwt from "jsonwebtoken";
+import User from "../models/userModel";
+import RoomUser from "../models/roomUsers";
+import { emitMessage } from "../lib/customEmit";
+import { encrypt } from "../lib/lock";
+import { getCurrentlyPlaying } from "../lib/utils";
 export async function middleware(
   socket: CustomSocket,
   next: (err?: ExtendedError) => void
 ) {
   try {
+    let user = null;
     const token = socket.handshake.headers["authorization"];
     const roomId = socket.handshake.headers["room"];
-    if (typeof roomId == "string" && roomId.trim() !== "") {
-    } else {
-      throw new Error("Invalid roomId: " + roomId);
-    }
-    if (!roomId) throw new Error("roomId not provided");
-    if (token && token !== "undefined") {
-      const decoded = (await jwt.verify(
-        token,
-        process.env.JWT_SECRET || ""
-      )) as JwtPayload;
-      if (decoded && typeof decoded.userId === "string") {
-        const user = await User.findById(decoded?.userId);
-        if (!user) throw new Error("Could not find user");
-        socket.userId = user?._id.toString();
-        const room = await Room.findOneAndUpdate(
-          { roomId },
-          { isActive: true },
-          { upsert: true, new: true }
-        );
-        if (!room) throw new Error("Could not find room");
-        const role = await RoomUser.findOne({
-          roomId: room?._id,
-          userId: user?.id,
-        });
-        socket.roomInfo = {
-          _id: room._id.toString(),
-          roomId: room.roomId.toString(),
-        };
 
-        socket.progress = room.progress;
-        socket.loop = room.lopped;
-        socket.shuffle = room.shuffled;
-        if (role) {
-          socket.role = role.role.toString();
-        }
-      }
-    } else {
-      const room = await Room.findOne({ roomId });
-      socket.roomInfo = {
-        _id: room._id.toString(),
-        roomId: room.roomId.toString(),
-      };
-      socket.loop = room.looped;
-      socket.shuffle = room.shuffled;
-      socket.progress = room.progress;
+    if (!roomId || typeof roomId !== "string")
+      throw new Error("Invalid roomId");
+
+    if (token && token.length > 0) {
+      const decode: any = jwt.verify(token, process.env.JWT_SECRET || "");
+      user = await User.findById(decode.userId).select("username");
     }
-    socket.compress(true);
-    return next();
+
+    const room = await Room.findOne({ roomId });
+
+    if (!room && !user)
+      throw new Error("Only Logged in user can make new Room");
+
+    const newRoom = await Room.findOneAndUpdate(
+      { roomId },
+      {},
+      { new: true, upsert: true }
+    );
+
+    socket.join(roomId);
+
+    socket.roomInfo = {
+      roomId: newRoom.roomId,
+      _id: newRoom._id.toString(),
+      progress: newRoom.progress,
+    };
+
+    if (user) {
+      const existingUser = await RoomUser.findOne({
+        userId: user._id.toString(),
+        roomId: room._id,
+      }).select("role");
+
+      let userRole;
+
+      if (existingUser) {
+        userRole = existingUser.role;
+      } else {
+        const users = await RoomUser.countDocuments({ roomId: room._id });
+        userRole = users > 0 ? "listener" : "admin";
+      }
+
+      const addedUser = await RoomUser.findOneAndUpdate(
+        { userId: user._id.toString(), roomId: room._id },
+        {
+          active: true,
+          socketid: socket.id,
+          role: userRole,
+        },
+        { upsert: true, new: true }
+      );
+      socket.userInfo = {
+        id: addedUser.userId.toString(),
+        role: addedUser.role,
+      };
+    }
+
+    socket.emit("joined", encrypt(socket.roomInfo));
+
+    socket.emit(
+      "isplaying",
+      encrypt(
+        (await getCurrentlyPlaying(socket.roomInfo._id, socket.userInfo?.id))[0]
+      )
+    );
+
+    emitMessage(
+      socket,
+      roomId,
+      "userJoinedRoom",
+      user || { username: "someone" }
+    );
+
+    next();
   } catch (error: any) {
     console.log("MIDDLEWARE ERROR:", error.message);
-    if (error.message === "jwt malformed") return;
-    return next(new Error("Something went wrong try Login"));
+
+    errorHandler(socket, error.message);
   }
 }

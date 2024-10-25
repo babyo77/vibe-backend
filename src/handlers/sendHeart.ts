@@ -1,9 +1,10 @@
-import { DefaultEventsMap } from "socket.io/dist/typed-events";
+// used in new src
 import { CustomSocket } from "../../types";
-import { Server } from "socket.io";
+import { emitMessage } from "../lib/customEmit";
+import { decrypt } from "../lib/lock";
 
 export async function sendHeart(socket: CustomSocket, data: any) {
   const { roomInfo } = socket;
   if (!roomInfo) return;
-  socket.to(roomInfo.roomId).emit("heart", data);
+  emitMessage(socket, roomInfo.roomId, "heart", decrypt(data));
 }

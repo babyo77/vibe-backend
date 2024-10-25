@@ -1,50 +1,56 @@
-import { CustomSocket, prevSongT } from "../../types";
-import { getSongsWithVoteCounts } from "../lib/utils";
+//used in new src
+import { Server } from "socket.io";
+import { CustomSocket } from "../../types";
+import { getCurrentlyPlaying, getPreviousSongByOrder } from "../lib/utils";
+import { errorHandler } from "./error";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import { broadcast } from "../lib/customEmit";
 import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
-import { errorHandler } from "./error";
 
-export async function prevSong(socket: CustomSocket, data: prevSongT) {
+export async function PlayPrevSong(
+  io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
+  socket: CustomSocket
+) {
   try {
-    const { role, roomInfo, userId } = socket;
-    if (!roomInfo || !userId || !data || !data.prevSong) return;
-    if (role !== "admin" && !data.roomId)
-      throw new Error("Only admin can do this");
-    const { prevSong } = data;
+    const { roomInfo, userInfo } = socket;
+    if (!roomInfo || !userInfo) throw new Error("Login required");
+    if (userInfo.role !== "admin")
+      throw new Error("Only admin is allowed to play prev");
+    let nextSong = [];
+    const value = (await getCurrentlyPlaying(roomInfo._id, userInfo.id))[0];
     await Queue.updateOne(
       { roomId: roomInfo._id, isPlaying: true },
       {
         isPlaying: false,
       }
-    );
-    await Vote.deleteMany({
-      queueId: prevSong.queueId,
-      roomId: roomInfo._id,
-    });
-    const nextSongDb = (
-      await getSongsWithVoteCounts(
-        roomInfo._id,
-        userId,
-        false,
-        prevSong.order + -1
-      )
-    )[0];
-
+    ),
+      (nextSong = await getPreviousSongByOrder(roomInfo?._id, value.order));
+    if (nextSong.length == 0) {
+      await Queue.updateOne(
+        {
+          roomId: roomInfo._id,
+          "songData.id": value.id,
+        },
+        { isPlaying: true }
+      );
+      throw new Error("No more songs in the queue");
+    }
     await Queue.updateOne(
       {
         roomId: roomInfo._id,
-        "songData.id": nextSongDb.id,
+        "songData.id": nextSong[0].id,
       },
       { isPlaying: true }
-    );
-
-    socket.emit("nextSong", nextSongDb);
-    socket.emit("updateUpNextSongs");
-    socket.to(roomInfo.roomId).emit("updateUpNextSongs");
-    socket.to(roomInfo.roomId).emit("nextSong", nextSongDb);
+    ),
+      await Vote.deleteMany({
+        roomId: roomInfo._id,
+        queueId: nextSong[0].queueId,
+      });
+    broadcast(io, roomInfo.roomId, "play", nextSong[0]);
+    broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {
-    console.log("PREV SONG ERROR: " + error.message);
-
+    console.log("NEXT SONG ERROR:", error);
     errorHandler(socket, error.message);
   }
 }

@@ -1,12 +1,8 @@
 import { Socket } from "socket.io";
 
 export interface CustomSocket extends Socket {
-  userId?: string; // Optional property
-  roomInfo?: { roomId: string; _id: string }; // Optional property
-  role?: "admin" | "listener" | string;
-  progress?: number;
-  loop?: boolean;
-  shuffle?: boolean;
+  userInfo?: { id: string; role: "admin" | "listener" | string }; // Optional property
+  roomInfo?: { roomId: string; _id: string; progress: number }; // Optional property
 }
 
 export interface prevSongT {

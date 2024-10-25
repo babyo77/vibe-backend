@@ -1,32 +1,25 @@
-import { CustomSocket, searchResults } from "../../types";
-import { getSongsWithVoteCounts } from "../lib/utils";
+// used in  new src
+import { CustomSocket } from "../../types";
+import { emitMessage } from "../lib/customEmit";
+import { decrypt } from "../lib/lock";
 import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
 
-export default async function deleteSong(
-  socket: CustomSocket,
-  data?: searchResults
-) {
+export default async function deleteSong(socket: CustomSocket, data?: any) {
   try {
-    const { roomInfo, userId, role } = socket;
-    if (!roomInfo || !userId) throw new Error("Login Required");
+    const { roomInfo, userInfo } = socket;
+    if (!roomInfo || !userInfo) throw new Error("Login Required");
     if (!data) return;
-    if (role === "admin" || data?.addedBy === userId) {
+    const value = decrypt(data);
+
+    if (userInfo.role === "admin" || value?.addedBy === userInfo.id) {
       await Queue.deleteOne({
         roomId: roomInfo?._id,
-        "songData.queueId": data.queueId,
+        "songData.queueId": value.queueId,
       });
-      await Vote.deleteMany({ queueId: data.queueId });
-      const queue = await getSongsWithVoteCounts(roomInfo._id, userId);
-
-      if (queue) {
-        socket.emit("songQueue", queue);
-
-        if (data) {
-          socket.to(roomInfo.roomId).emit("songQueue", queue);
-        }
-      }
+      await Vote.deleteMany({ queueId: value.queueId });
+      emitMessage(socket, roomInfo.roomId, "update", "update");
     } else {
       throw new Error("Only admin and user who added this song can delete it");
     }

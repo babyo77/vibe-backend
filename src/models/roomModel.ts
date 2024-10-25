@@ -8,19 +8,6 @@ const roomSchema = new mongoose.Schema(
       unique: true,
       maxLength: 8,
     },
-    isActive: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
-    looped: {
-      type: Boolean,
-      default: false,
-    },
-    shuffled: {
-      type: Boolean,
-      default: false,
-    },
     progress: {
       type: Number,
       default: 0,

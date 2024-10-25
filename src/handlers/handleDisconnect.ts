@@ -1,25 +1,31 @@
+// using in new
+
 import { CustomSocket } from "../../types";
-import { getListener } from "../lib/utils";
-import Room from "../models/roomModel";
+import { emitMessage } from "../lib/customEmit";
+
 import RoomUser from "../models/roomUsers";
 
 export async function handleDisconnect(socket: CustomSocket) {
   try {
-    const { userId, roomInfo } = socket;
-    if (!roomInfo) return;
+    const { userInfo, roomInfo } = socket;
+    if (!roomInfo || !userInfo) return;
     const data = await RoomUser.findOneAndUpdate(
-      { userId, roomId: roomInfo?._id },
+      { userId: userInfo?.id, roomId: roomInfo?._id },
       {
         active: false,
       }
-    ).populate("userId");
-    const listeners = await getListener(roomInfo._id);
+    )
+      .populate("userId")
+      .select("username");
     if (roomInfo.roomId) {
-      socket.to(roomInfo.roomId).emit("userLeftRoom", {
-        user: data?.userId || { username: "Someone" },
-        listeners,
-      });
+      emitMessage(
+        socket,
+        roomInfo.roomId,
+        "userLeftRoom",
+        data?.userId || { username: "Someone" }
+      );
     }
+    socket.leave(roomInfo.roomId);
   } catch (error) {
     console.log(error);
   }
