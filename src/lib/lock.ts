@@ -1,8 +1,8 @@
+import crypto from "crypto";
 interface ChunkProcessingOptions {
   chunkSize: number;
   maxSize: number;
 }
-
 class LargeDataCrypto {
   private static readonly DEFAULT_OPTIONS: ChunkProcessingOptions = {
     chunkSize: 1024 * 1024, // 1MB chunks
