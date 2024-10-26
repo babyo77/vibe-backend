@@ -1,10 +1,15 @@
+import { Server } from "socket.io";
 import { CustomSocket } from "../../types";
-import { emitMessage } from "../lib/customEmit";
+import { broadcast } from "../lib/customEmit";
 import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 
-export async function deleteAll(socket: CustomSocket) {
+export async function deleteAll(
+  io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
+  socket: CustomSocket
+) {
   try {
     const { roomInfo, userInfo } = socket;
     if (!roomInfo) return;
@@ -19,7 +24,7 @@ export async function deleteAll(socket: CustomSocket) {
         roomId: roomInfo._id,
       }),
     ]);
-    emitMessage(socket, roomInfo.roomId, "update", "update");
+    broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {
     console.log("DELETE ALL ERROR:", error);
     errorHandler(socket, error.message);

@@ -1,12 +1,18 @@
 // used in  new src
+import { Server } from "socket.io";
 import { CustomSocket } from "../../types";
-import { emitMessage } from "../lib/customEmit";
+import { broadcast } from "../lib/customEmit";
 import { decrypt } from "../lib/lock";
 import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 
-export default async function deleteSong(socket: CustomSocket, data?: any) {
+export default async function deleteSong(
+  io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
+  socket: CustomSocket,
+  data?: any
+) {
   try {
     const { roomInfo, userInfo } = socket;
     if (!roomInfo || !userInfo) throw new Error("Login Required");
@@ -19,7 +25,7 @@ export default async function deleteSong(socket: CustomSocket, data?: any) {
         "songData.queueId": value.queueId,
       });
       await Vote.deleteMany({ queueId: value.queueId });
-      emitMessage(socket, roomInfo.roomId, "update", "update");
+      broadcast(io, roomInfo.roomId, "update", "update");
     } else {
       throw new Error("Only admin and user who added this song can delete it");
     }
