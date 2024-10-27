@@ -163,7 +163,7 @@ export const getCurrentlyPlaying = async (
         {
           $sort: {
             "songData.voteCount": -1, // Primary sort by vote count
-            lastVoteTime: -1, // Secondary sort by latest vote time
+            lastVoteTime: 1, // Secondary sort by latest vote time
           },
         }
       );
