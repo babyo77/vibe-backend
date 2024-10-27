@@ -700,3 +700,164 @@ export const getPreviousSongByOrder = async (
     throw error;
   }
 };
+
+// Function to construct the aggregation pipeline
+export function getQueuePipeline(
+  roomId: string,
+  userId: string,
+  page = 1,
+  limit = 50,
+  search = ""
+) {
+  const pipeline: any = [
+    {
+      $match: {
+        roomId: new mongoose.Types.ObjectId(roomId),
+      },
+    },
+    {
+      $lookup: {
+        from: "votes",
+        localField: "_id",
+        foreignField: "queueId",
+        as: "votes",
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        let: { addedBy: "$songData.addedBy" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              name: 1,
+              imageUrl: 1,
+              username: 1,
+            },
+          },
+        ],
+        as: "addedByUser",
+      },
+    },
+    {
+      $unwind: {
+        path: "$addedByUser",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $addFields: {
+        "songData.voteCount": { $size: "$votes" },
+        "songData.addedByUser": "$addedByUser",
+        "songData.order": "$order",
+        "songData.topVoterIds": {
+          $slice: [
+            {
+              $map: {
+                input: {
+                  $sortArray: { input: "$votes", sortBy: { createdAt: -1 } },
+                },
+                as: "vote",
+                in: "$$vote.userId",
+              },
+            },
+            2,
+          ],
+        },
+        "songData.isVoted": {
+          $cond: {
+            if: {
+              $and: [
+                { $gt: [{ $size: "$votes" }, 0] },
+                { $ifNull: [userId, false] },
+              ],
+            },
+            then: {
+              $gt: [
+                {
+                  $size: {
+                    $filter: {
+                      input: "$votes",
+                      as: "vote",
+                      cond: {
+                        $eq: [
+                          "$$vote.userId",
+                          new mongoose.Types.ObjectId(userId),
+                        ],
+                      },
+                    },
+                  },
+                },
+                0,
+              ],
+            },
+            else: false,
+          },
+        },
+        isPlaying: "$isPlaying",
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "songData.topVoterIds",
+        foreignField: "_id",
+        as: "songData.topVoters",
+      },
+    },
+    {
+      $addFields: {
+        "songData.topVoters": {
+          $map: {
+            input: "$songData.topVoters",
+            as: "voter",
+            in: {
+              name: "$$voter.name",
+              username: "$$voter.username",
+              imageUrl: "$$voter.imageUrl",
+            },
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        songData: 1,
+        isPlaying: 1,
+        order: 1,
+      },
+    },
+    {
+      $sort: {
+        order: -1,
+      },
+    },
+    {
+      $replaceRoot: { newRoot: "$songData" },
+    },
+    {
+      $project: {
+        topVoterIds: 0,
+      },
+    },
+  ];
+
+  if (search && search.trim() !== "") {
+    pipeline.push({
+      $match: {
+        name: { $regex: search, $options: "i" },
+      },
+    });
+  }
+
+  pipeline.push({ $skip: (page - 1) * limit }, { $limit: limit });
+
+  return pipeline;
+}

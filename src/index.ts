@@ -6,7 +6,7 @@ import { CustomSocket } from "../types";
 import { handleDisconnect } from "./handlers/handleDisconnect";
 import { sendMessage } from "./handlers/sendMessage";
 import { middleware } from "./handlers/middleware";
-import { cors, homeResponse } from "./lib/utils";
+import { cors } from "./lib/utils";
 import { sendHeart } from "./handlers/sendHeart";
 import { handleProgress } from "./handlers/handleProgress";
 import { handleSeek } from "./handlers/handleSeek";
@@ -18,7 +18,9 @@ import { bulkDelete } from "./handlers/bulkDelete";
 import { PlayNextSong } from "./handlers/nextSong";
 import { SongEnded } from "./handlers/songEnded";
 import { PlayPrevSong } from "./handlers/prevSong";
-
+import cookieParser from "cookie-parser";
+import useCors from "cors";
+import router from "./router/router";
 const app = express();
 const server = createServer(app);
 
@@ -27,9 +29,16 @@ const io = new Server(server, {
   httpCompression: true,
 });
 
-app.get("/", (_req, res) => {
-  res.json(homeResponse);
-});
+app.use(
+  useCors({
+    origin: true,
+    credentials: true,
+  })
+);
+app.use(express.json());
+app.use(cookieParser()); // For cookie parsing
+app.use(router);
+
 io.use(async (socket: CustomSocket, next) => {
   socket.compress(true);
   await middleware(socket, next);
