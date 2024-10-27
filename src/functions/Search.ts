@@ -68,7 +68,9 @@ export const search = async (req: CustomRequest, res: Response) => {
             quality: "500x500",
             url: `https://wsrv.nl/?url=${s.thumbnails[
               s.thumbnails.length - 1
-            ].url.replace(/w\\d+-h\\d+/, "w500-h500")}`,
+            ].url
+              .replace(/w\\d+-h\\d+/, "w500-h500")
+              .replace("w120-h120", "w500-h500")}`,
           },
         ],
         source: "youtube",
@@ -106,7 +108,9 @@ export const search = async (req: CustomRequest, res: Response) => {
               quality: "500x500",
               url: `https://wsrv.nl/?url=${s.thumbnails[
                 s.thumbnails.length - 1
-              ].url.replace(/w\\d+-h\\d+/, "w500-h500")}`,
+              ].url
+                .replace(/w\\d+-h\\d+/, "w500-h500")
+                .replace("w120-h120", "w500-h500")}`,
             },
           ],
           source: "youtube",
