@@ -5,6 +5,8 @@ import { search } from "../functions/Search";
 import { login } from "../functions/Login";
 import { queue } from "../functions/Queue";
 import { addToQueue } from "../functions/AddToQueue";
+import { roomListeners } from "../functions/RoomListeners";
+import { getUser } from "../functions/getUser";
 const router = express.Router();
 
 router.get("/", (_req, res) => {
@@ -13,10 +15,10 @@ router.get("/", (_req, res) => {
 
 router.post("/api/auth", login);
 
-router.use(authMiddleware);
+router.get("/api/getUser", authMiddleware, getUser);
 router.get("/api/search", search);
 router.get("/api/queue", queue);
-router.get("/api/listeners", queue);
-router.post("/api/add", addToQueue);
+router.get("/api/listeners", roomListeners);
+router.post("/api/add", authMiddleware, addToQueue);
 
 export default router;

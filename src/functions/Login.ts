@@ -49,6 +49,7 @@ const proceed = (res: Response, saved: any, user?: any) => {
     sameSite: "none", // Change to 'None' if using cross-domain
     secure: true, // Ensure your server is running with HTTPS
     path: "/",
+    domain: ".getvibe.in",
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Current date + 7 days
   });
 
