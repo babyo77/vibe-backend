@@ -11,16 +11,16 @@ export const login = async (req: CustomRequest, res: Response) => {
     if (isAlready) {
       const user = await User.findOneAndUpdate(
         { email: data.email },
-        { imageUrl: data.photoURL, name: data.providerData[0].displayName },
+        { imageUrl: data.images[0].url, name: data.display_name },
         { new: true }
       );
       return proceed(res, isAlready, user);
     } else {
       const user = await User.create({
         username: data.email?.split("@gmail.com")[0],
-        name: data.providerData[0].displayName,
+        name: data.display_name,
         email: data.email,
-        imageUrl: data.photoURL,
+        imageUrl: data.images[0].url,
       });
 
       if (user) {
