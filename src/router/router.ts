@@ -6,7 +6,7 @@ import { login } from "../functions/Login";
 import { queue } from "../functions/Queue";
 import { addToQueue } from "../functions/AddToQueue";
 import { roomListeners } from "../functions/RoomListeners";
-import { getUser } from "../functions/getUser";
+// import { getUser } from "../functions/getUser";
 const router = express.Router();
 
 router.get("/", (_req, res) => {
@@ -15,7 +15,7 @@ router.get("/", (_req, res) => {
 
 router.post("/api/auth", login);
 
-router.get("/api/getUser", authMiddleware, getUser);
+// router.get("/api/getUser", authMiddleware, getUser);
 router.get("/api/search", search);
 router.get("/api/queue", queue);
 router.get("/api/listeners", roomListeners);
