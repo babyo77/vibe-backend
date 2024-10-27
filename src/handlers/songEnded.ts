@@ -14,10 +14,10 @@ export async function SongEnded(
 ) {
   try {
     const { roomInfo, userInfo } = socket;
-    if (!roomInfo || !userInfo) throw new Error("Login required");
+    if (!roomInfo) throw new Error("Login required");
 
     let nextSong = [];
-    const value = (await getCurrentlyPlaying(roomInfo._id, userInfo.id))[0];
+    const value = (await getCurrentlyPlaying(roomInfo._id, userInfo?.id))[0];
 
     await Queue.updateOne(
       { roomId: roomInfo._id, isPlaying: true },
@@ -25,7 +25,11 @@ export async function SongEnded(
         isPlaying: false,
       }
     ),
-      (nextSong = await getCurrentlyPlaying(roomInfo?._id, userInfo.id, false));
+      (nextSong = await getCurrentlyPlaying(
+        roomInfo?._id,
+        userInfo?.id,
+        false
+      ));
     if (nextSong?.length == 0) {
       nextSong = await getSongByOrder(roomInfo?._id, value.order);
     }
