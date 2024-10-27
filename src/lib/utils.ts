@@ -704,7 +704,7 @@ export const getPreviousSongByOrder = async (
 // Function to construct the aggregation pipeline
 export function getQueuePipeline(
   roomId: string,
-  userId: string,
+  userId?: string,
   page = 1,
   limit = 50,
   search = ""

@@ -7,7 +7,7 @@ import Room from "../models/roomModel";
 export const queue = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.userId;
-    if (!userId) throw new Error("Invalid userId");
+
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 50;
     const name = String(req.query.name) || "";
