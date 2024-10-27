@@ -7,6 +7,7 @@ import { queue } from "../functions/Queue";
 import { addToQueue } from "../functions/AddToQueue";
 import { roomListeners } from "../functions/RoomListeners";
 import { queueMiddleware } from "../middleware/queueMiddleware";
+import { upNextSong } from "../functions/upNextSong";
 // import { getUser } from "../functions/getUser";
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.post("/api/auth", login);
 
 // router.get("/api/getUser", authMiddleware, getUser);
 router.get("/api/search", search);
+router.get("/api/upNextSong", upNextSong);
 router.get("/api/queue", queueMiddleware, queue);
 router.get("/api/listeners", roomListeners);
 router.post("/api/add", authMiddleware, addToQueue);

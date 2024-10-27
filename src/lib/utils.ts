@@ -170,16 +170,16 @@ export const getCurrentlyPlaying = async (
     }
 
     pipeline.push(
-      { $limit: 1 },
+      { $limit: 3 },
       { $replaceRoot: { newRoot: "$songData" } },
       { $project: { topVoterIds: 0 } }
     );
 
-    const songs = await Queue.aggregate(pipeline);
+    const songs = (await Queue.aggregate(pipeline)) || [];
     return songs as searchResults[];
   } catch (error) {
     console.error("Error fetching songs with vote counts:", error);
-    throw error;
+    return [];
   }
 };
 
@@ -252,7 +252,7 @@ export const getSongByOrder = async (
         },
       },
       { $sort: { order: 1 } }, // Ascending to get the next song
-      { $limit: 1 }, // Get only the next song
+      { $limit: 3 }, // Get only the next song
       {
         $lookup: {
           from: "votes",
@@ -382,7 +382,7 @@ export const getSongByOrder = async (
           $match: { roomId: new mongoose.Types.ObjectId(roomId) },
         },
         { $sort: { order: 1 } }, // Ascending order for the lowest order song
-        { $limit: 1 },
+        { $limit: 3 },
         {
           $lookup: {
             from: "votes",
