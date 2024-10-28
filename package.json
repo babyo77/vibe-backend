@@ -16,7 +16,6 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "compression": "^1.7.4",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "discord-rpc": "^4.0.1",

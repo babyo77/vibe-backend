@@ -21,7 +21,6 @@ import { PlayPrevSong } from "./handlers/prevSong";
 import cookieParser from "cookie-parser";
 import useCors from "cors";
 import router from "./router/router";
-import compress from "compression";
 const app = express();
 const server = createServer(app);
 
@@ -39,7 +38,6 @@ app.use(
 
 app.use(express.json());
 app.use(cookieParser()); // For cookie parsing
-app.use(compress());
 app.use(router);
 
 io.use(async (socket: CustomSocket, next) => {
