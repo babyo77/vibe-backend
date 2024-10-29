@@ -27,9 +27,6 @@ const server = createServer(app);
 
 const io = new Server(server, {
   cors: cors,
-  connectionStateRecovery: {
-    maxDisconnectionDuration: 10000,
-  },
   httpCompression: true,
 });
 
