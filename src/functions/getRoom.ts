@@ -174,7 +174,7 @@ export async function getRooms(req: CustomRequest, res: Response) {
         },
       },
       {
-        $limit: 6,
+        $limit: 5,
       },
       {
         $project: {
