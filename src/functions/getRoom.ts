@@ -111,7 +111,13 @@ export async function getRooms(req: CustomRequest, res: Response) {
             {
               $project: {
                 _id: 0,
+                isPlaying: 1,
                 songData: 1,
+              },
+            },
+            {
+              $sort: {
+                isPlaying: -1,
               },
             },
           ],
