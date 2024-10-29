@@ -44,7 +44,7 @@ const proceed = (res: Response, saved: any, user?: any) => {
   });
 
   // Set the cookie
-  res.cookie("vibeId", accessToken, {
+  res.cookie("vibeIdR", accessToken, {
     httpOnly: true,
     sameSite: "none", // Change to 'None' if using cross-domain
     secure: true, // Ensure your server is running with HTTPS

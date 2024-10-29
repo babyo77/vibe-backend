@@ -76,7 +76,10 @@ export async function middleware(
       };
     }
 
-    socket.emit("joined", encrypt(socket.roomInfo));
+    socket.emit(
+      "joined",
+      encrypt({ ...socket.roomInfo, role: socket.userInfo?.role })
+    );
 
     socket.emit(
       "isplaying",
