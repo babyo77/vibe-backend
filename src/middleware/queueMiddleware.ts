@@ -9,7 +9,8 @@ export const queueMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  const session = req.cookies.vibeIdR; // Access the session cookie
+  const session =
+    req.cookies.vibeIdR || req.headers.authorization?.split(" ")[1]; // Access the session cookie
 
   try {
     if (session) {
