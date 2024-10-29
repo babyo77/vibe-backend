@@ -162,12 +162,19 @@ export async function getRooms(req: CustomRequest, res: Response) {
         },
       },
       {
+        $match: {
+          $expr: {
+            $gt: [{ $size: "$name" }, 0],
+          },
+        },
+      },
+      {
         $sort: {
           updatedAt: -1,
         },
       },
       {
-        $limit: 4,
+        $limit: 6,
       },
       {
         $project: {
