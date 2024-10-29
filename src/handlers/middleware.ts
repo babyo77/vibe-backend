@@ -81,12 +81,12 @@ export async function middleware(
       encrypt({ ...socket.roomInfo, role: socket.userInfo?.role })
     );
 
-    socket.emit(
-      "isplaying",
-      encrypt(
-        (await getCurrentlyPlaying(socket.roomInfo._id, socket.userInfo?.id))[0]
-      )
-    );
+    const currentSong = (
+      await getCurrentlyPlaying(socket.roomInfo._id, socket.userInfo?.id)
+    )[0];
+    if (currentSong) {
+      socket.emit("isplaying", encrypt(currentSong));
+    }
 
     emitMessage(
       socket,
