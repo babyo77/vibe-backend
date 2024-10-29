@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
+import Room from "./roomModel";
+import User from "./userModel";
 
 const queueSchema = new mongoose.Schema(
   {
     roomId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Room",
+      ref: Room,
       required: true,
     },
     isPlaying: {
@@ -43,7 +45,7 @@ const queueSchema = new mongoose.Schema(
         },
         addedBy: {
           type: String,
-          ref: "Users",
+          ref: User,
         },
         queueId: {
           type: String,
