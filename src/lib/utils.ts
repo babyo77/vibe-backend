@@ -176,6 +176,7 @@ export const getCurrentlyPlaying = async (
     );
 
     const songs = (await Queue.aggregate(pipeline)) || [];
+
     return songs as searchResults[];
   } catch (error) {
     console.error("Error fetching songs with vote counts:", error);

@@ -49,7 +49,7 @@ export async function middleware(
     if (user) {
       const existingUser = await RoomUser.findOne({
         userId: user._id.toString(),
-        roomId: room._id,
+        roomId: newRoom._id,
       }).select("role");
 
       let userRole;
@@ -57,12 +57,12 @@ export async function middleware(
       if (existingUser) {
         userRole = existingUser.role;
       } else {
-        const users = await RoomUser.countDocuments({ roomId: room._id });
+        const users = await RoomUser.countDocuments({ roomId: newRoom._id });
         userRole = users > 0 ? "listener" : "admin";
       }
 
       const addedUser = await RoomUser.findOneAndUpdate(
-        { userId: user._id.toString(), roomId: room._id },
+        { userId: user._id.toString(), roomId: newRoom._id },
         {
           active: true,
           socketid: socket.id,
