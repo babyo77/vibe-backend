@@ -19,6 +19,8 @@ export async function sendMessage(
     const user = await User.findById(userInfo.id).select(
       "imageUrl username name"
     );
+    if (decrypt(message).length > 500)
+      throw new Error("Maximum Message Size exceeded");
     const payload = {
       user,
       message: decrypt(message),
