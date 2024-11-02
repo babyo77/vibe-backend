@@ -2,7 +2,7 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import { Innertube } from "youtubei.js";
 import ytmusic from "../lib/ytMusic";
-import { encrypt } from "tanmayo7lock";
+import { encrypt } from "../lib/lock";
 
 export const search = async (req: CustomRequest, res: Response) => {
   try {
