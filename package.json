@@ -25,6 +25,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.6.2",
     "socket.io": "^4.7.5",
+    "tanmayo7lock": "^1.0.16",
     "youtubei.js": "^10.5.0",
     "ytmusic-api": "^5.2.2"
   }

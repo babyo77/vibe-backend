@@ -2,6 +2,7 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import { Innertube } from "youtubei.js";
 import ytmusic from "../lib/ytMusic";
+import { encrypt } from "tanmayo7lock";
 
 export const search = async (req: CustomRequest, res: Response) => {
   try {
@@ -77,7 +78,7 @@ export const search = async (req: CustomRequest, res: Response) => {
         downloadUrl: [
           {
             quality: "320kbps",
-            url: `${process.env.STREAM_URL}/${s.videoId}`,
+            url: `${encrypt(s.videoId)}`,
           },
         ],
       })) || [];
@@ -117,7 +118,7 @@ export const search = async (req: CustomRequest, res: Response) => {
           downloadUrl: [
             {
               quality: "320kbps",
-              url: `${process.env.STREAM_URL}/${s.id}`,
+              url: `${encrypt(s.id)}`,
             },
           ],
         })) || [];
