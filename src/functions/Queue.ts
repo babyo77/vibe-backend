@@ -15,7 +15,7 @@ export const queue = async (req: CustomRequest, res: Response) => {
     const roomId = String(req.query.room) || "";
     if (
       VibeCache.has(`${page}_${limit}_${name}_${roomId}`) &&
-      !req.headers.noCache
+      !req.headers.nocache
     ) {
       return res.json(VibeCache.get(`${page}_${limit}_${name}_${roomId}`));
     }
