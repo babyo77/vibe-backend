@@ -18,7 +18,6 @@ export async function deleteAll(
     await Promise.all([
       await Queue.deleteMany({
         roomId: roomInfo._id,
-        isPlaying: false,
       }),
       await Vote.deleteMany({
         roomId: roomInfo._id,
