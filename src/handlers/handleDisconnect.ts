@@ -1,6 +1,7 @@
 // using in new
 
 import { CustomSocket } from "../../types";
+import { VibeCache } from "../cache/cache";
 import { emitMessage } from "../lib/customEmit";
 
 import RoomUser from "../models/roomUsers";
@@ -9,6 +10,7 @@ export async function handleDisconnect(socket: CustomSocket) {
   try {
     const { userInfo, roomInfo } = socket;
     if (!roomInfo || !userInfo) return;
+    VibeCache.del(roomInfo.roomId + "listeners");
     const data = await RoomUser.findOneAndUpdate(
       { userId: userInfo?.id, roomId: roomInfo?._id },
       {

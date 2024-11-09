@@ -3,6 +3,7 @@ import { getQueuePipeline } from "../lib/utils";
 import { CustomRequest } from "../middleware/auth";
 import Queue from "../models/queueModel";
 import Room from "../models/roomModel";
+import { VibeCache } from "../cache/cache";
 
 export const queue = async (req: CustomRequest, res: Response) => {
   try {
@@ -12,7 +13,12 @@ export const queue = async (req: CustomRequest, res: Response) => {
     const limit = Number(req.query.limit) || 50;
     const name = String(req.query.name) || "";
     const roomId = String(req.query.room) || "";
-
+    if (
+      VibeCache.has(`${page}_${limit}_${name}_${roomId}`) &&
+      !req.headers.noCache
+    ) {
+      return res.json(VibeCache.get(`${page}_${limit}_${name}_${roomId}`));
+    }
     if (!roomId) throw new Error("Invalid roomId");
 
     const room = await Room.findOne({ roomId }).select("_id");
@@ -29,6 +35,7 @@ export const queue = async (req: CustomRequest, res: Response) => {
       results,
     };
 
+    VibeCache.set(`${page}_${limit}_${name}_${roomId}`, payload);
     return res.json(payload);
   } catch (error: any) {
     return res.status(500).json({ message: error.message });

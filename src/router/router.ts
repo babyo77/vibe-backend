@@ -11,7 +11,6 @@ import { upNextSong } from "../functions/upNextSong";
 import { getMe } from "../functions/Me";
 import { getRooms } from "../functions/getRoom";
 import { checkVibe } from "../functions/CheckVibe";
-// import { getUser } from "../functions/getUser";
 const router = express.Router();
 
 router.get("/", (_req, res) => {
@@ -20,10 +19,15 @@ router.get("/", (_req, res) => {
 
 router.post("/api/auth", login);
 
+// unauthorized users api
 router.get("/api/search", search);
 router.get("/api/upNextSong", upNextSong);
 router.get("/api/listeners", roomListeners);
+
+// both  authorized n unauthorized users api
 router.get("/api/queue", queueMiddleware, queue);
+
+// authorized users api
 router.use(authMiddleware);
 router.get("/api/vibe", checkVibe);
 router.post("/api/add", addToQueue);

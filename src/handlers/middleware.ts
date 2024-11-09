@@ -10,6 +10,7 @@ import RoomUser from "../models/roomUsers";
 import { emitMessage } from "../lib/customEmit";
 import { encrypt } from "../lib/lock";
 import { getCurrentlyPlaying } from "../lib/utils";
+import { VibeCache } from "../cache/cache";
 export async function middleware(
   socket: CustomSocket,
   next: (err?: ExtendedError) => void
@@ -94,7 +95,8 @@ export async function middleware(
       "userJoinedRoom",
       user || { username: "someone" }
     );
-
+    VibeCache.del(socket.userInfo?.id + "room");
+    VibeCache.del(socket.roomInfo?.roomId + "listeners");
     next();
   } catch (error: any) {
     console.log("MIDDLEWARE ERROR:", error);

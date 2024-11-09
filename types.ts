@@ -47,3 +47,10 @@ export interface searchResults {
   queueId?: string;
   voteCount: number;
 }
+
+export interface updateDetailsT {
+  action: "updateRoomName";
+  payload: {
+    text: string;
+  };
+}

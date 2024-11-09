@@ -2,11 +2,15 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import mongoose from "mongoose";
 import RoomUser from "../models/roomUsers";
+import { VibeCache } from "../cache/cache";
 
 export async function getRooms(req: CustomRequest, res: Response) {
   try {
     const userId = req.userId;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    if (VibeCache.has(userId + "room")) {
+      return res.json(VibeCache.get(userId + "room"));
+    }
     const roomAdmins = await RoomUser.aggregate([
       {
         $match: {
@@ -186,7 +190,7 @@ export async function getRooms(req: CustomRequest, res: Response) {
         },
       },
     ]);
-
+    VibeCache.set(userId + "room", roomAdmins);
     res.json(roomAdmins);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });

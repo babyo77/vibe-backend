@@ -2,7 +2,7 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { runServer } from "./lib/db";
-import { CustomSocket } from "../types";
+import { CustomSocket, updateDetailsT } from "../types";
 import { handleDisconnect } from "./handlers/handleDisconnect";
 import { sendMessage } from "./handlers/sendMessage";
 import { middleware } from "./handlers/middleware";
@@ -23,6 +23,7 @@ import useCors from "cors";
 import router from "./router/router";
 
 import { rateLimit } from "express-rate-limit";
+import { updateDetails } from "./handlers/updateDetails";
 
 const limiter = rateLimit({
   windowMs: 2 * 60 * 1000, // 15 minutes
@@ -74,6 +75,7 @@ io.on("connection", (socket: CustomSocket) => {
     playNext: async () => PlayNextSong(io, socket),
     songEnded: async () => SongEnded(io, socket),
     playPrev: async () => PlayPrevSong(io, socket),
+    updateDetails: async (data: any) => updateDetails(socket, data),
   };
 
   for (const [event, handler] of Object.entries(eventHandlers)) {

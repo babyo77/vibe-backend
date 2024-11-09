@@ -3,6 +3,7 @@ import { CustomRequest } from "../middleware/auth";
 import { Innertube } from "youtubei.js";
 import ytmusic from "../lib/ytMusic";
 import { encrypt } from "../lib/lock";
+import { VibeCache } from "../cache/cache";
 
 export const search = async (req: CustomRequest, res: Response) => {
   try {
@@ -10,6 +11,12 @@ export const search = async (req: CustomRequest, res: Response) => {
 
     const page = Number(req.query.page) || 0;
     const search = String(req.query.name) || "";
+
+    if (VibeCache.has(`${page + search}`)) {
+      return res.json({
+        data: VibeCache.get(`${page + search}`),
+      });
+    }
 
     if (!search) throw new Error("Search not found");
 
@@ -55,12 +62,7 @@ export const search = async (req: CustomRequest, res: Response) => {
         artists: {
           primary: [
             {
-              id: s.artist.artistId,
               name: s.artist.name,
-              role: "",
-              image: [],
-              type: "artist",
-              url: "",
             },
           ],
         },
@@ -93,14 +95,7 @@ export const search = async (req: CustomRequest, res: Response) => {
           artists: {
             primary: [
               {
-                id: s.author.id,
                 name: s.author.name,
-                role: "",
-                image: s.author.thumbnails.map((thumb: any) => ({
-                  url: thumb.url,
-                })),
-                type: "artist",
-                url: s.author.url,
               },
             ],
           },
@@ -123,16 +118,18 @@ export const search = async (req: CustomRequest, res: Response) => {
           ],
         })) || [];
 
+    const payload = {
+      ...result.data,
+      results: [
+        ...result.data.results.slice(0, 4),
+        ...songs2,
+        ...songs,
+        ...result.data.results.slice(4),
+      ],
+    };
+    VibeCache.set(`${page + search}`, payload);
     return res.json({
-      data: {
-        ...result.data,
-        results: [
-          ...result.data.results.slice(0, 4),
-          ...songs2,
-          ...songs,
-          ...result.data.results.slice(4),
-        ],
-      },
+      data: payload,
     });
   } catch (error: any) {
     return res
