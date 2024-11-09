@@ -4,6 +4,7 @@ import { Innertube } from "youtubei.js";
 import ytmusic from "../lib/ytMusic";
 import { encrypt } from "../lib/lock";
 import { VibeCache } from "../cache/cache";
+import { getInnertubeInstance } from "../lib/utils";
 
 export const search = async (req: CustomRequest, res: Response) => {
   try {
@@ -20,13 +21,11 @@ export const search = async (req: CustomRequest, res: Response) => {
 
     if (!search) throw new Error("Search not found");
 
+    // Initialize yt only if search is a URL
     let yt = null;
     if (search.startsWith("http")) {
-      yt = await Innertube.create({
-        cookie: process.env.COOKIES,
-      });
+      yt = await getInnertubeInstance();
     }
-
     // Fetch data concurrently
     const [data, ytSongs, yt2Songs] = await Promise.all([
       !search.startsWith("http")

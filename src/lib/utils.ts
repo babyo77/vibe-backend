@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Queue from "../models/queueModel";
 import RoomUser from "../models/roomUsers";
 import { searchResults } from "../../types";
+import { Innertube } from "youtubei.js";
 
 export const parseCookies = (cookieHeader?: string) => {
   const cookies: any = {};
@@ -862,3 +863,13 @@ export function getQueuePipeline(
 
   return pipeline;
 }
+
+let ytInstance: Innertube | null = null;
+export const getInnertubeInstance = async () => {
+  if (!ytInstance) {
+    ytInstance = await Innertube.create({
+      cookie: process.env.COOKIES,
+    });
+  }
+  return ytInstance;
+};

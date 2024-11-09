@@ -11,6 +11,7 @@ import { upNextSong } from "../functions/upNextSong";
 import { getMe } from "../functions/Me";
 import { getRooms } from "../functions/getRoom";
 import { checkVibe } from "../functions/CheckVibe";
+import { getPlaylist } from "../functions/getPlaylist";
 const router = express.Router();
 
 router.get("/", (_req, res) => {
@@ -23,7 +24,7 @@ router.post("/api/auth", login);
 router.get("/api/search", search);
 router.get("/api/upNextSong", upNextSong);
 router.get("/api/listeners", roomListeners);
-
+router.get("/api/youtube", getPlaylist);
 // both  authorized n unauthorized users api
 router.get("/api/queue", queueMiddleware, queue);
 
