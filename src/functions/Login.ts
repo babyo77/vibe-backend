@@ -31,11 +31,11 @@ export const login = async (req: CustomRequest, res: Response) => {
 
     return res.status(500).json({ success: false, data: {} });
   } catch (error: any) {
-    console.log(error);
+    console.log("LOGIN ERROR", error);
 
     return res
       .status(500)
-      .json({ success: false, data: {}, message: error?.message });
+      .json({ success: false, data: {}, message: "Something went wrong" });
   }
 };
 
@@ -44,7 +44,7 @@ const proceed = (res: Response, saved: any, user?: any) => {
     expiresIn: "7d",
   });
 
-  VibeCache.del(saved._id);
+  VibeCache.del(saved._id.toString());
   // Set the cookie
   res.cookie("vibeIdR", accessToken, {
     httpOnly: true,
