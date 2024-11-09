@@ -2,6 +2,7 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel";
+import { VibeCache } from "../cache/cache";
 const jwt_secret = process.env.JWT_SECRET || "";
 export const login = async (req: CustomRequest, res: Response) => {
   try {
@@ -43,6 +44,7 @@ const proceed = (res: Response, saved: any, user?: any) => {
     expiresIn: "7d",
   });
 
+  VibeCache.del(saved._id);
   // Set the cookie
   res.cookie("vibeIdR", accessToken, {
     httpOnly: true,
