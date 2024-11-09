@@ -12,6 +12,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.5.5",
     "@types/node-cron": "^3.0.11",
+    "dotenv": "^16.4.5",
     "nodemon": "^3.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2"
@@ -19,8 +20,6 @@
   "dependencies": {
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "discord-rpc": "^4.0.1",
-    "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "express-rate-limit": "^7.4.1",
     "jsonwebtoken": "^9.0.2",
