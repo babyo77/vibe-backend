@@ -3,7 +3,7 @@ import { getQueuePipeline } from "../lib/utils";
 import { CustomRequest } from "../middleware/auth";
 import Queue from "../models/queueModel";
 import Room from "../models/roomModel";
-import { queCache } from "../cache/cache";
+import { tempCache } from "../cache/cache";
 
 export const queue = async (req: CustomRequest, res: Response) => {
   try {
@@ -14,10 +14,10 @@ export const queue = async (req: CustomRequest, res: Response) => {
     const name = String(req.query.name) || "";
     const roomId = String(req.query.room) || "";
     if (
-      queCache.has(`${page}_${limit}_${name}_${roomId}`) &&
+      tempCache.has(`${page}_${limit}_${name}_${roomId}`) &&
       !req.headers.nocache
     ) {
-      return res.json(queCache.get(`${page}_${limit}_${name}_${roomId}`));
+      return res.json(tempCache.get(`${page}_${limit}_${name}_${roomId}`));
     }
     if (!roomId) throw new Error("Invalid roomId");
 
@@ -35,7 +35,7 @@ export const queue = async (req: CustomRequest, res: Response) => {
       results,
     };
 
-    queCache.set(`${page}_${limit}_${name}_${roomId}`, payload);
+    tempCache.set(`${page}_${limit}_${name}_${roomId}`, payload);
     return res.json(payload);
   } catch (error: any) {
     return res.status(500).json({ message: error.message });

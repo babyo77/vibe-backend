@@ -49,24 +49,30 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
 
     const maxOrder = maxOrderResult.length > 0 ? maxOrderResult[0].maxOrder : 0;
 
-    // Prepare new songs to be inserted with incremented order
+    // Prepare new songs to be inserted
     const newSongs = songsToAdd.map((song: searchResults, index: number) => ({
       roomId: room._id,
       isPlaying: existingSongs.length === 0 && index === 0,
       songData: { ...song, addedBy: userId },
-      order: maxOrder + index + 1,
+      order: maxOrder + index + 1, // Set the initial order (will be adjusted atomically)
     }));
 
-    // Insert new songs and update `queueId` in bulk
+    // Insert new songs into the queue
     const insertedSongs = await Queue.insertMany(newSongs, { session });
+
+    // For each inserted song, atomically increment the order using $inc
     const updates = insertedSongs.map((song) => ({
       updateOne: {
         filter: { _id: song._id },
-        update: { "songData.queueId": song._id.toString() },
+        update: {
+          $set: { "songData.queueId": song._id.toString() },
+          $inc: { order: 1 }, // Atomic increment of order
+        },
       },
     }));
 
     if (updates.length > 0) {
+      // Apply the updates to increment the order field atomically
       await Queue.bulkWrite(updates, { session });
     }
 
@@ -74,7 +80,8 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
     await session.commitTransaction();
     res.json({ message: "Songs added to the queue successfully." });
   } catch (error: any) {
-    await session.abortTransaction(); // Rollback transaction on error
+    // Rollback transaction on error
+    await session.abortTransaction();
     console.error("Error adding songs to queue:", error.message);
     res.status(500).json({ error: error.message });
   } finally {

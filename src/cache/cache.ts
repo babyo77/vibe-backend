@@ -3,6 +3,6 @@ import NodeCache from "node-cache";
 export const VibeCache = new NodeCache({
   stdTTL: 172800,
 });
-export const queCache = new NodeCache({
-  stdTTL: 40,
+export const tempCache = new NodeCache({
+  stdTTL: 5,
 });
