@@ -14,10 +14,12 @@ export const queue = async (req: CustomRequest, res: Response) => {
     const name = String(req.query.name) || "";
     const roomId = String(req.query.room) || "";
     if (
-      tempCache.has(`${page}_${limit}_${name}_${roomId}`) &&
+      tempCache.has(`${page}_${limit}_${name}_${roomId}_${userId}`) &&
       !req.headers.nocache
     ) {
-      return res.json(tempCache.get(`${page}_${limit}_${name}_${roomId}`));
+      return res.json(
+        tempCache.get(`${page}_${limit}_${name}_${roomId}_${userId}`)
+      );
     }
     if (!roomId) throw new Error("Invalid roomId");
 
@@ -35,7 +37,7 @@ export const queue = async (req: CustomRequest, res: Response) => {
       results,
     };
 
-    tempCache.set(`${page}_${limit}_${name}_${roomId}`, payload);
+    tempCache.set(`${page}_${limit}_${name}_${roomId}_${userId}`, payload);
     return res.json(payload);
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
