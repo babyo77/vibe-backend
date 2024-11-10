@@ -41,6 +41,6 @@ export async function handlePlay(
   } catch (error: any) {
     console.log("PLAY ERROR: " + error);
 
-    errorHandler(socket, error.message);
+    errorHandler(socket, "Playback Error");
   }
 }
