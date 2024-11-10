@@ -22,7 +22,7 @@ class QueueError extends Error {
   }
 }
 
-const MAX_RETRIES = 500;
+const MAX_RETRIES = 100;
 const RETRY_DELAY = 100; // milliseconds
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
