@@ -15,18 +15,19 @@ export const roomListeners = async (req: CustomRequest, res: Response) => {
       return res.json(VibeCache.get(cacheKey));
     }
 
+    const room = await Room.findOne({ roomId }).select("_id");
     // Run queries in parallel
-    const [room, roomUsers, totalListeners, isAdminActive] = await Promise.all([
-      Room.findOne({ roomId }).select("_id"), // Fetch only `_id` for the room
-      RoomUser.find({ roomId, active: true })
+    const [roomUsers, totalListeners, isAdminActive] = await Promise.all([
+      // Fetch only `_id` for the room
+      RoomUser.find({ roomId: room._id, active: true })
         .populate({
           path: "userId",
           select: "name username imageUrl", // Fetch only necessary fields
         })
         .limit(17)
         .select("userId -_id"), // Limit fields and records returned
-      RoomUser.countDocuments({ roomId, active: true }), // Count active listeners
-      RoomUser.exists({ roomId, role: "admin", active: true }), // Check if any admin is active
+      RoomUser.countDocuments({ roomId: room._id, active: true }), // Count active listeners
+      RoomUser.exists({ roomId: room._id, role: "admin", active: true }), // Check if any admin is active
     ]);
 
     // Check if room exists
