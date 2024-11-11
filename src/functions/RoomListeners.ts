@@ -35,7 +35,7 @@ export const roomListeners = async (req: CustomRequest, res: Response) => {
 
     // Prepare payload
     const payload = {
-      totalUsers: totalListeners,
+      totalUsers: totalListeners + 1,
       isAdminActive: Boolean(isAdminActive), // Convert result to boolean
       currentPage: 1,
       roomUsers,
