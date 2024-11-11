@@ -17,7 +17,7 @@ export const roomListeners = async (req: CustomRequest, res: Response) => {
 
     const room = await Room.findOne({ roomId }).select("_id");
     // Run queries in parallel
-    const [roomUsers, totalListeners, isAdminActive] = await Promise.all([
+    const [roomUsers, totalListeners] = await Promise.all([
       // Fetch only `_id` for the room
       RoomUser.find({ roomId: room._id, active: true })
         .populate({
@@ -27,7 +27,6 @@ export const roomListeners = async (req: CustomRequest, res: Response) => {
         .limit(17)
         .select("userId -_id"), // Limit fields and records returned
       RoomUser.countDocuments({ roomId: room._id, active: true }), // Count active listeners
-      RoomUser.exists({ roomId: room._id, role: "admin", active: true }), // Check if any admin is active
     ]);
 
     // Check if room exists
@@ -36,7 +35,6 @@ export const roomListeners = async (req: CustomRequest, res: Response) => {
     // Prepare payload
     const payload = {
       totalUsers: totalListeners + 1,
-      isAdminActive: Boolean(isAdminActive), // Convert result to boolean
       currentPage: 1,
       roomUsers,
     };
