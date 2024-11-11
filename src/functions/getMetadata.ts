@@ -28,6 +28,7 @@ export const getMetadata = async (req: CustomRequest, res: Response) => {
           select: "name imageUrl -_id",
         })
         .select("userId");
+      if (!adminMetadata) throw new Error("No admin");
       const { name, imageUrl } = adminMetadata?.userId || {};
       VibeCache.set(data.text + "roomAdmin", { name, imageUrl });
       metadata = { name, imageUrl };
