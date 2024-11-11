@@ -30,8 +30,14 @@ export const roomListeners = async (req: CustomRequest, res: Response) => {
       active: true,
     });
 
+    const isAdminActive = await RoomUser.exists({
+      roomId: room._id,
+      role: "admin",
+      active: true,
+    });
     const payload = {
       totalUsers: totalListeners,
+      isAdminActive: isAdminActive ? true : false,
       currentPage: 1,
       roomUsers,
     };
