@@ -18,7 +18,9 @@ export const login = async (req: CustomRequest, res: Response) => {
       return proceed(res, isAlready, user);
     } else {
       const user = await User.create({
-        username: data.email?.split("@gmail.com")[0],
+        username: data.email
+          ?.split("@gmail.com")[0]
+          ?.replace(/[^a-zA-Z0-9]/g, ""),
         name: data.display_name,
         email: data.email,
         imageUrl: data.images[0].url,
