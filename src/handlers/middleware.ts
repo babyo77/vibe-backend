@@ -27,8 +27,8 @@ export async function middleware(
       throw new Error("Name is too short, minimum 4 characters");
     }
 
-    if (roomId.length > 8) {
-      throw new Error("Name is too large, maximum 8 characters");
+    if (roomId.length > 11) {
+      throw new Error("Name is too large, maximum 11 characters");
     }
 
     if (!isValidRoomId) {
