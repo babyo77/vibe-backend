@@ -56,8 +56,12 @@ app.use(cookieParser()); // For cookie parsing
 app.use(router);
 
 io.use(async (socket: CustomSocket, next) => {
-  socket.compress(true);
-  await middleware(socket, next);
+  try {
+    socket.compress(true);
+    await middleware(socket, next);
+  } catch (error: any) {
+    next(new Error(error.message));
+  }
 });
 
 io.on("connection", (socket: CustomSocket) => {

@@ -23,6 +23,14 @@ export async function middleware(
       throw new Error("Invalid roomId");
     const isValidRoomId = /^[a-zA-Z0-9]+$/.test(roomId);
 
+    if (roomId.length <= 3) {
+      throw new Error("Name is too short, minimum 4 characters");
+    }
+
+    if (roomId.length > 8) {
+      throw new Error("Name is too large, maximum 8 characters");
+    }
+
     if (!isValidRoomId) {
       throw new Error("Special characters not allowed");
     }
@@ -34,8 +42,7 @@ export async function middleware(
 
     const room = await Room.findOne({ roomId });
 
-    if (!room && !user)
-      throw new Error("Only Logged in user can make new Room");
+    if (!room && !user) throw new Error("Login to claim this Room");
 
     const newRoom = await Room.findOneAndUpdate(
       { roomId },
@@ -105,6 +112,6 @@ export async function middleware(
   } catch (error: any) {
     console.log("MIDDLEWARE ERROR:", error);
 
-    errorHandler(socket, error.message);
+    throw new Error(error.message);
   }
 }
