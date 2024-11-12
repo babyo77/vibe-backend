@@ -34,7 +34,7 @@ export const roomListeners = async (req: CustomRequest, res: Response) => {
 
     // Prepare payload
     const payload = {
-      totalUsers: totalListeners + 1,
+      totalUsers: totalListeners,
       currentPage: 1,
       roomUsers,
     };
