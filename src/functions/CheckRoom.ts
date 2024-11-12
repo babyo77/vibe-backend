@@ -12,8 +12,8 @@ export async function checkRoom(req: CustomRequest, res: Response) {
     if (roomName.length <= 3) {
       throw new Error("Name is too short, minimum 4 characters");
     }
-    if (roomName.length > 8) {
-      throw new Error("Name is too large, maximum 8 characters");
+    if (roomName.length > 11) {
+      throw new Error("Name is too large, maximum 11 characters");
     }
 
     if (!isValidRoomId) {
