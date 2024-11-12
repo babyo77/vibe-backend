@@ -19,9 +19,13 @@ export async function middleware(
     let user = null;
     const token = socket.handshake.headers["authorization"];
     const roomId = socket.handshake.headers["room"];
-
     if (!roomId || typeof roomId !== "string")
       throw new Error("Invalid roomId");
+    const isValidRoomId = /^[a-zA-Z0-9]+$/.test(roomId);
+
+    if (!isValidRoomId) {
+      throw new Error("Special characters not allowed");
+    }
 
     if (token && token.length > 0) {
       const decode: any = jwt.verify(token, process.env.JWT_SECRET || "");

@@ -13,6 +13,7 @@ import { getRooms } from "../functions/getRoom";
 import { checkVibe } from "../functions/CheckVibe";
 import { getPlaylist } from "../functions/getPlaylist";
 import { getMetadata } from "../functions/getMetadata";
+import { checkRoom } from "../functions/CheckRoom";
 
 const router = express.Router();
 
@@ -21,6 +22,7 @@ router.get("/", (_req, res) => {
 });
 
 router.post("/api/auth", login);
+router.get("/api/checkroom", checkRoom);
 
 // unauthorized users api
 router.post("/api/metadata", getMetadata);
