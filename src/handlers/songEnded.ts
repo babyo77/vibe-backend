@@ -7,6 +7,7 @@ import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { broadcast } from "../lib/customEmit";
 import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
+import RoomUser from "../models/roomUsers";
 
 export async function SongEnded(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -15,7 +16,13 @@ export async function SongEnded(
   try {
     const { roomInfo, userInfo } = socket;
     if (!roomInfo) throw new Error("Login required");
+    const iasAdminOnline = await RoomUser.findOne({
+      roomId: roomInfo._id,
+      role: "admin",
+      active: true,
+    });
 
+    if (!iasAdminOnline && userInfo?.role !== "admin") return;
     let nextSong = [];
     const value = (await getCurrentlyPlaying(roomInfo._id, userInfo?.id))[0];
 

@@ -39,17 +39,19 @@ export async function PlayNextSong(
       );
       throw new Error("No more songs in the queue");
     }
-    await Queue.updateOne(
-      {
-        roomId: roomInfo._id,
-        "songData.id": nextSong[0].id,
-      },
-      { isPlaying: true }
-    ),
-      await Vote.deleteMany({
+    await Promise.all([
+      Queue.updateOne(
+        {
+          roomId: roomInfo._id,
+          "songData.id": nextSong[0].id,
+        },
+        { isPlaying: true }
+      ),
+      Vote.deleteMany({
         roomId: roomInfo._id,
         queueId: nextSong[0].queueId,
-      });
+      }),
+    ]);
     broadcast(io, roomInfo.roomId, "play", nextSong[0]);
     broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {
