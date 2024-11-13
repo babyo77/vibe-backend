@@ -1,6 +1,5 @@
 import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
-import { Innertube } from "youtubei.js";
 import ytmusic from "../lib/ytMusic";
 import { encrypt } from "../lib/lock";
 import { VibeCache } from "../cache/cache";
