@@ -12,14 +12,17 @@ export async function handleProgress(socket: CustomSocket, progress: number) {
     if (VibeCache.has(roomInfo._id + "isaAminOnline")) {
       isAdminOnline = VibeCache.get(roomInfo._id + "isaAminOnline");
     } else {
-      console.log("called api");
-
-      isAdminOnline = await RoomUser.findOne({
-        roomId: roomInfo?._id,
-        role: "admin",
-        active: true,
-        status: true,
-      });
+      if (userInfo?.role == "admin") {
+        isAdminOnline = true;
+      } else {
+        isAdminOnline = false;
+      }
+      // isAdminOnline = await RoomUser.findOne({
+      //   roomId: roomInfo?._id,
+      //   role: "admin",
+      //   active: true,
+      //   status: true,
+      // });
     }
 
     VibeCache.set(roomInfo._id + "isaAminOnline", isAdminOnline);
