@@ -20,6 +20,9 @@ const roomUserSchema = new mongoose.Schema(
       ref: "Room",
       required: true,
     },
+    status: {
+      type: Boolean,
+    },
     role: {
       type: String,
       enum: ["admin", "listener"],

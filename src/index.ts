@@ -24,6 +24,7 @@ import router from "./router/router";
 
 import { rateLimit } from "express-rate-limit";
 import { updateDetails } from "./handlers/updateDetails";
+import { handleUpdateStatus } from "./handlers/handleUpdateStatus";
 
 const limiter = rateLimit({
   windowMs: 2 * 60 * 1000,
@@ -80,6 +81,7 @@ io.on("connection", (socket: CustomSocket) => {
     songEnded: async () => SongEnded(io, socket),
     playPrev: async () => PlayPrevSong(io, socket),
     updateDetails: async (data: any) => updateDetails(socket, data),
+    status: async (status: any) => handleUpdateStatus(socket, status),
   };
 
   for (const [event, handler] of Object.entries(eventHandlers)) {

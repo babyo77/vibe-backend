@@ -8,6 +8,7 @@ import { broadcast } from "../lib/customEmit";
 import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import RoomUser from "../models/roomUsers";
+import { VibeCache } from "../cache/cache";
 
 export async function SongEnded(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -16,13 +17,19 @@ export async function SongEnded(
   try {
     const { roomInfo, userInfo } = socket;
     if (!roomInfo) throw new Error("Login required");
-    const iasAdminOnline = await RoomUser.findOne({
-      roomId: roomInfo._id,
-      role: "admin",
-      active: true,
-    });
-
-    if (!iasAdminOnline && userInfo?.role !== "admin") return;
+    let isAdminOnline = null;
+    if (VibeCache.has(roomInfo._id + "isaAminOnline")) {
+      isAdminOnline = VibeCache.get(roomInfo._id + "isaAminOnline");
+    } else {
+      isAdminOnline = await RoomUser.findOne({
+        roomId: roomInfo?._id,
+        role: "admin",
+        active: true,
+        status: true,
+      });
+    }
+    VibeCache.set(roomInfo._id + "isaAminOnline", isAdminOnline);
+    if (isAdminOnline && userInfo?.role !== "admin") return;
     let nextSong = [];
     const value = (await getCurrentlyPlaying(roomInfo._id, userInfo?.id))[0];
 

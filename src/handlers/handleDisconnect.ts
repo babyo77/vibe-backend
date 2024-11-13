@@ -27,6 +27,9 @@ export async function handleDisconnect(socket: CustomSocket) {
         data?.userId || { username: "Someone" }
       );
     }
+    if (userInfo?.role == "admin") {
+      VibeCache.del(roomInfo._id + "isaAminOnline");
+    }
     socket.leave(roomInfo.roomId);
   } catch (error) {
     console.log(error);

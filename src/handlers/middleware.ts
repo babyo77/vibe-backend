@@ -79,6 +79,7 @@ export async function middleware(
           active: true,
           socketid: socket.id,
           role: userRole,
+          status: false,
         },
         { upsert: true, new: true }
       );
