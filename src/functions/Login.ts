@@ -53,5 +53,5 @@ const proceed = (res: Response, saved: any) => {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Current date + 7 days
   });
 
-  return res.json({ success: true, data: saved });
+  return res.json({ success: true, data: saved, token: accessToken });
 };
