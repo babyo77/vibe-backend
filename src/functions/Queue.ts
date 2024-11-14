@@ -3,7 +3,7 @@ import { getQueuePipeline } from "../lib/utils";
 import { CustomRequest } from "../middleware/auth";
 import Queue from "../models/queueModel";
 import Room from "../models/roomModel";
-import { tempCache } from "../cache/cache";
+import { tempCache, VibeCache } from "../cache/cache";
 
 export const queue = async (req: CustomRequest, res: Response) => {
   try {
@@ -23,7 +23,9 @@ export const queue = async (req: CustomRequest, res: Response) => {
     }
     if (!roomId) throw new Error("Invalid roomId");
 
-    const room = await Room.findOne({ roomId }).select("_id");
+    const room = VibeCache.has(roomId + "roomId")
+      ? VibeCache.get(roomId + "roomId")
+      : await Room.findOne({ roomId }).select("_id");
     if (!room) throw new Error("Room not found");
 
     const [total, results] = await Promise.all([
