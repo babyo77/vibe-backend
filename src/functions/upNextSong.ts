@@ -2,7 +2,8 @@ import { Response } from "express";
 import { getCurrentlyPlaying, getSongByOrder } from "../lib/utils";
 import { CustomRequest } from "../middleware/auth";
 import Room from "../models/roomModel";
-import { tempCache } from "../cache/cache";
+import { tempCache, VibeCache } from "../cache/cache";
+import { searchResults } from "../../types";
 
 export const upNextSong = async (req: CustomRequest, res: Response) => {
   try {
@@ -12,11 +13,15 @@ export const upNextSong = async (req: CustomRequest, res: Response) => {
     if (tempCache.has(roomId + "upNextSong")) {
       return res.json(tempCache.get(roomId + "upNextSong"));
     }
-    const room = await Room.findOne({ roomId });
+    const room = VibeCache.has(roomId + "roomId")
+      ? VibeCache.get(roomId + "roomId")
+      : await Room.findOne({ roomId });
     if (!room) return res.status(400).json({ message: "Invalid roomId" });
 
     let nextSong = [];
-    const value = (await getCurrentlyPlaying(room._id))[0];
+    const value = VibeCache.has(roomId + "isplaying")
+      ? (VibeCache.get(roomId + "isplaying") as searchResults)
+      : (await getCurrentlyPlaying(room._id))[0];
     nextSong = await getCurrentlyPlaying(room?._id, undefined, false);
     if (nextSong?.length == 0) {
       nextSong = await getSongByOrder(room?._id, value?.order);

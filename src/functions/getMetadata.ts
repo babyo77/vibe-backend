@@ -18,7 +18,9 @@ export const getMetadata = async (req: CustomRequest, res: Response) => {
       if (VibeCache.has(data.text + "roomAdmin")) {
         return res.json(VibeCache.get(data.text + "roomAdmin"));
       }
-      const room = await Room.findOne({ roomId: data.text });
+      const room = VibeCache.has(data.text + "roomId")
+        ? VibeCache.get(data.text + "roomId")
+        : await Room.findOne({ roomId: data.text });
       const adminMetadata = await RoomUser.findOne({
         roomId: room?._id,
         role: "admin",

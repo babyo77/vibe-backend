@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import Queue from "../models/queueModel";
 import Room from "../models/roomModel";
 import { searchResults } from "../../types";
+import { VibeCache } from "../cache/cache";
 
 // Define Counter Schema if not already defined
 const counterSchema = new mongoose.Schema({
@@ -68,7 +69,9 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
         );
       }
 
-      const room = await Room.findOne({ roomId }).session(session);
+      const room = VibeCache.has(roomId + "roomId")
+        ? VibeCache.get(roomId + "roomId")
+        : await Room.findOne({ roomId }).session(session);
 
       if (!room) {
         throw new QueueError("Invalid roomId", 404);

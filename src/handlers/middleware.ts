@@ -51,7 +51,7 @@ export async function middleware(
     );
 
     socket.join(roomId);
-
+    VibeCache.set(roomId + "roomId", { _id: newRoom._id.toString() });
     socket.roomInfo = {
       roomId: newRoom.roomId,
       _id: newRoom._id.toString(),
