@@ -47,7 +47,12 @@ export async function SongEnded(
         false
       ));
     if (nextSong?.length == 0) {
-      nextSong = await getSongByOrder(roomInfo?._id, value.order);
+      nextSong = await getSongByOrder(
+        roomInfo?._id,
+        value.order,
+        userInfo?.id,
+        value
+      );
     }
 
     await Promise.all([

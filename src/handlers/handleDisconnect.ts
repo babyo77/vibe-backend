@@ -29,6 +29,7 @@ export async function handleDisconnect(socket: CustomSocket) {
     }
     if (userInfo?.role == "admin") {
       VibeCache.del(roomInfo._id + "isaAminOnline");
+      socket.to(roomInfo.roomId).emit("seekable", true);
     }
     socket.leave(roomInfo.roomId);
   } catch (error) {

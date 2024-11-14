@@ -5,16 +5,7 @@ import Queue from "../models/queueModel";
 import Room from "../models/roomModel";
 import { searchResults } from "../../types";
 import { VibeCache } from "../cache/cache";
-
-// Define Counter Schema if not already defined
-const counterSchema = new mongoose.Schema({
-  _id: String,
-  seq: { type: Number, default: 0 },
-});
-
-// Create Counter model if not exists
-const Counter =
-  mongoose.models.Counter || mongoose.model("Counter", counterSchema);
+import { Counter } from "../models/counterModel";
 
 class QueueError extends Error {
   constructor(message: string, public statusCode: number = 500) {
@@ -24,11 +15,10 @@ class QueueError extends Error {
 }
 
 const MAX_RETRIES = 100;
-const RETRY_DELAY = 100; // milliseconds
+const RETRY_DELAY = 100;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Function to get next sequence of orders atomically
 const getNextSequence = async (
   roomId: string,
   count: number,
@@ -45,7 +35,7 @@ const getNextSequence = async (
     }
   );
 
-  return counter.seq - count + 1; // Return the starting sequence
+  return counter.seq - count + 1;
 };
 
 export const addToQueue = async (req: CustomRequest, res: Response) => {
@@ -173,11 +163,3 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
     }
   }
 };
-
-// Required indexes
-/*
-await Queue.collection.createIndex({ roomId: 1, order: 1 });
-await Queue.collection.createIndex({ "songData.id": 1 });
-await Room.collection.createIndex({ roomId: 1 }, { unique: true });
-await Counter.collection.createIndex({ _id: 1 }, { unique: true });
-*/

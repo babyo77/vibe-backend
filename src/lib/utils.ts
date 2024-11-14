@@ -3,6 +3,9 @@ import Queue from "../models/queueModel";
 import RoomUser from "../models/roomUsers";
 import { searchResults } from "../../types";
 import { Innertube } from "youtubei.js";
+import ytmusic from "./ytMusic";
+import { decrypt, encrypt } from "tanmayo7lock";
+import { VibeCache } from "../cache/cache";
 
 export const parseCookies = (cookieHeader?: string) => {
   const cookies: any = {};
@@ -242,7 +245,8 @@ export const getTime = () => {
 export const getSongByOrder = async (
   roomId: string,
   order: number,
-  userId?: string
+  userId?: string,
+  currentSong?: searchResults
 ) => {
   try {
     // Primary pipeline to find the next song in ascending order
@@ -373,104 +377,101 @@ export const getSongByOrder = async (
       },
       { $replaceRoot: { newRoot: "$songData" } },
     ];
-
-    // Execute primary pipeline to get the next song
-    let songs = await Queue.aggregate(primaryPipeline);
-
-    // If no song is found, use fallback pipeline for the lowest order song
-    if (songs.length === 0) {
-      const fallbackPipeline: any[] = [
-        {
-          $match: { roomId: new mongoose.Types.ObjectId(roomId) },
+    const fallbackPipeline: any[] = [
+      {
+        $match: { roomId: new mongoose.Types.ObjectId(roomId) },
+      },
+      { $sort: { order: 1 } }, // Ascending order for the lowest order song
+      { $limit: 3 },
+      {
+        $lookup: {
+          from: "votes",
+          localField: "_id",
+          foreignField: "queueId",
+          as: "votes",
         },
-        { $sort: { order: 1 } }, // Ascending order for the lowest order song
-        { $limit: 3 },
-        {
-          $lookup: {
-            from: "votes",
-            localField: "_id",
-            foreignField: "queueId",
-            as: "votes",
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            let: { addedBy: "$songData.addedBy" },
-            pipeline: [
-              {
-                $match: {
-                  $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] },
-                },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { addedBy: "$songData.addedBy" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] },
               },
-              {
-                $project: {
-                  _id: 0,
-                  name: 1,
-                  imageUrl: 1,
-                  username: 1,
-                },
+            },
+            {
+              $project: {
+                _id: 0,
+                name: 1,
+                imageUrl: 1,
+                username: 1,
               },
-            ],
-            as: "addedByUser",
-          },
+            },
+          ],
+          as: "addedByUser",
         },
-        {
-          $unwind: {
-            path: "$addedByUser",
-            preserveNullAndEmptyArrays: true,
-          },
+      },
+      {
+        $unwind: {
+          path: "$addedByUser",
+          preserveNullAndEmptyArrays: true,
         },
-        {
-          $addFields: {
-            "songData.voteCount": { $size: "$votes" },
-            "songData.order": "$order",
-            "songData.addedByUser": "$addedByUser",
-            "songData.isVoted": {
-              $cond: {
-                if: {
-                  $and: [
-                    { $gt: [{ $size: "$votes" }, 0] },
-                    { $ifNull: [userId, false] },
-                  ],
-                },
-                then: {
-                  $gt: [
-                    {
-                      $size: {
-                        $filter: {
-                          input: "$votes",
-                          as: "vote",
-                          cond: {
-                            $eq: [
-                              "$$vote.userId",
-                              new mongoose.Types.ObjectId(userId),
-                            ],
-                          },
+      },
+      {
+        $addFields: {
+          "songData.voteCount": { $size: "$votes" },
+          "songData.order": "$order",
+          "songData.addedByUser": "$addedByUser",
+          "songData.isVoted": {
+            $cond: {
+              if: {
+                $and: [
+                  { $gt: [{ $size: "$votes" }, 0] },
+                  { $ifNull: [userId, false] },
+                ],
+              },
+              then: {
+                $gt: [
+                  {
+                    $size: {
+                      $filter: {
+                        input: "$votes",
+                        as: "vote",
+                        cond: {
+                          $eq: [
+                            "$$vote.userId",
+                            new mongoose.Types.ObjectId(userId),
+                          ],
                         },
                       },
                     },
-                    0,
-                  ],
-                },
-                else: false,
+                  },
+                  0,
+                ],
               },
+              else: false,
             },
           },
         },
-        {
-          $project: {
-            _id: 0,
-            songData: 1,
-          },
+      },
+      {
+        $project: {
+          _id: 0,
+          songData: 1,
         },
-        { $replaceRoot: { newRoot: "$songData" } },
-      ];
-
-      // Execute fallback pipeline to get the lowest order song
-      songs = await Queue.aggregate(fallbackPipeline);
+      },
+      { $replaceRoot: { newRoot: "$songData" } },
+    ];
+    // Execute primary pipeline to get the next song
+    let songs = await Queue.aggregate(primaryPipeline);
+    if (songs.length !== 0) {
+      VibeCache.del(`${roomId}suggestion`);
     }
-
+    if (songs.length === 0) {
+      songs = await getSongs(roomId, currentSong, "next", fallbackPipeline);
+    }
     return songs.length > 0 ? songs : []; // Return the song or null if none found
   } catch (error) {
     console.error("Error fetching the next song by order:", error);
@@ -481,7 +482,8 @@ export const getSongByOrder = async (
 export const getPreviousSongByOrder = async (
   roomId: string,
   order: number,
-  userId?: string
+  userId?: string,
+  currentSong?: searchResults
 ) => {
   try {
     // Primary pipeline to find the previous song in descending order
@@ -598,104 +600,102 @@ export const getPreviousSongByOrder = async (
       },
       { $replaceRoot: { newRoot: "$songData" } },
     ];
-
-    // Execute primary pipeline to get the previous song
-    let songs = await Queue.aggregate(primaryPipeline);
-
-    // If no previous song is found, use fallback pipeline for the highest order song
-    if (songs.length === 0) {
-      const fallbackPipeline: any[] = [
-        {
-          $match: { roomId: new mongoose.Types.ObjectId(roomId) },
+    const fallbackPipeline: any[] = [
+      {
+        $match: { roomId: new mongoose.Types.ObjectId(roomId) },
+      },
+      { $sort: { order: -1 } }, // Descending to get the highest order song
+      { $limit: 1 },
+      {
+        $lookup: {
+          from: "votes",
+          localField: "_id",
+          foreignField: "queueId",
+          as: "votes",
         },
-        { $sort: { order: -1 } }, // Descending to get the highest order song
-        { $limit: 1 },
-        {
-          $lookup: {
-            from: "votes",
-            localField: "_id",
-            foreignField: "queueId",
-            as: "votes",
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            let: { addedBy: "$songData.addedBy" },
-            pipeline: [
-              {
-                $match: {
-                  $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] },
-                },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { addedBy: "$songData.addedBy" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$_id", { $toObjectId: "$$addedBy" }] },
               },
-              {
-                $project: {
-                  _id: 0,
-                  name: 1,
-                  imageUrl: 1,
-                  username: 1,
-                },
+            },
+            {
+              $project: {
+                _id: 0,
+                name: 1,
+                imageUrl: 1,
+                username: 1,
               },
-            ],
-            as: "addedByUser",
-          },
+            },
+          ],
+          as: "addedByUser",
         },
-        {
-          $unwind: {
-            path: "$addedByUser",
-            preserveNullAndEmptyArrays: true,
-          },
+      },
+      {
+        $unwind: {
+          path: "$addedByUser",
+          preserveNullAndEmptyArrays: true,
         },
-        {
-          $addFields: {
-            "songData.voteCount": { $size: "$votes" },
-            "songData.order": "$order",
-            "songData.addedByUser": "$addedByUser",
-            "songData.isVoted": {
-              $cond: {
-                if: {
-                  $and: [
-                    { $gt: [{ $size: "$votes" }, 0] },
-                    { $ifNull: [userId, false] },
-                  ],
-                },
-                then: {
-                  $gt: [
-                    {
-                      $size: {
-                        $filter: {
-                          input: "$votes",
-                          as: "vote",
-                          cond: {
-                            $eq: [
-                              "$$vote.userId",
-                              new mongoose.Types.ObjectId(userId),
-                            ],
-                          },
+      },
+      {
+        $addFields: {
+          "songData.voteCount": { $size: "$votes" },
+          "songData.order": "$order",
+          "songData.addedByUser": "$addedByUser",
+          "songData.isVoted": {
+            $cond: {
+              if: {
+                $and: [
+                  { $gt: [{ $size: "$votes" }, 0] },
+                  { $ifNull: [userId, false] },
+                ],
+              },
+              then: {
+                $gt: [
+                  {
+                    $size: {
+                      $filter: {
+                        input: "$votes",
+                        as: "vote",
+                        cond: {
+                          $eq: [
+                            "$$vote.userId",
+                            new mongoose.Types.ObjectId(userId),
+                          ],
                         },
                       },
                     },
-                    0,
-                  ],
-                },
-                else: false,
+                  },
+                  0,
+                ],
               },
+              else: false,
             },
           },
         },
-        {
-          $project: {
-            _id: 0,
-            songData: 1,
-          },
+      },
+      {
+        $project: {
+          _id: 0,
+          songData: 1,
         },
-        { $replaceRoot: { newRoot: "$songData" } },
-      ];
+      },
+      { $replaceRoot: { newRoot: "$songData" } },
+    ];
 
-      // Execute fallback pipeline to get the highest order song
-      songs = await Queue.aggregate(fallbackPipeline);
+    // Execute primary pipeline to get the previous song
+    let songs = await Queue.aggregate(primaryPipeline);
+    if (songs.length !== 0) {
+      VibeCache.del(`${roomId}suggestion`);
     }
-
+    if (songs.length === 0) {
+      songs = await getSongs(roomId, currentSong, "prev", fallbackPipeline);
+    }
     return songs.length > 0 ? songs : []; // Return the song or null if none found
   } catch (error) {
     console.error("Error fetching the previous song by order:", error);
@@ -873,3 +873,114 @@ export const getInnertubeInstance = async () => {
   }
   return ytInstance;
 };
+
+async function fetchSuggestedSongs(
+  roomId: string,
+  currentSong: searchResults
+): Promise<searchResults[] | null> {
+  try {
+    let suggestionId =
+      currentSong.downloadUrl[currentSong.downloadUrl.length - 1].url;
+
+    if (suggestionId.startsWith("http")) {
+      const searchResults = await ytmusic.searchSongs(
+        `${currentSong.name} ${currentSong.artists.primary[0]?.name}`
+      );
+      suggestionId = encrypt(searchResults[0]?.videoId || "");
+    }
+
+    const response = await fetch(
+      `${process.env.SUGGESTION_API}/vibe/${suggestionId}`
+    );
+    if (response.ok) {
+      const songs = await response.json();
+      VibeCache.set(`${roomId}suggestion`, songs);
+      return songs;
+    }
+  } catch (error) {
+    console.log("SUGGESTION ERROR:", error, currentSong, roomId);
+  }
+  return null;
+}
+
+async function getSongs(
+  roomId: string,
+  currentSong?: searchResults,
+  direction: "next" | "prev" = "next",
+  fallbackPipeline?: any[]
+): Promise<searchResults[]> {
+  if (!currentSong) return await Queue.aggregate(fallbackPipeline);
+  if (
+    currentSong.suggestedOrder &&
+    direction == "prev" &&
+    currentSong.suggestedOrder == 1
+  ) {
+    return await Queue.aggregate(fallbackPipeline);
+  }
+  let suggestedSongs = VibeCache.get(`${roomId}suggestion`) as
+    | searchResults[]
+    | null;
+  if (!suggestedSongs) {
+    suggestedSongs = await fetchSuggestedSongs(roomId, currentSong);
+  }
+
+  if (suggestedSongs) {
+    // Locate the current song's index based on suggestedOrder
+    const currentIndex = suggestedSongs.findIndex(
+      (song) => song.suggestedOrder === currentSong.suggestedOrder
+    );
+    let targetIndex = currentIndex;
+
+    if (direction === "next") {
+      targetIndex = currentIndex + 1;
+    } else if (direction === "prev") {
+      targetIndex = currentIndex - 1;
+    }
+
+    // Check if targetIndex is within bounds
+    if (targetIndex >= 0 && targetIndex < suggestedSongs.length) {
+      // Get the remaining songs after the target index (next or prev direction)
+      const remainingSongs =
+        direction === "next"
+          ? suggestedSongs.slice(targetIndex) // Songs after the target song
+          : suggestedSongs.slice(0, targetIndex + 1).reverse(); // Songs before the target song (reversed for prev)
+
+      // Return the song at target index along with the rest of the filtered songs
+
+      return [
+        suggestedSongs[targetIndex],
+        ...remainingSongs.filter(
+          (song) =>
+            song.suggestedOrder !== suggestedSongs![targetIndex].suggestedOrder
+        ),
+      ];
+    }
+
+    // Reload suggestions if no valid next/prev song is found in cache
+    VibeCache.del(`${roomId}suggestion`);
+    suggestedSongs = await fetchSuggestedSongs(roomId, currentSong);
+
+    if (suggestedSongs) {
+      // For "next", return the first song, and for "prev", return the last song
+      const newIndex = direction === "next" ? 0 : suggestedSongs.length - 1;
+      return [suggestedSongs[newIndex]];
+    }
+  }
+
+  // Fallback if no suggestions are found
+  return await Queue.aggregate(fallbackPipeline);
+}
+
+export function encryptObjectValues(obj: any[]) {
+  return Object.keys(obj).reduce((acc, key) => {
+    acc[key] = encrypt(obj[key as any]); // Apply decrypt to each value
+    return acc;
+  }, {} as Record<string, string>);
+}
+
+export function decryptObjectValues(obj: any[]) {
+  return Object.keys(obj).reduce((acc, key) => {
+    acc[key] = decrypt(obj[key as any]); // Apply decrypt to each value
+    return acc;
+  }, {} as Record<string, string>);
+}

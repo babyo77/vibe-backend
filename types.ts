@@ -46,6 +46,7 @@ export interface searchResults {
   addedBy?: string;
   queueId?: string;
   voteCount: number;
+  suggestedOrder: number;
 }
 
 export interface updateDetailsT {

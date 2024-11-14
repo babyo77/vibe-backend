@@ -30,22 +30,28 @@ export async function PlayNextSong(
     );
     nextSong = await getCurrentlyPlaying(roomInfo?._id, userInfo.id, false);
     if (nextSong?.length == 0) {
-      nextSong = await getSongByOrder(roomInfo?._id, value.order);
+      nextSong = await getSongByOrder(
+        roomInfo?._id,
+        value.order,
+        userInfo?.id,
+        value
+      );
     }
-
-    await Promise.all([
-      Queue.updateOne(
-        {
+    if (!nextSong[0].suggestedOrder) {
+      await Promise.all([
+        Queue.updateOne(
+          {
+            roomId: roomInfo._id,
+            "songData.id": nextSong[0].id,
+          },
+          { isPlaying: true }
+        ),
+        Vote.deleteMany({
           roomId: roomInfo._id,
-          "songData.id": nextSong[0].id,
-        },
-        { isPlaying: true }
-      ),
-      Vote.deleteMany({
-        roomId: roomInfo._id,
-        queueId: nextSong[0].queueId,
-      }),
-    ]);
+          queueId: nextSong[0].queueId,
+        }),
+      ]);
+    }
     VibeCache.set(roomInfo.roomId + "isplaying", nextSong[0]);
     broadcast(io, roomInfo.roomId, "play", nextSong[0]);
     broadcast(io, roomInfo.roomId, "update", "update");

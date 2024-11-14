@@ -24,7 +24,12 @@ export const upNextSong = async (req: CustomRequest, res: Response) => {
       : (await getCurrentlyPlaying(room._id))[0];
     nextSong = await getCurrentlyPlaying(room?._id, undefined, false);
     if (nextSong?.length == 0) {
-      nextSong = await getSongByOrder(room?._id, value?.order);
+      nextSong = await getSongByOrder(
+        room?._id,
+        value?.order,
+        undefined,
+        value
+      );
     }
     tempCache.set(roomId + "upNextSong", nextSong);
     res.json(nextSong);

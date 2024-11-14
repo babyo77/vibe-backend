@@ -3,19 +3,15 @@ import { CustomRequest } from "../middleware/auth";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel";
 import { VibeCache } from "../cache/cache";
+import { decryptObjectValues } from "../lib/utils";
 const jwt_secret = process.env.JWT_SECRET || "";
 export const login = async (req: CustomRequest, res: Response) => {
   try {
-    const data = req.body; // Express uses req.body for JSON data
+    const data = decryptObjectValues(req.body) as any; // Express uses req.body for JSON data
 
     const isAlready = await User.findOne({ email: data.email });
     if (isAlready) {
-      const user = await User.findOneAndUpdate(
-        { email: data.email },
-        { imageUrl: data.images[0].url, name: data.display_name },
-        { new: true }
-      );
-      return proceed(res, isAlready, user);
+      return proceed(res, isAlready);
     } else {
       const user = await User.create({
         username: data.email
@@ -41,7 +37,7 @@ export const login = async (req: CustomRequest, res: Response) => {
   }
 };
 
-const proceed = (res: Response, saved: any, user?: any) => {
+const proceed = (res: Response, saved: any) => {
   const accessToken = jwt.sign({ userId: saved._id }, jwt_secret, {
     expiresIn: "7d",
   });
@@ -57,5 +53,5 @@ const proceed = (res: Response, saved: any, user?: any) => {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Current date + 7 days
   });
 
-  return res.json({ success: true, data: user || saved });
+  return res.json({ success: true, data: saved });
 };

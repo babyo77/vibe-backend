@@ -19,7 +19,7 @@ export async function checkRoom(req: CustomRequest, res: Response) {
     if (!isValidRoomId) {
       throw new Error("Special characters not allowed");
     }
-    const isExist = await Room.findOne({ roomId: roomName });
+    const isExist = await Room.exists({ roomId: roomName });
 
     if (isExist) {
       throw new Error("Name already taken");

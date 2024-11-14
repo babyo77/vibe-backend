@@ -28,7 +28,12 @@ export async function PlayPrevSong(
         isPlaying: false,
       }
     );
-    nextSong = await getPreviousSongByOrder(roomInfo?._id, value.order);
+    nextSong = await getPreviousSongByOrder(
+      roomInfo?._id,
+      value.order,
+      userInfo?.id,
+      value
+    );
 
     await Promise.all([
       Queue.updateOne(

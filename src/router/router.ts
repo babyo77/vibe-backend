@@ -14,6 +14,7 @@ import { checkVibe } from "../functions/CheckVibe";
 import { getPlaylist } from "../functions/getPlaylist";
 import { getMetadata } from "../functions/getMetadata";
 import { checkRoom } from "../functions/CheckRoom";
+import { updateUser } from "../functions/UpdateUser";
 
 const router = express.Router();
 
@@ -40,5 +41,6 @@ router.get("/api/vibe", checkVibe);
 router.post("/api/add", addToQueue);
 router.get("/api/@me", getMe);
 router.get("/api/rooms", getRooms);
+router.put("/api/update", updateUser);
 
 export default router;
