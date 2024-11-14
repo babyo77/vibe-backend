@@ -18,7 +18,7 @@ export async function PlayPrevSong(
     if (!roomInfo || !userInfo) throw new Error("Login required");
     if (userInfo.role !== "admin")
       throw new Error("Only admin is allowed to play prev");
-    let nextSong = [];
+    let nextSong: any = [];
     const value = VibeCache.has(roomInfo.roomId + "isplaying")
       ? (VibeCache.get(roomInfo.roomId + "isplaying") as searchResults)
       : (await getCurrentlyPlaying(roomInfo._id, userInfo.id))[0];
@@ -27,29 +27,22 @@ export async function PlayPrevSong(
       {
         isPlaying: false,
       }
-    ),
-      (nextSong = await getPreviousSongByOrder(roomInfo?._id, value.order));
-    if (nextSong.length == 0) {
-      await Queue.updateOne(
+    );
+    nextSong = await getPreviousSongByOrder(roomInfo?._id, value.order);
+
+    await Promise.all([
+      Queue.updateOne(
         {
           roomId: roomInfo._id,
-          "songData.id": value.id,
+          "songData.id": nextSong[0].id,
         },
         { isPlaying: true }
-      );
-      throw new Error("No more songs in the queue");
-    }
-    await Queue.updateOne(
-      {
-        roomId: roomInfo._id,
-        "songData.id": nextSong[0].id,
-      },
-      { isPlaying: true }
-    ),
-      await Vote.deleteMany({
+      ),
+      Vote.deleteMany({
         roomId: roomInfo._id,
         queueId: nextSong[0].queueId,
-      });
+      }),
+    ]);
     VibeCache.set(roomInfo.roomId + "isplaying", nextSong[0]);
     broadcast(io, roomInfo.roomId, "play", nextSong[0]);
     broadcast(io, roomInfo.roomId, "update", "update");
