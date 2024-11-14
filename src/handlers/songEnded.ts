@@ -49,27 +49,20 @@ export async function SongEnded(
     if (nextSong?.length == 0) {
       nextSong = await getSongByOrder(roomInfo?._id, value.order);
     }
-    if (nextSong.length == 0) {
-      await Queue.updateOne(
+
+    await Promise.all([
+      Queue.updateOne(
         {
           roomId: roomInfo._id,
-          "songData.id": value.id,
+          "songData.id": nextSong[0].id,
         },
         { isPlaying: true }
-      );
-      throw new Error("No more songs in the queue");
-    }
-    await Queue.updateOne(
-      {
-        roomId: roomInfo._id,
-        "songData.id": nextSong[0].id,
-      },
-      { isPlaying: true }
-    ),
+      ),
       await Vote.deleteMany({
         roomId: roomInfo._id,
         queueId: nextSong[0].queueId,
-      });
+      }),
+    ]);
     VibeCache.set(roomInfo.roomId + "isplaying", nextSong[0]);
     broadcast(io, roomInfo.roomId, "play", nextSong[0]);
     broadcast(io, roomInfo.roomId, "update", "update");
