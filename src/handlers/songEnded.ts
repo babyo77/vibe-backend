@@ -1,6 +1,6 @@
 //used in new src
 import { Server } from "socket.io";
-import { CustomSocket } from "../../types";
+import { CustomSocket, searchResults } from "../../types";
 import { getCurrentlyPlaying, getSongByOrder } from "../lib/utils";
 import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
@@ -31,7 +31,9 @@ export async function SongEnded(
     VibeCache.set(roomInfo._id + "isaAminOnline", isAdminOnline);
     if (isAdminOnline && userInfo?.role !== "admin") return;
     let nextSong = [];
-    const value = (await getCurrentlyPlaying(roomInfo._id, userInfo?.id))[0];
+    const value = VibeCache.has(roomInfo.roomId + "isplaying")
+      ? (VibeCache.get(roomInfo.roomId + "isplaying") as searchResults)
+      : (await getCurrentlyPlaying(roomInfo._id, userInfo?.id))[0];
 
     await Queue.updateOne(
       { roomId: roomInfo._id, isPlaying: true },
@@ -68,6 +70,7 @@ export async function SongEnded(
         roomId: roomInfo._id,
         queueId: nextSong[0].queueId,
       });
+    VibeCache.set(roomInfo.roomId + "isplaying", nextSong[0]);
     broadcast(io, roomInfo.roomId, "play", nextSong[0]);
     broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {
