@@ -28,8 +28,10 @@ export async function PlayNextSong(
         isPlaying: false,
       }
     );
-    // (nextSong = await getCurrentlyPlaying(roomInfo?._id, userInfo.id, false));
-    nextSong = await getSongByOrder(roomInfo?._id, value.order);
+    nextSong = await getCurrentlyPlaying(roomInfo?._id, userInfo.id, false);
+    if (nextSong?.length == 0) {
+      nextSong = await getSongByOrder(roomInfo?._id, value.order);
+    }
 
     await Promise.all([
       Queue.updateOne(
