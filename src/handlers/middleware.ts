@@ -94,9 +94,11 @@ export async function middleware(
       encrypt({ ...socket.roomInfo, role: socket.userInfo?.role })
     );
 
-    const currentSong = (
-      await getCurrentlyPlaying(socket.roomInfo._id, socket.userInfo?.id)
-    )[0];
+    const currentSong = VibeCache.has(socket.roomInfo.roomId + "isplaying")
+      ? VibeCache.get(socket.roomInfo.roomId + "isplaying")
+      : (
+          await getCurrentlyPlaying(socket.roomInfo._id, socket.userInfo?.id)
+        )[0];
     if (currentSong) {
       socket.emit("isplaying", encrypt(currentSong));
     }

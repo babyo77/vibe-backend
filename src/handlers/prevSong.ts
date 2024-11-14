@@ -1,12 +1,13 @@
 //used in new src
 import { Server } from "socket.io";
-import { CustomSocket } from "../../types";
+import { CustomSocket, searchResults } from "../../types";
 import { getCurrentlyPlaying, getPreviousSongByOrder } from "../lib/utils";
 import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { broadcast } from "../lib/customEmit";
 import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
+import { VibeCache } from "../cache/cache";
 
 export async function PlayPrevSong(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -18,7 +19,9 @@ export async function PlayPrevSong(
     if (userInfo.role !== "admin")
       throw new Error("Only admin is allowed to play prev");
     let nextSong = [];
-    const value = (await getCurrentlyPlaying(roomInfo._id, userInfo.id))[0];
+    const value = VibeCache.has(roomInfo.roomId + "isplaying")
+      ? (VibeCache.get(roomInfo.roomId + "isplaying") as searchResults)
+      : (await getCurrentlyPlaying(roomInfo._id, userInfo.id))[0];
     await Queue.updateOne(
       { roomId: roomInfo._id, isPlaying: true },
       {
@@ -47,6 +50,7 @@ export async function PlayPrevSong(
         roomId: roomInfo._id,
         queueId: nextSong[0].queueId,
       });
+    VibeCache.set(roomInfo.roomId + "isplaying", nextSong[0]);
     broadcast(io, roomInfo.roomId, "play", nextSong[0]);
     broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {
