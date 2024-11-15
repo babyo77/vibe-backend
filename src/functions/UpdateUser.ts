@@ -14,15 +14,18 @@ export const updateUser = async (req: CustomRequest, res: Response) => {
     if (!data.username || !data.name)
       throw new Error(`username or name is required`);
     const isValidName =
-      /^[a-zA-Z0-9_]+$/.test(data.name) && /[^_]+/.test(data.name);
+      /^[a-zA-Z0-9_ ]+$/.test(data.name) && /[^_ ]+/.test(data.name);
     const isValidUserName =
-      /^[a-zA-Z0-9_]+$/.test(data.username) && /[^_]+/.test(data.username);
-
+      /^[a-z0-9_]+$/.test(data.username) &&
+      /[^_]+/.test(data.username) &&
+      data.username === data.username.toLowerCase();
     if (!isValidName) {
       throw new Error("Special characters not allowed in name");
     }
     if (!isValidUserName) {
-      throw new Error("Special characters not allowed in username");
+      throw new Error(
+        "Special characters not allowed in username and must be in lowercase"
+      );
     }
     if (data.username.length <= 3 || data.name.length <= 3) {
       throw new Error("Name or username is too short, minimum 4 characters");
@@ -31,14 +34,17 @@ export const updateUser = async (req: CustomRequest, res: Response) => {
       throw new Error("Name or username  is too large, maximum 15 characters");
     }
 
-    const isAlreadyUsernameExist = await User.exists({
+    const isAlreadyUsernameExist = await User.findOne({
       username: data.username,
     });
-    if (isAlreadyUsernameExist) {
+    if (
+      isAlreadyUsernameExist &&
+      isAlreadyUsernameExist?._id.toString() !== userId
+    ) {
       throw new Error("Username already taken");
     }
     await User.findByIdAndUpdate(userId, {
-      username: data.username,
+      username: data.username.toLocaleLowerCase(),
       name: data.name,
     });
     res.send();
