@@ -38,6 +38,10 @@ const queueSchema = new mongoose.Schema(
         image: {
           type: mongoose.Schema.Types.Mixed,
         },
+        video: {
+          type: Boolean,
+          default: false,
+        },
         source: {
           type: String,
         },

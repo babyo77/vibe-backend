@@ -4,5 +4,5 @@ export const VibeCache = new NodeCache({
   stdTTL: 172800,
 });
 export const tempCache = new NodeCache({
-  stdTTL: 2,
+  stdTTL: 1,
 });

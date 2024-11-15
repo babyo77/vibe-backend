@@ -30,7 +30,6 @@
     "socket.io": "^4.8.1",
     "tanmayo7lock": "^1.0.18",
     "youtubei.js": "^11.0.1",
-    "ytmusic-api": "^5.2.2",
-    "ytpl": "^2.3.0"
+    "ytmusic-api": "^5.2.2"
   }
 }

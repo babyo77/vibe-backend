@@ -7,18 +7,15 @@ import { getInnertubeInstance } from "../lib/utils";
 
 export const search = async (req: CustomRequest, res: Response) => {
   try {
-    // Initialize YouTube music and Innertube
-
     const page = Number(req.query.page) || 0;
-    const search = String(req.query.name) || "";
+    const search = String(req.query.name || "").trim();
 
+    if (!search) throw new Error("Search not found");
     if (VibeCache.has(`${page + search}`)) {
       return res.json({
         data: VibeCache.get(`${page + search}`),
       });
     }
-
-    if (!search) throw new Error("Search not found");
 
     // Initialize yt only if search is a URL
     let yt = null;
@@ -33,10 +30,7 @@ export const search = async (req: CustomRequest, res: Response) => {
               process.env.BACKEND_URI
             }/api/search/songs?query=${encodeURIComponent(
               search
-            )}&page=${page}&limit=5`,
-            {
-              cache: "force-cache",
-            }
+            )}&page=${page}&limit=4`
           ).then((res) => res.json())
         : null,
       page === 0 && !search.startsWith("http")
@@ -97,6 +91,7 @@ export const search = async (req: CustomRequest, res: Response) => {
               },
             ],
           },
+          video: true,
           image: [
             {
               quality: "500x500",
@@ -118,12 +113,7 @@ export const search = async (req: CustomRequest, res: Response) => {
 
     const payload = {
       ...result.data,
-      results: [
-        ...result.data.results.slice(0, 4),
-        ...songs2,
-        ...songs,
-        ...result.data.results.slice(4),
-      ],
+      results: [...result.data.results.slice(0, 4), ...songs2, ...songs],
     };
     VibeCache.set(`${page + search}`, payload);
     return res.json({
