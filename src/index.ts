@@ -2,7 +2,7 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { runServer } from "./lib/db";
-import { CustomSocket, updateDetailsT } from "../types";
+import { CustomSocket } from "../types";
 import { handleDisconnect } from "./handlers/handleDisconnect";
 import { sendMessage } from "./handlers/sendMessage";
 import { middleware } from "./handlers/middleware";
@@ -21,7 +21,6 @@ import { PlayPrevSong } from "./handlers/prevSong";
 import cookieParser from "cookie-parser";
 import useCors from "cors";
 import router from "./router/router";
-
 import { rateLimit } from "express-rate-limit";
 import { updateDetails } from "./handlers/updateDetails";
 import { handleUpdateStatus } from "./handlers/handleUpdateStatus";
