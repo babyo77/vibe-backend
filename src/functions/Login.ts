@@ -3,7 +3,6 @@ import { CustomRequest } from "../middleware/auth";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel";
 import { VibeCache } from "../cache/cache";
-import { decryptObjectValues } from "../lib/utils";
 import admin from "../../firebase/firebase";
 const jwt_secret = process.env.JWT_SECRET || "";
 export const login = async (req: CustomRequest, res: Response) => {
@@ -62,5 +61,5 @@ const proceed = (res: Response, saved: any) => {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Current date + 7 days
   });
 
-  return res.json({ success: true, data: saved, token: accessToken });
+  return res.json({ success: true, data: {}, token: accessToken });
 };
