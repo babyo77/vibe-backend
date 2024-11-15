@@ -56,7 +56,7 @@ export async function middleware(
       roomId: newRoom.roomId,
       _id: newRoom._id.toString(),
       progress: VibeCache.has(roomId + "progress")
-        ? (VibeCache.get(roomId + "progress") as number)
+        ? Number(VibeCache.get(roomId + "progress"))
         : 0,
     };
 

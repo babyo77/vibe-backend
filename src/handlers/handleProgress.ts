@@ -1,8 +1,6 @@
 // used in new src
 import { CustomSocket } from "../../types";
 import { VibeCache } from "../cache/cache";
-import Room from "../models/roomModel";
-import RoomUser from "../models/roomUsers";
 
 export async function handleProgress(socket: CustomSocket, progress: number) {
   try {
