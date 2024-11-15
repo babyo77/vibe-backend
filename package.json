@@ -27,9 +27,9 @@
     "mongoose": "^8.6.2",
     "node-cache": "^5.1.2",
     "node-cron": "^3.0.3",
-    "socket.io": "^4.7.5",
+    "socket.io": "^4.8.1",
     "tanmayo7lock": "^1.0.18",
-    "youtubei.js": "^10.5.0",
+    "youtubei.js": "^11.0.1",
     "ytmusic-api": "^5.2.2",
     "ytpl": "^2.3.0"
   }
