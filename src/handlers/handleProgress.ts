@@ -33,7 +33,7 @@ export async function handleProgress(socket: CustomSocket, progress: number) {
       socket.to(roomInfo.roomId).emit("seekable", true);
     }
     VibeCache.set(roomInfo._id + "progress", progress);
-    await Room.findByIdAndUpdate(roomInfo._id, { progress });
+    // await Room.findByIdAndUpdate(roomInfo._id, { progress });
   } catch (error) {
     console.log(error);
   }
