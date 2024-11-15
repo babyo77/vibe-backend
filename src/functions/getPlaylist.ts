@@ -12,7 +12,7 @@ export async function getPlaylist(req: CustomRequest, res: Response) {
   }
   try {
     const playlist = await ytpl(id, {
-      pages: Infinity,
+      pages: 2,
       requestOptions: { headers: { Cookie: process.env.COOKIES || "" } },
     });
     if (!playlist.items) throw new Error("Invalid playlist");
