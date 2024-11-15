@@ -39,9 +39,7 @@ export const login = async (req: CustomRequest, res: Response) => {
   } catch (error: any) {
     console.log("LOGIN ERROR", error);
 
-    return res
-      .status(500)
-      .json({ success: false, data: {}, message: "Something went wrong" });
+    return res.status(500).json({ success: false, message: error?.message });
   }
 };
 
