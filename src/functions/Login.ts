@@ -9,7 +9,7 @@ export const login = async (req: CustomRequest, res: Response) => {
   try {
     const data = decryptObjectValues(req.body) as any; // Express uses req.body for JSON data
 
-    const isAlready = await User.findOne({ id: data.id });
+    const isAlready = await User.findOne({ email: data.email });
     if (isAlready) {
       return proceed(res, isAlready);
     } else {
@@ -19,7 +19,6 @@ export const login = async (req: CustomRequest, res: Response) => {
           ?.replace(/[^a-zA-Z0-9]/g, ""),
         name: data.display_name,
         email: data.email,
-        id: data.id,
         imageUrl: data.images[0].url,
       });
 
