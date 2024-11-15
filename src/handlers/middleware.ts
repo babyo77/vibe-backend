@@ -55,8 +55,8 @@ export async function middleware(
     socket.roomInfo = {
       roomId: newRoom.roomId,
       _id: newRoom._id.toString(),
-      progress: VibeCache.has(roomId + "progress")
-        ? Number(VibeCache.get(roomId + "progress"))
+      progress: VibeCache.has(newRoom._id.toString() + "progress")
+        ? (VibeCache.get(newRoom._id.toString() + "progress") as number)
         : 0,
     };
 
