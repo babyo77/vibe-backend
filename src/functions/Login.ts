@@ -4,22 +4,31 @@ import jwt from "jsonwebtoken";
 import User from "../models/userModel";
 import { VibeCache } from "../cache/cache";
 import { decryptObjectValues } from "../lib/utils";
+import admin from "../../firebase/firebase";
 const jwt_secret = process.env.JWT_SECRET || "";
 export const login = async (req: CustomRequest, res: Response) => {
   try {
-    const data = decryptObjectValues(req.body) as any; // Express uses req.body for JSON data
+    const { token } = req.body;
 
-    const isAlready = await User.findOne({ email: data.email });
+    if (!token) throw new Error("Gotach u 🤣");
+
+    const verify = await admin.auth().verifyIdToken(token);
+
+    if (!verify) {
+      throw new Error("Invalid token 🤡");
+    }
+
+    const isAlready = await User.findOne({ email: verify.email });
     if (isAlready) {
       return proceed(res, isAlready);
     } else {
       const user = await User.create({
-        username: data.email
+        username: verify.email
           ?.split("@gmail.com")[0]
           ?.replace(/[^a-zA-Z0-9]/g, ""),
-        name: data.display_name,
-        email: data.email,
-        imageUrl: data.images[0].url,
+        name: verify.name,
+        email: verify.email,
+        imageUrl: verify.picture,
       });
 
       if (user) {
