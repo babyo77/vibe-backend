@@ -109,7 +109,7 @@ export async function middleware(
       socket,
       roomId,
       "userJoinedRoom",
-      user || { username: "someone" }
+      user || { username: "@someone" }
     );
     VibeCache.del(socket.userInfo?.id + "room");
     VibeCache.del(socket.roomInfo?.roomId + "listeners");
