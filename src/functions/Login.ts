@@ -19,15 +19,20 @@ export const login = async (req: CustomRequest, res: Response) => {
 
     const isAlready = await User.findOne({ email: verify.email });
     if (isAlready) {
+      await User.findByIdAndUpdate(isAlready._id, {
+        imageUrl: verify?.picture,
+      });
       return proceed(res, isAlready);
     } else {
+      if (!verify.name || !verify.email || !verify.picture)
+        throw new Error("Invalid data");
       const user = await User.create({
         username: verify.email
           ?.split("@gmail.com")[0]
           ?.replace(/[^a-zA-Z0-9]/g, ""),
-        name: verify.name,
-        email: verify.email,
-        imageUrl: verify.picture,
+        name: verify?.name,
+        email: verify?.email,
+        imageUrl: verify?.picture,
       });
 
       if (user) {
