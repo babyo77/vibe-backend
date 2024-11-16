@@ -7,7 +7,7 @@ import Room from "../models/roomModel";
 export async function checkVibe(req: CustomRequest, res: Response) {
   try {
     const userId = req.userId;
-    const sessionCookie = req.cookies?.vibeIdR; // Get cookies from the request
+    const sessionCookie = req.headers.authorization?.split(" ")[1]; // Get cookies from the request
     const roomId = req.cookies?.room; // Get room ID from cookies
 
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
