@@ -31,6 +31,7 @@ export async function handleDisconnect(socket: CustomSocket) {
       VibeCache.del(roomInfo._id + "isaAminOnline");
       socket.to(roomInfo.roomId).emit("seekable", true);
     }
+    socket.removeAllListeners();
     socket.leave(roomInfo.roomId);
   } catch (error) {
     console.log(error);
