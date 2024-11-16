@@ -16,15 +16,16 @@ export const search = async (req: CustomRequest, res: Response) => {
         data: VibeCache.get(`${page + search}`),
       });
     }
+    const url = search.startsWith("http");
 
     // Initialize yt only if search is a URL
     let yt = null;
-    if (search.startsWith("http")) {
+    if (url) {
       yt = await getInnertubeInstance();
     }
     // Fetch data concurrently
     const [data, ytSongs, yt2Songs] = await Promise.all([
-      !search.startsWith("http")
+      !url
         ? fetch(
             `${
               process.env.BACKEND_URI
@@ -33,9 +34,7 @@ export const search = async (req: CustomRequest, res: Response) => {
             )}&page=${page}&limit=4`
           ).then((res) => res.json())
         : null,
-      page === 0 && !search.startsWith("http")
-        ? ytmusic.searchSongs(search)
-        : null,
+      page === 0 && !url ? ytmusic.searchSongs(search) : null,
       yt ? yt.search(search) : null,
     ]);
 
