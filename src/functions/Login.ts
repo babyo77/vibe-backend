@@ -19,9 +19,6 @@ export const login = async (req: CustomRequest, res: Response) => {
 
     const isAlready = await User.findOne({ email: verify.email });
     if (isAlready) {
-      await User.findByIdAndUpdate(isAlready._id, {
-        imageUrl: verify?.picture,
-      });
       return proceed(res, isAlready);
     } else {
       if (!verify.name || !verify.email || !verify.picture)
