@@ -19,6 +19,9 @@ const userSchema = new mongoose.Schema(
     imageUrl: {
       type: String,
     },
+    imageDelUrl: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

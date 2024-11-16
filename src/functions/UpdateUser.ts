@@ -47,7 +47,7 @@ export const updateUser = async (req: CustomRequest, res: Response) => {
       username: data.username.toLocaleLowerCase(),
       name: data.name,
     });
-    res.send();
+    res.send().status(204);
   } catch (error: any) {
     return res
       .status(500)
