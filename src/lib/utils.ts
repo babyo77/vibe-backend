@@ -898,7 +898,7 @@ async function fetchSuggestedSongs(
       return songs;
     }
   } catch (error) {
-    console.log("SUGGESTION ERROR:", error, currentSong, roomId);
+    console.log("SUGGESTION ERROR:", error, roomId);
   }
   return null;
 }
