@@ -24,7 +24,7 @@ export async function handleDisconnect(socket: CustomSocket) {
         socket,
         roomInfo.roomId,
         "userLeftRoom",
-        data?.userId || { username: "Someone" }
+        data?.userId || { username: "@Someone" }
       );
     }
     if (userInfo?.role == "admin") {
