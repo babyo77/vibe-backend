@@ -26,7 +26,7 @@ export const updateUserDp = async (req: CustomRequest, res: Response) => {
       imageDelUrl: data.imageDelUrl,
     });
 
-    res.send().status(204);
+    res.status(204).send();
   } catch (error: any) {
     console.log("UPDATE USER PROFILE ERROR", error);
     return apiError(res);

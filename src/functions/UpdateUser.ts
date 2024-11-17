@@ -48,7 +48,7 @@ export const updateUser = async (req: CustomRequest, res: Response) => {
       username: data.username.toLocaleLowerCase(),
       name: data.name,
     });
-    res.send().status(204);
+    res.status(204).send();
   } catch (error: any) {
     console.log("UPDATE USER ERROR", error);
     return apiError(res, error.message, 401);
