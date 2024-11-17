@@ -1,0 +1,10 @@
+{
+  "browser": "Chrome 130.0",
+  "info": "::1 | Browser: Chrome 130.0 | OS: Unknown OS",
+  "ip": "::1",
+  "level": "error",
+  "message": "Log file not found",
+  "os": "Unknown OS",
+  "stack": "Error: Log file not found\n    at /Users/tanmay/github/vibe-node-js/src/logs/getLogs.ts:22:11\n    at Generator.next (<anonymous>)\n    at /Users/tanmay/github/vibe-node-js/src/logs/getLogs.ts:8:71\n    at new Promise (<anonymous>)\n    at __awaiter (/Users/tanmay/github/vibe-node-js/src/logs/getLogs.ts:4:12)\n    at getLogs (/Users/tanmay/github/vibe-node-js/src/logs/getLogs.ts:22:12)\n    at /Users/tanmay/github/vibe-node-js/src/lib/asyncHandler.ts:12:21\n    at Layer.handle [as handle_request] (/Users/tanmay/github/vibe-node-js/node_modules/express/lib/router/layer.js:95:5)\n    at next (/Users/tanmay/github/vibe-node-js/node_modules/express/lib/router/route.js:149:13)\n    at Route.dispatch (/Users/tanmay/github/vibe-node-js/node_modules/express/lib/router/route.js:119:3)",
+  "timestamp": "2024-11-17T23:10:23.568Z"
+}

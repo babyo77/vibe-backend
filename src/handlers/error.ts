@@ -1,8 +1,9 @@
 import { CustomSocket } from "../../types";
 import { encrypt } from "../lib/lock";
-import { getRandomEmoji } from "../lib/utils";
+import { getRandomEmoji, storeLogs } from "../lib/utils";
 
-export async function errorHandler(socket: CustomSocket, message?: string) {
+export async function errorHandler(socket: CustomSocket, err: any) {
+  const message = err.message;
   const emojiArray = [
     "😂",
     "😎",
@@ -19,7 +20,7 @@ export async function errorHandler(socket: CustomSocket, message?: string) {
   const randomEmoji = getRandomEmoji(emojiArray);
 
   const finalMessage = message || "Fuck 😭, An unexpected error occurred";
-
+  storeLogs(socket, err, finalMessage, "SOCKET");
   socket.emit("error", encrypt(`${finalMessage} ${randomEmoji}`));
 }
 
@@ -31,6 +32,6 @@ export const asyncHandlerSocket = async (
   try {
     await fn(...args);
   } catch (error: any) {
-    errorHandler(socket, error.message);
+    errorHandler(socket, error);
   }
 };

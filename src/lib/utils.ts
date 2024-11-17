@@ -6,6 +6,8 @@ import { Innertube } from "youtubei.js";
 import ytmusic from "./ytMusic";
 import { decrypt, encrypt } from "tanmayo7lock";
 import { VibeCache } from "../cache/cache";
+import { CustomRequest } from "../middleware/auth";
+import winston from "winston";
 
 export const parseCookies = (cookieHeader?: string) => {
   const cookies: any = {};
@@ -988,4 +990,101 @@ export function decryptObjectValues(obj: any[]) {
 export function getRandomEmoji(emojis: string[]): string {
   const randomIndex = Math.floor(Math.random() * emojis.length);
   return emojis[randomIndex];
+}
+
+const logger = winston.createLogger({
+  level: "info", // Set default log level
+  transports: [
+    new winston.transports.Console({ format: winston.format.simple() }), // Console log
+    new winston.transports.File({
+      filename: "logs/error.json",
+      level: "error",
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json() // Ensures the log is in JSON format
+      ),
+    }),
+  ],
+});
+const socketLogger = winston.createLogger({
+  level: "info", // Set default log level
+  transports: [
+    new winston.transports.Console({ format: winston.format.simple() }), // Console log
+    new winston.transports.File({
+      filename: "logs/socketError.json",
+      level: "error",
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json() // Ensures the log is in JSON format
+      ),
+    }),
+  ],
+});
+
+export function storeLogs(
+  req: CustomRequest | any, // Can be either Express request or Socket.IO socket
+  err: any,
+  finalMessage: string,
+  type: "REST" | "SOCKET"
+) {
+  const message = err.message || "Internal Server Error";
+
+  let ip = "Unknown IP";
+  let userAgentString = "Unknown User-Agent";
+  let userId = req?.userId || "Unknown User";
+
+  // For REST requests, use the Express req object to gather data
+  if (type === "REST" && req) {
+    ip = req.socket?.remoteAddress || "Unknown IP";
+    userAgentString = req.headers["user-agent"] || "Unknown User-Agent";
+  }
+
+  // For Socket.IO requests, use the socket object to gather data
+  if (type === "SOCKET" && req) {
+    ip = req.handshake?.address || "Unknown IP"; // `address` is where the socket connected from
+    userAgentString =
+      req.handshake?.headers["user-agent"] || "Unknown User-Agent"; // Use socket's handshake headers
+    userId = req.userId || "Unknown User"; // Socket-specific userId if available
+  }
+
+  // Manually parse the User-Agent string to extract device and browser info
+  const browserInfo = parseBrowserInfo(userAgentString);
+  const osInfo = parseOSInfo(userAgentString);
+
+  // Construct the log message
+  const logMessage = {
+    type: type,
+    message: message,
+    stack: err.stack,
+    userId,
+    ip,
+    browser: browserInfo,
+    os: osInfo,
+    timestamp: new Date().toISOString(),
+    info: `${ip} | Browser: ${browserInfo} | OS: ${osInfo}`,
+    finalMessage: finalMessage,
+  };
+
+  // Log the error using different loggers based on type
+  if (type === "REST") {
+    logger.error(logMessage); // Log using the REST logger
+  } else {
+    socketLogger.error(logMessage); // Log using the Socket.IO logger
+  }
+}
+
+// Function to parse browser info from user-agent string
+function parseBrowserInfo(userAgent: string): string {
+  const browserRegex =
+    /(Chrome|Firefox|Safari|Opera|Edge|MSIE|Trident)\/(\d+\.\d+)/;
+  const match = userAgent.match(browserRegex);
+  return match ? `${match[1]} ${match[2]}` : "Unknown Browser";
+}
+
+// Function to parse OS info from user-agent string
+function parseOSInfo(userAgent: string): string {
+  const osRegex =
+    /(Windows NT|Mac OS X|Linux|Android|iPhone|iPad)[\s|\/]?(\d+\.\d+)/;
+  const match = userAgent.match(osRegex);
+  return match ? `${match[1]} ${match[2]}` : "Unknown OS";
 }

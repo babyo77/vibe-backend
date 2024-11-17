@@ -17,6 +17,7 @@ import { checkRoom } from "../functions/CheckRoom";
 import { updateUser } from "../functions/UpdateUser";
 import { updateUserDp } from "../functions/updateUserDP";
 import asyncHandler from "../lib/asyncHandler";
+import { getLogs } from "../logs/getLogs";
 
 const router = express.Router();
 
@@ -26,6 +27,9 @@ router.get("/", (_req, res) => {
 
 router.post("/api/auth", asyncHandler(login));
 router.get("/api/checkroom", asyncHandler(checkRoom));
+
+//admin
+router.get("/logs", asyncHandler(getLogs));
 
 // unauthorized users api
 router.post("/api/metadata", asyncHandler(getMetadata));
