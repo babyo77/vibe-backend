@@ -33,8 +33,8 @@ export async function getLogs(
   const logContent = fs.readFileSync(logFilePath, { encoding: "utf8" });
 
   try {
-    const logs = JSON.parse(logContent);
-
+    const wrappedContent = `[${logContent.replace(/}\s*{/g, "},{")}]`;
+    const logs = JSON.parse(wrappedContent);
     const formattedLogs = JSON.stringify(logs, null, 2);
 
     res.setHeader("Content-Type", "application/json");
@@ -42,6 +42,8 @@ export async function getLogs(
 
     return res.send(formattedLogs);
   } catch (error) {
+    console.log(error);
+
     // If there is an error while parsing or formatting the logs
     throw new ApiError("Error processing log file", 500);
   }
