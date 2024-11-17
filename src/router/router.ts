@@ -16,6 +16,7 @@ import { getMetadata } from "../functions/getMetadata";
 import { checkRoom } from "../functions/CheckRoom";
 import { updateUser } from "../functions/UpdateUser";
 import { updateUserDp } from "../functions/updateUserDP";
+import asyncHandler from "../lib/asyncHandler";
 
 const router = express.Router();
 
@@ -23,26 +24,26 @@ router.get("/", (_req, res) => {
   res.json(homeResponse);
 });
 
-router.post("/api/auth", login);
-router.get("/api/checkroom", checkRoom);
+router.post("/api/auth", asyncHandler(login));
+router.get("/api/checkroom", asyncHandler(checkRoom));
 
 // unauthorized users api
-router.post("/api/metadata", getMetadata);
-router.get("/api/search", search);
-router.get("/api/upNextSong", upNextSong);
-router.get("/api/listeners", roomListeners);
-router.get("/api/youtube", getPlaylist);
+router.post("/api/metadata", asyncHandler(getMetadata));
+router.get("/api/search", asyncHandler(search));
+router.get("/api/upNextSong", asyncHandler(upNextSong));
+router.get("/api/listeners", asyncHandler(roomListeners));
+router.get("/api/youtube", asyncHandler(getPlaylist));
 
 // both  authorized n unauthorized users api
-router.get("/api/queue", queueMiddleware, queue);
+router.get("/api/queue", queueMiddleware, asyncHandler(queue));
 
 // authorized users api
 router.use(authMiddleware);
-router.get("/api/vibe", checkVibe);
-router.post("/api/add", addToQueue);
-router.get("/api/@me", getMe);
-router.get("/api/rooms", getRooms);
-router.put("/api/update", updateUser);
-router.put("/api/dp", updateUserDp);
+router.get("/api/vibe", asyncHandler(checkVibe));
+router.post("/api/add", asyncHandler(addToQueue));
+router.get("/api/@me", asyncHandler(getMe));
+router.get("/api/rooms", asyncHandler(getRooms));
+router.put("/api/update", asyncHandler(updateUser));
+router.put("/api/dp", asyncHandler(updateUserDp));
 
 export default router;

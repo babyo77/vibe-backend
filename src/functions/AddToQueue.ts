@@ -6,14 +6,7 @@ import Room from "../models/roomModel";
 import { searchResults } from "../../types";
 import { VibeCache } from "../cache/cache";
 import { Counter } from "../models/counterModel";
-import { apiError } from "./apiError";
-
-class QueueError extends Error {
-  constructor(message: string, public statusCode: number = 500) {
-    super(message);
-    this.name = "QueueError";
-  }
-}
+import { ApiError } from "./apiError";
 
 const MAX_RETRIES = 100;
 const RETRY_DELAY = 100;
@@ -39,7 +32,10 @@ const getNextSequence = async (
   return counter.seq - count + 1;
 };
 
-export const addToQueue = async (req: CustomRequest, res: Response) => {
+export const addToQueue = async (
+  req: CustomRequest,
+  res: Response
+): Promise<Response> => {
   let retryCount = 0;
 
   while (retryCount < MAX_RETRIES) {
@@ -54,7 +50,7 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
       } = req;
 
       if (!userId || !roomId) {
-        throw new QueueError(
+        throw new ApiError(
           !userId ? "Invalid userId" : "Room ID is required",
           400
         );
@@ -65,7 +61,7 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
         : await Room.findOne({ roomId }).session(session);
 
       if (!room) {
-        throw new QueueError("Invalid roomId", 404);
+        throw new ApiError("Invalid roomId", 404);
       }
 
       // Get existing songs to check for duplicates
@@ -84,8 +80,7 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
       );
 
       if (songsToAdd.length === 0) {
-        await session.commitTransaction();
-        return apiError(res, "All songs already exist in queue.", 400);
+        throw new ApiError("All songs already exist in queue.", 409);
       }
 
       // Get starting order number atomically
@@ -148,15 +143,14 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
         }
       }
 
-      if (error instanceof QueueError) {
-        return apiError(res, error.message, error?.statusCode);
+      if (error instanceof Error) {
+        throw new ApiError(error.message, 409);
       }
 
-      console.error("Queue error:", error.message, error.stack);
-
-      return apiError(res);
+      throw new ApiError("Write conflict");
     } finally {
       session.endSession();
     }
   }
+  throw new ApiError("Max retries reached. Could not add songs to queue.", 500);
 };

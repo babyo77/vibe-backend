@@ -25,6 +25,8 @@ import { rateLimit } from "express-rate-limit";
 import { updateDetails } from "./handlers/updateDetails";
 import { handleUpdateStatus } from "./handlers/handleUpdateStatus";
 import emitUpdates from "./handlers/emitUpdates";
+import { errorHandler } from "./functions/apiError";
+import { asyncHandlerSocket } from "./handlers/error";
 
 const limiter = rateLimit({
   windowMs: 2 * 60 * 1000,
@@ -55,6 +57,7 @@ app.use(limiter);
 app.use(express.json());
 app.use(cookieParser()); // For cookie parsing
 app.use(router);
+app.use(errorHandler);
 
 io.use(async (socket: CustomSocket, next) => {
   try {
@@ -67,22 +70,40 @@ io.use(async (socket: CustomSocket, next) => {
 
 io.on("connection", (socket: CustomSocket) => {
   const eventHandlers = {
-    message: async (message: string) => sendMessage(io, socket, message),
-    heart: async (heart: any) => sendHeart(socket, heart),
-    progress: async (progress: any) => handleProgress(socket, progress),
-    seek: async (seek: number) => handleSeek(socket, seek),
-    play: async (play: any) => handlePlay(io, socket, play),
+    message: async (message: string) =>
+      asyncHandlerSocket(socket, sendMessage, io, socket, message),
+    heart: async (heart: any) =>
+      asyncHandlerSocket(socket, sendHeart, socket, heart),
+    progress: async (progress: any) =>
+      asyncHandlerSocket(socket, handleProgress, socket, progress),
+    seek: async (seek: number) =>
+      asyncHandlerSocket(socket, handleSeek, socket, seek),
+    play: async (play: any) =>
+      asyncHandlerSocket(socket, handlePlay, io, socket, play),
     update: () => io.to(socket.roomInfo?.roomId || "").emit("update"),
-    deleteSong: async (data: any) => deleteSong(io, socket, data),
-    deleteAll: async () => deleteAll(io, socket),
-    upvote: async (upvote: any) => upVote(io, socket, upvote),
-    bulkDelete: async (data: any) => bulkDelete(io, socket, data),
-    playNext: async () => PlayNextSong(io, socket),
-    songEnded: async () => SongEnded(io, socket),
-    playPrev: async () => PlayPrevSong(io, socket),
-    updateDetails: async (data: any) => updateDetails(socket, data),
-    status: async (status: any) => handleUpdateStatus(socket, status),
-    profile: async () => emitUpdates(socket),
+    deleteSong: async (data: any) =>
+      asyncHandlerSocket(socket, deleteSong, io, socket, data),
+    deleteAll: async () => asyncHandlerSocket(socket, deleteAll, io, socket),
+    upvote: async (upvote: any) =>
+      asyncHandlerSocket(socket, upVote, io, socket, upvote),
+    bulkDelete: async (data: any) =>
+      asyncHandlerSocket(socket, bulkDelete, io, socket, data),
+    playNext: async () =>
+      asyncHandlerSocket(
+        socket,
+        asyncHandlerSocket,
+        socket,
+        PlayNextSong,
+        io,
+        socket
+      ),
+    songEnded: async () => asyncHandlerSocket(socket, SongEnded, io, socket),
+    playPrev: async () => asyncHandlerSocket(socket, PlayPrevSong, io, socket),
+    updateDetails: async (data: any) =>
+      asyncHandlerSocket(socket, updateDetails, socket, data),
+    status: async (status: any) =>
+      asyncHandlerSocket(socket, handleUpdateStatus, socket, status),
+    profile: async () => asyncHandlerSocket(socket, emitUpdates, socket),
   };
 
   for (const [event, handler] of Object.entries(eventHandlers)) {

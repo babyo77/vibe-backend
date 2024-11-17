@@ -18,7 +18,19 @@ export async function errorHandler(socket: CustomSocket, message?: string) {
 
   const randomEmoji = getRandomEmoji(emojiArray);
 
-  const finalMessage = message || "An unexpected error occurred";
+  const finalMessage = message || "Fuck 😭, An unexpected error occurred";
 
   socket.emit("error", encrypt(`${finalMessage} ${randomEmoji}`));
 }
+
+export const asyncHandlerSocket = async (
+  socket: CustomSocket,
+  fn: Function,
+  ...args: any[]
+) => {
+  try {
+    await fn(...args);
+  } catch (error: any) {
+    errorHandler(socket, error.message);
+  }
+};

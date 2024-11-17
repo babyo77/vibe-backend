@@ -3,47 +3,42 @@ import { CustomRequest } from "../middleware/auth";
 import Room from "../models/roomModel";
 import RoomUser from "../models/roomUsers";
 import { VibeCache } from "../cache/cache";
-import { apiError } from "./apiError";
+import { ApiError } from "./apiError";
 
-export const roomListeners = async (req: CustomRequest, res: Response) => {
-  try {
-    const roomId = String(req.query.room) || "";
-    if (!roomId) throw new Error("Invalid roomId");
+export const roomListeners = async (
+  req: CustomRequest,
+  res: Response
+): Promise<Response> => {
+  const roomId = String(req.query.room) || "";
+  if (!roomId) throw new Error("Invalid roomId");
 
-    // Check cache first
-    const cacheKey = roomId + "listeners";
-    if (VibeCache.has(cacheKey)) {
-      return res.json(VibeCache.get(cacheKey));
-    }
-
-    const room = await Room.findOne({ roomId }).select("_id");
-    // Run queries in parallel
-    const [roomUsers, totalListeners] = await Promise.all([
-      // Fetch only `_id` for the room
-      RoomUser.find({ roomId: room._id, active: true })
-        .populate({
-          path: "userId",
-          select: "name username imageUrl", // Fetch only necessary fields
-        })
-        .limit(17)
-        .select("userId -_id"), // Limit fields and records returned
-      RoomUser.countDocuments({ roomId: room._id, active: true }), // Count active listeners
-    ]);
-
-    // Check if room exists
-    if (!room) return res.status(400).json({ message: "Invalid roomId" });
-
-    // Prepare payload
-    const payload = {
-      totalUsers: totalListeners,
-      currentPage: 1,
-      roomUsers,
-    };
-
-    // Cache the result
-    VibeCache.set(cacheKey, payload);
-    return res.json(payload);
-  } catch (error: any) {
-    return apiError(res, error.message);
+  const cacheKey = roomId + "listeners";
+  if (VibeCache.has(cacheKey)) {
+    return res.json(VibeCache.get(cacheKey));
   }
+
+  const room = VibeCache.has(roomId + "roomId")
+    ? VibeCache.get(roomId + "roomId")
+    : await Room.findOne({ roomId }).select("_id");
+  if (!room) throw new ApiError("Invalid roomId", 400);
+
+  const [roomUsers, totalListeners] = await Promise.all([
+    RoomUser.find({ roomId: room._id, active: true })
+      .populate({
+        path: "userId",
+        select: "name username imageUrl -_id",
+      })
+      .limit(17)
+      .select("userId -_id"),
+    RoomUser.countDocuments({ roomId: room._id, active: true }),
+  ]);
+
+  const payload = {
+    totalUsers: totalListeners,
+    currentPage: 1,
+    roomUsers,
+  };
+
+  VibeCache.set(cacheKey, payload);
+  return res.json(payload);
 };

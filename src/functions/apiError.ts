@@ -1,13 +1,15 @@
-import { Response } from "express";
+import { Response, NextFunction } from "express";
 import { getRandomEmoji } from "../lib/utils";
+import { CustomRequest } from "../middleware/auth";
+import { MongooseError } from "mongoose";
 
-type StatusCode = 400 | 401 | 403 | 404 | 500 | 502 | 503 | 504;
-
-export function apiError(
+export const errorHandler = (
+  err: any,
+  _req: CustomRequest,
   res: Response,
-  message?: string,
-  status: StatusCode | number = 500
-): void {
+  _next: NextFunction
+): void => {
+  const statusCode = err.statusCode || 500;
   const emojiArray = [
     "😂",
     "😎",
@@ -23,7 +25,40 @@ export function apiError(
 
   const randomEmoji = getRandomEmoji(emojiArray);
 
-  const finalMessage = message || "An unexpected error occurred";
+  let message = err.message || "Internal Server Error";
 
-  res.status(status).json({ message: `${finalMessage} ${randomEmoji}` });
+  if (err instanceof MongooseError) {
+    // Handle MongoDB-specific errors
+    if (process.env.NODE_ENV === "production") {
+      message = "Fuck 😭, An unexpected error occurred";
+    } else {
+      message = `MongoDB Error: ${err.message}`;
+    }
+  }
+
+  const finalMessage = `${message} ${randomEmoji}`;
+
+  console.error(`[ERROR] ${err.message}`, err.stack);
+
+  res.status(statusCode).json({
+    success: false,
+    message: finalMessage,
+  });
+};
+
+export class ApiError extends Error {
+  statusCode: number;
+
+  constructor(
+    message: string = "Something went wrong",
+    statusCode: number = 500
+  ) {
+    super(message);
+    this.statusCode = statusCode;
+
+    // Maintain proper stack trace (only in development mode)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor);
+    }
+  }
 }

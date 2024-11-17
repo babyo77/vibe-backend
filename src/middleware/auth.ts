@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { apiError } from "../functions/apiError";
+import { ApiError } from "../functions/apiError";
 
 export interface CustomRequest extends Request {
   userId?: string;
@@ -15,7 +15,7 @@ export const authMiddleware = (
 
   // Check if the session cookie is present
   if (!session) {
-    return res.status(401).json({ message: "No session found" }); // Use 401 for unauthorized
+    throw new ApiError("Login required", 401); // Use 401 for unauthorized
   }
 
   try {
@@ -24,7 +24,7 @@ export const authMiddleware = (
 
     // Check if the decoded token contains a valid userId
     if (!decoded || !decoded.userId) {
-      return res.status(401).json({ message: "Invalid token" }); // Use 401 for invalid token
+      throw new ApiError("Invalid token", 401); // Use 401 for invalid token
     }
 
     // Attach userId to the request object for further use
@@ -33,6 +33,6 @@ export const authMiddleware = (
     // Call the next middleware or route handler
     next();
   } catch (error: any) {
-    return apiError(res, error.message, 403);
+    throw error;
   }
 };
