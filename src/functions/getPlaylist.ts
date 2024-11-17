@@ -3,6 +3,7 @@ import { CustomRequest } from "../middleware/auth";
 import { Response } from "express";
 import { VibeCache } from "../cache/cache";
 import ytmusic from "../lib/ytMusic";
+import { apiError } from "./apiError";
 export async function getPlaylist(req: CustomRequest, res: Response) {
   const id = req.query.id;
 
@@ -47,8 +48,6 @@ export async function getPlaylist(req: CustomRequest, res: Response) {
     return res.json(playload);
   } catch (error: any) {
     console.log(error);
-    return res
-      .status(500)
-      .json({ message: "Failed to fetch", error: error.message });
+    return apiError(res, "Failed to fetch");
   }
 }

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { apiError } from "../functions/apiError";
 
 export interface CustomRequest extends Request {
   userId?: string;
@@ -32,9 +33,6 @@ export const authMiddleware = (
     // Call the next middleware or route handler
     next();
   } catch (error: any) {
-    // Handle token verification errors
-    return res
-      .status(403)
-      .json({ message: "Token verification failed", error: error.message });
+    return apiError(res, error.message, 403);
   }
 };

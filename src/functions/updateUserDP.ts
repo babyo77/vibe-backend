@@ -2,6 +2,7 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import User from "../models/userModel";
 import { decryptObjectValues } from "../lib/utils";
+import { apiError } from "./apiError";
 
 export const updateUserDp = async (req: CustomRequest, res: Response) => {
   try {
@@ -27,8 +28,7 @@ export const updateUserDp = async (req: CustomRequest, res: Response) => {
 
     res.send().status(204);
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({ success: false, data: {}, message: error?.message });
+    console.log("UPDATE USER PROFILE ERROR", error);
+    return apiError(res);
   }
 };

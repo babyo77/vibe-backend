@@ -4,6 +4,7 @@ import User from "../models/userModel";
 import Room from "../models/roomModel";
 import RoomUser from "../models/roomUsers";
 import { VibeCache } from "../cache/cache";
+import { apiError } from "./apiError";
 
 export const getMetadata = async (req: CustomRequest, res: Response) => {
   const data = req.body;
@@ -36,10 +37,9 @@ export const getMetadata = async (req: CustomRequest, res: Response) => {
       metadata = { name, imageUrl };
     }
 
-    res.json(metadata);
+    return res.json(metadata);
   } catch (error: any) {
     console.log(error);
-
-    res.status(500).json({ message: error.message });
+    return apiError(res, error.message);
   }
 };

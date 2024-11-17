@@ -6,6 +6,7 @@ import Room from "../models/roomModel";
 import { searchResults } from "../../types";
 import { VibeCache } from "../cache/cache";
 import { Counter } from "../models/counterModel";
+import { apiError } from "./apiError";
 
 class QueueError extends Error {
   constructor(message: string, public statusCode: number = 500) {
@@ -154,10 +155,8 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
       }
 
       console.error("Queue error:", error.message, error.stack);
-      return res.status(500).json({
-        error: "Operation failed after retries",
-        details: error.message,
-      });
+
+      return apiError(res);
     } finally {
       session.endSession();
     }

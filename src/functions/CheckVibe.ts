@@ -3,6 +3,7 @@ import { CustomRequest } from "../middleware/auth";
 import RoomUser from "../models/roomUsers";
 import User from "../models/userModel";
 import Room from "../models/roomModel";
+import { apiError } from "./apiError";
 
 export async function checkVibe(req: CustomRequest, res: Response) {
   try {
@@ -31,11 +32,9 @@ export async function checkVibe(req: CustomRequest, res: Response) {
       role: roleData?.role || "guest",
     };
 
-    res.json(userData); // Send JSON response with user data
+    return res.json(userData); // Send JSON response with user data
   } catch (error: any) {
     console.error("Error in getLoggedInUser:", error.message);
-    res
-      .status(500)
-      .json({ message: "An error occurred while retrieving user data." });
+    return apiError(res, "An error occurred while retrieving user data.");
   }
 }

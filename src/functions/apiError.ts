@@ -1,8 +1,13 @@
-import { CustomSocket } from "../../types";
-import { encrypt } from "../lib/lock";
+import { Response } from "express";
 import { getRandomEmoji } from "../lib/utils";
 
-export async function errorHandler(socket: CustomSocket, message?: string) {
+type StatusCode = 400 | 401 | 403 | 404 | 500 | 502 | 503 | 504;
+
+export function apiError(
+  res: Response,
+  message?: string,
+  status: StatusCode = 500
+): void {
   const emojiArray = [
     "😂",
     "😎",
@@ -20,5 +25,5 @@ export async function errorHandler(socket: CustomSocket, message?: string) {
 
   const finalMessage = message || "An unexpected error occurred";
 
-  socket.emit("error", encrypt(`${finalMessage} ${randomEmoji}`));
+  res.status(status).json({ message: `${finalMessage} ${randomEmoji}` });
 }

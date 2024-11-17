@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import Room from "../models/roomModel";
+import { apiError } from "./apiError";
 
 export async function checkRoom(req: CustomRequest, res: Response) {
   try {
@@ -26,8 +27,6 @@ export async function checkRoom(req: CustomRequest, res: Response) {
     }
     return res.json({ success: true, data: { exists: true } });
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({ success: false, data: {}, message: error?.message });
+    return apiError(res, error?.message);
   }
 }

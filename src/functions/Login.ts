@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/userModel";
 import { VibeCache } from "../cache/cache";
 import admin from "../../firebase/firebase";
+import { apiError } from "./apiError";
 const jwt_secret = process.env.JWT_SECRET || "";
 export const login = async (req: CustomRequest, res: Response) => {
   try {
@@ -41,7 +42,7 @@ export const login = async (req: CustomRequest, res: Response) => {
   } catch (error: any) {
     console.log("LOGIN ERROR", error);
 
-    return res.status(500).json({ success: false, message: "Gotach u 🤣" });
+    return apiError(res, "Gotach u 🤣");
   }
 };
 

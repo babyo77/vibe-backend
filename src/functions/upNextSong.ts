@@ -4,6 +4,7 @@ import { CustomRequest } from "../middleware/auth";
 import Room from "../models/roomModel";
 import { tempCache, VibeCache } from "../cache/cache";
 import { searchResults } from "../../types";
+import { apiError } from "./apiError";
 
 export const upNextSong = async (req: CustomRequest, res: Response) => {
   try {
@@ -32,8 +33,8 @@ export const upNextSong = async (req: CustomRequest, res: Response) => {
       );
     }
     tempCache.set(roomId + "upNextSong", nextSong);
-    res.json(nextSong);
+    return res.json(nextSong);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    return apiError(res, error.message);
   }
 };

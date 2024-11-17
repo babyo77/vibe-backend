@@ -4,6 +4,7 @@ import ytmusic from "../lib/ytMusic";
 import { encrypt } from "../lib/lock";
 import { VibeCache } from "../cache/cache";
 import { getInnertubeInstance } from "../lib/utils";
+import { apiError } from "./apiError";
 
 export const search = async (req: CustomRequest, res: Response) => {
   try {
@@ -119,8 +120,6 @@ export const search = async (req: CustomRequest, res: Response) => {
       data: payload,
     });
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({ message: "Failed to fetch", error: error.message });
+    return apiError(res, "Failed to fetch");
   }
 };

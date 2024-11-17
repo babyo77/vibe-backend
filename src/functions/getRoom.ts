@@ -3,6 +3,7 @@ import { CustomRequest } from "../middleware/auth";
 import mongoose from "mongoose";
 import RoomUser from "../models/roomUsers";
 import { VibeCache } from "../cache/cache";
+import { apiError } from "./apiError";
 
 export async function getRooms(req: CustomRequest, res: Response) {
   try {
@@ -191,8 +192,8 @@ export async function getRooms(req: CustomRequest, res: Response) {
       },
     ]);
     VibeCache.set(userId + "room", roomAdmins);
-    res.json(roomAdmins);
+    return res.json(roomAdmins);
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    return apiError(res);
   }
 }

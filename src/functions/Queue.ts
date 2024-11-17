@@ -4,6 +4,7 @@ import { CustomRequest } from "../middleware/auth";
 import Queue from "../models/queueModel";
 import Room from "../models/roomModel";
 import { tempCache, VibeCache } from "../cache/cache";
+import { apiError } from "./apiError";
 
 export const queue = async (req: CustomRequest, res: Response) => {
   try {
@@ -42,6 +43,6 @@ export const queue = async (req: CustomRequest, res: Response) => {
     tempCache.set(`${page}_${limit}_${name}_${roomId}_${userId}`, payload);
     return res.json(payload);
   } catch (error: any) {
-    return res.status(500).json({ message: error.message });
+    return apiError(res, error.message);
   }
 };

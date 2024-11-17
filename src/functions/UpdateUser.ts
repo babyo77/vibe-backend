@@ -2,6 +2,7 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import { decryptObjectValues } from "../lib/utils";
 import User from "../models/userModel";
+import { apiError } from "./apiError";
 
 export const updateUser = async (req: CustomRequest, res: Response) => {
   try {
@@ -49,8 +50,7 @@ export const updateUser = async (req: CustomRequest, res: Response) => {
     });
     res.send().status(204);
   } catch (error: any) {
-    return res
-      .status(500)
-      .json({ success: false, data: {}, message: error?.message });
+    console.log("UPDATE USER ERROR", error);
+    return apiError(res, error.message, 401);
   }
 };

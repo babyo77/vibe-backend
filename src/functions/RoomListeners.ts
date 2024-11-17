@@ -3,6 +3,7 @@ import { CustomRequest } from "../middleware/auth";
 import Room from "../models/roomModel";
 import RoomUser from "../models/roomUsers";
 import { VibeCache } from "../cache/cache";
+import { apiError } from "./apiError";
 
 export const roomListeners = async (req: CustomRequest, res: Response) => {
   try {
@@ -41,8 +42,8 @@ export const roomListeners = async (req: CustomRequest, res: Response) => {
 
     // Cache the result
     VibeCache.set(cacheKey, payload);
-    res.json(payload);
+    return res.json(payload);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    return apiError(res, error.message);
   }
 };
