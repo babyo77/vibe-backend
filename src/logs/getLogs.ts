@@ -20,8 +20,9 @@ export async function getLogs(
 ): Promise<Response> {
   const key = req.query.key;
   const type = req.query.type;
+
   if (!key || key !== process.env.LOGS_KEY) {
-    throw new ApiError("Fuck u got it ", 400);
+    throw new ApiError("Unauthorized access", 400);
   }
 
   const logFilePath = type === "s" ? SOCKET_PATH : REST_PATH;
@@ -33,18 +34,30 @@ export async function getLogs(
   const logContent = fs.readFileSync(logFilePath, { encoding: "utf8" });
 
   try {
+    // Wrap the content as an array if it's a continuous JSON object
     const wrappedContent = `[${logContent.replace(/}\s*{/g, "},{")}]`;
     const logs = JSON.parse(wrappedContent);
     const formattedLogs = JSON.stringify(logs, null, 2);
 
+    // Set appropriate headers
     res.setHeader("Content-Type", "application/json");
     res.setHeader("Transfer-Encoding", "chunked");
 
-    return res.send(formattedLogs);
+    // Send the data in chunks
+    let chunkSize = 1024; // size of each chunk in bytes (1KB)
+    let position = 0;
+
+    while (position < formattedLogs.length) {
+      const chunk = formattedLogs.slice(position, position + chunkSize);
+      res.write(chunk); // Write a chunk to the response
+      position += chunkSize;
+    }
+
+    res.end(); // End the response after sending the chunks
+
+    return res;
   } catch (error) {
     console.log(error);
-
-    // If there is an error while parsing or formatting the logs
     throw new ApiError("Error processing log file", 500);
   }
 }
