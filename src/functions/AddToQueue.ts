@@ -85,9 +85,7 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
 
       if (songsToAdd.length === 0) {
         await session.commitTransaction();
-        return res.status(400).json({
-          message: "All songs already exist in queue.",
-        });
+        return apiError(res, "All songs already exist in queue.", 400);
       }
 
       // Get starting order number atomically
@@ -151,7 +149,7 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
       }
 
       if (error instanceof QueueError) {
-        return res.status(error.statusCode).json({ error: error.message });
+        return apiError(res, error.message, error?.statusCode);
       }
 
       console.error("Queue error:", error.message, error.stack);
