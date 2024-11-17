@@ -13,7 +13,7 @@ export async function handleUpdateStatus(
     VibeCache.del(roomInfo._id + "isaAminOnline");
     await RoomUser.updateOne(
       { roomId: roomInfo._id, userId: userInfo?.id },
-      { status }
+      { status, active: true }
     );
     if (userInfo?.role == "admin") {
       socket.to(roomInfo.roomId).emit("seekable", !status ? true : false);
