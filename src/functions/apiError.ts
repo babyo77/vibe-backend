@@ -6,7 +6,7 @@ type StatusCode = 400 | 401 | 403 | 404 | 500 | 502 | 503 | 504;
 export function apiError(
   res: Response,
   message?: string,
-  status: StatusCode = 500
+  status: StatusCode | number = 500
 ): void {
   const emojiArray = [
     "😂",
