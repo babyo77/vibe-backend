@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import RoomUser from "../models/roomUsers";
-import { VibeCache } from "../cache/cache";
+import { roomCache, VibeCache } from "../cache/cache";
 import { ApiError } from "./apiError";
 import { roomPipeline } from "../lib/utils";
 
@@ -36,8 +36,8 @@ export async function getRooms(
 
   // If fetching "all", check cache for "all" data
   if (type === "all") {
-    if (VibeCache.has(dataKey)) {
-      return res.json(VibeCache.get(dataKey));
+    if (roomCache.has(dataKey)) {
+      return res.json(roomCache.get(dataKey));
     }
     const allRooms = await RoomUser.aggregate(
       roomPipeline(userId, page, 50, true, search)
@@ -48,7 +48,7 @@ export async function getRooms(
       results: allRooms[0].rooms,
     };
 
-    VibeCache.set(dataKey, result);
+    roomCache.set(dataKey, result);
 
     return res.json(result);
   }
