@@ -25,6 +25,13 @@ app.use(
     credentials: true,
   })
 );
+
+app.get("/metrics", async (req, res) => {
+  const key = req.query.key;
+  if (!key || key !== process.env.LOGS_KEY) return res.status(403).send();
+  res.setHeader("content-type", register.contentType);
+  res.send(await register.metrics());
+});
 app.use((req, res, next) => {
   const end = httpRequestDurationHistogram.startTimer();
 
@@ -34,13 +41,6 @@ app.use((req, res, next) => {
   });
 
   next();
-});
-
-app.get("/metrics", async (req, res) => {
-  const key = req.query.key;
-  if (!key || key !== process.env.LOGS_KEY) return res.status(403).send();
-  res.setHeader("content-type", register.contentType);
-  res.send(await register.metrics());
 });
 app.use(limiter);
 app.use(express.json());
