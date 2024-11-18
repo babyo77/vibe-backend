@@ -49,7 +49,7 @@ export async function SongEnded(
     if (nextSong?.length == 0) {
       nextSong = await getSongByOrder(
         roomInfo?._id,
-        value.order,
+        value?.order,
         userInfo?.id,
         value
       );

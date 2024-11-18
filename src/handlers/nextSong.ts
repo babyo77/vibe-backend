@@ -31,7 +31,7 @@ export async function PlayNextSong(
   if (nextSong?.length == 0) {
     nextSong = await getSongByOrder(
       roomInfo?._id,
-      value.order,
+      value?.order,
       userInfo?.id,
       value
     );
