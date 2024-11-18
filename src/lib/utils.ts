@@ -6,6 +6,7 @@ import { Innertube } from "youtubei.js";
 import ytmusic from "./ytMusic";
 import { decrypt, encrypt } from "tanmayo7lock";
 import { VibeCache } from "../cache/cache";
+import rateLimit from "express-rate-limit";
 
 export const parseCookies = (cookieHeader?: string) => {
   const cookies: any = {};
@@ -990,21 +991,12 @@ export function getRandomEmoji(emojis: string[]): string {
   return emojis[randomIndex];
 }
 
-export function getFormattedDateTime() {
-  const now = new Date();
-  const options: Intl.DateTimeFormatOptions = {
-    weekday: "short", // 'Mon', 'Tue', etc.
-    day: "2-digit", // '18'
-    month: "short", // 'Nov'
-    year: "numeric", // '2024'
-    hour: "2-digit", // '15'
-    minute: "2-digit", // '30'
-    second: "2-digit", // '00'
-    timeZone: "Asia/Kolkata", // Indian Standard Time (IST)
-    timeZoneName: "short", // 'IST'
-  };
-
-  // Format date and time using Intl.DateTimeFormat
-  const formatter = new Intl.DateTimeFormat("en-IN", options);
-  return formatter.format(now); // Output example: 'Mon, 18-Nov-2024 15:30:00 IST'
-}
+export const limiter = rateLimit({
+  windowMs: 2 * 60 * 1000,
+  limit: 100,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  validate: {
+    xForwardedForHeader: false,
+  },
+});
