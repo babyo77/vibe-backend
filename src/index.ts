@@ -6,7 +6,7 @@ import { CustomSocket } from "../types";
 import { handleDisconnect } from "./handlers/handleDisconnect";
 import { sendMessage } from "./handlers/sendMessage";
 import { middleware } from "./handlers/middleware";
-import { cors } from "./lib/utils";
+import { cors, getFormattedDateTime } from "./lib/utils";
 import { sendHeart } from "./handlers/sendHeart";
 import { handleProgress } from "./handlers/handleProgress";
 import { handleSeek } from "./handlers/handleSeek";
@@ -30,9 +30,9 @@ import { asyncHandlerSocket } from "./handlers/error";
 
 const limiter = rateLimit({
   windowMs: 2 * 60 * 1000,
-  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-  standardHeaders: "draft-7", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+  limit: 100,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
   validate: {
     xForwardedForHeader: false,
   },
@@ -55,7 +55,7 @@ app.use(
 
 app.use(limiter);
 app.use(express.json());
-app.use(cookieParser()); // For cookie parsing
+app.use(cookieParser());
 app.use(router);
 app.use(errorHandler);
 

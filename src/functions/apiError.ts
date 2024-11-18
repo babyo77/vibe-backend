@@ -1,5 +1,5 @@
 import { Response, NextFunction } from "express";
-import { getRandomEmoji, storeLogs } from "../lib/utils";
+import { getRandomEmoji } from "../lib/utils";
 import { CustomRequest } from "../middleware/auth";
 import { MongooseError } from "mongoose";
 
@@ -37,7 +37,6 @@ export const errorHandler = (
   }
 
   const finalMessage = `${message} ${randomEmoji}`;
-  storeLogs(req, err, finalMessage, "REST");
   res.status(statusCode).json({
     success: false,
     message: finalMessage,
