@@ -1,6 +1,7 @@
 import { CustomSocket } from "../../types";
 import { encrypt } from "../lib/lock";
 import { getRandomEmoji } from "../lib/utils";
+import { socketIoErrorCounter } from "../metrics/metrics";
 
 export async function errorHandler(socket: CustomSocket, err: any) {
   const message = err.message;
@@ -19,7 +20,10 @@ export async function errorHandler(socket: CustomSocket, err: any) {
   ];
 
   const randomEmoji = getRandomEmoji(emojiArray);
-
+  socketIoErrorCounter.inc({
+    event: "error",
+    error_message: err.message || "Unknown error",
+  });
   const finalMessage = message || "Fuck 😭, An unexpected error occurred";
   socket.emit("error", encrypt(`${finalMessage} ${randomEmoji}`));
 }

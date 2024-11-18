@@ -2,6 +2,7 @@ import { Response, NextFunction } from "express";
 import { getRandomEmoji } from "../lib/utils";
 import { CustomRequest } from "../middleware/auth";
 import { MongooseError } from "mongoose";
+import { httpRequestErrorCounter } from "../metrics/metrics";
 
 export const errorHandler = (
   err: any,
@@ -9,6 +10,9 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction
 ): void => {
+  const { method, route } = req;
+  const errorMessage = err.message || "Unknown error";
+
   const statusCode = err.statusCode || 500;
   const emojiArray = [
     "😂",
@@ -35,6 +39,12 @@ export const errorHandler = (
       message = `MongoDB Error: ${err.message}`;
     }
   }
+  httpRequestErrorCounter.inc({
+    method,
+    route: route?.path || "unknown",
+    status_code: res.statusCode || 500,
+    error_message: errorMessage,
+  });
 
   const finalMessage = `${message} ${randomEmoji}`;
   res.status(statusCode).json({
