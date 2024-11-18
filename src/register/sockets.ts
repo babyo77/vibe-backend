@@ -21,7 +21,7 @@ import { handleDisconnect } from "../handlers/handleDisconnect";
 export function setSocketListeners(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 ) {
-  console.log("SOCKET LISTENERS SET 🤡");
+  console.log("SOCKET LISTENERS SET ⚡️");
 
   io.on("connection", (socket: CustomSocket) => {
     const eventHandlers = {

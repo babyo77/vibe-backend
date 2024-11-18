@@ -15,6 +15,7 @@ export async function errorHandler(socket: CustomSocket, err: any) {
     "🥴",
     "😜",
     "🫠",
+    "⚡️",
   ];
 
   const randomEmoji = getRandomEmoji(emojiArray);

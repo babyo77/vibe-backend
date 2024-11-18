@@ -5,7 +5,7 @@ import {
 } from "./functions/cronFunctions";
 export default function cronsJobs() {
   try {
-    console.log("ADDED CRON JOBS 🤡");
+    console.log("ADDED CRON JOBS ⚡️");
     // Schedule the job to run every hour
     cron.schedule("0 * * * *", () => {
       console.log("Running scheduled task to delete empty rooms...");
