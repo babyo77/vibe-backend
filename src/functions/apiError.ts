@@ -42,7 +42,7 @@ export const errorHandler = (
   httpRequestErrorCounter.inc({
     method,
     route: route?.path || "unknown",
-    status_code: res.statusCode || 500,
+    status_code: statusCode || 500,
     error_message: errorMessage,
   });
 
