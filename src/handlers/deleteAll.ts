@@ -5,6 +5,7 @@ import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import mongoose from "mongoose";
 
 export async function deleteAll(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -21,7 +22,10 @@ export async function deleteAll(
           roomId: roomInfo._id,
         },
         {
-          $set: { roomId: `_deleted_${roomInfo._id}` },
+          $set: {
+            roomId: new mongoose.Types.ObjectId(),
+            deleted: true,
+          },
         }
       ),
       await Vote.deleteMany({

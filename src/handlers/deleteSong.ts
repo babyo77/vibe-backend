@@ -7,6 +7,7 @@ import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import mongoose from "mongoose";
 
 export default async function deleteSong(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -20,10 +21,16 @@ export default async function deleteSong(
     const value = decrypt(data);
 
     if (userInfo.role === "admin" || value?.addedBy === userInfo.id) {
-      await Queue.deleteOne({
-        roomId: roomInfo?._id,
-        "songData.queueId": value.queueId,
-      });
+      await Queue.updateOne(
+        {
+          roomId: roomInfo?._id,
+          "songData.queueId": value.queueId,
+        },
+        {
+          roomId: new mongoose.Types.ObjectId(),
+          deleted: true,
+        }
+      );
       await Vote.deleteMany({ queueId: value.queueId });
       broadcast(io, roomInfo.roomId, "update", "update");
     } else {
