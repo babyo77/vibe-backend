@@ -42,7 +42,7 @@ router.use(authMiddleware);
 router.get("/api/vibe", asyncHandler(checkVibe));
 router.post("/api/add", asyncHandler(addToQueue));
 router.get("/api/@me", asyncHandler(getMe));
-router.get("/api/rooms", asyncHandler(getRooms));
+router.get("/api/rooms/:type", asyncHandler(getRooms));
 router.put("/api/update", asyncHandler(updateUser));
 router.put("/api/dp", asyncHandler(updateUserDp));
 

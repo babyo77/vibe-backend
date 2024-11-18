@@ -704,7 +704,6 @@ export const getPreviousSongByOrder = async (
   }
 };
 
-// Function to construct the aggregation pipeline
 export function getQueuePipeline(
   roomId: string,
   userId?: string,
@@ -864,6 +863,203 @@ export function getQueuePipeline(
 
   return pipeline;
 }
+export const roomPipeline = (
+  userId: string,
+  page: number = 1, // Default to page 1 if not provided
+  pageSize: number = 10, // Default to 10 results per page if not provided
+  isAdminSearch: boolean = false,
+  searchRoomId?: string // Optional search criteria for roomId
+): mongoose.PipelineStage[] => {
+  const matchStage: mongoose.PipelineStage = {
+    $match: {
+      userId: new mongoose.Types.ObjectId(userId),
+    },
+  };
+
+  return [
+    matchStage,
+
+    {
+      $lookup: {
+        from: "rooms",
+        localField: "roomId",
+        foreignField: "_id",
+        as: "roomDetails",
+      },
+    },
+    {
+      $unwind: "$roomDetails",
+    },
+    ...(searchRoomId
+      ? [
+          {
+            $match: {
+              "roomDetails.roomId": {
+                $regex: searchRoomId, // Match any roomId that contains the search string
+                $options: "i", // Case-insensitive search
+              },
+            },
+          },
+        ]
+      : []),
+    {
+      $lookup: {
+        from: "roomusers",
+        let: { roomId: "$roomId" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$roomId", "$$roomId"] },
+                  { $eq: ["$role", "admin"] },
+                ],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "userId",
+              foreignField: "_id",
+              as: "adminDetails",
+            },
+          },
+          {
+            $unwind: "$adminDetails",
+          },
+          {
+            $project: {
+              _id: 0,
+              adminName: "$adminDetails.name",
+              userId: "$userId",
+            },
+          },
+        ],
+        as: "admins",
+      },
+    },
+    {
+      $lookup: {
+        from: "queues",
+        let: { roomId: "$roomId" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ["$roomId", "$$roomId"],
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              isPlaying: 1,
+              songData: 1,
+            },
+          },
+          {
+            $sort: {
+              isPlaying: -1,
+            },
+          },
+        ],
+        as: "currentSong",
+      },
+    },
+    {
+      $match: {
+        $expr: {
+          $gt: [{ $size: "$currentSong" }, 0],
+        },
+      },
+    },
+    {
+      $project: {
+        roomId: "$roomDetails.roomId",
+        name: {
+          $map: { input: "$admins", as: "admin", in: "$$admin.adminName" },
+        },
+        background: {
+          $let: {
+            vars: {
+              filteredImages: {
+                $filter: {
+                  input: { $arrayElemAt: ["$currentSong.songData.image", 0] },
+                  as: "bg",
+                  cond: { $eq: ["$$bg.quality", "500x500"] },
+                },
+              },
+            },
+            in: {
+              $cond: {
+                if: { $gt: [{ $size: "$$filteredImages" }, 0] },
+                then: { $arrayElemAt: ["$$filteredImages.url", 0] },
+                else: "randomImageUrl", // Fallback URL
+              },
+            },
+          },
+        },
+        updatedAt: 1,
+        isAdminRoom: {
+          $in: [new mongoose.Types.ObjectId(userId), "$admins.userId"], // Check if the user is an admin in the room
+        },
+        isAdmin: {
+          $cond: {
+            if: {
+              $in: [new mongoose.Types.ObjectId(userId), "$admins.userId"],
+            },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+    {
+      $match: {
+        $expr: {
+          $gt: [{ $size: "$name" }, 0], // Ensure we only have rooms with admins
+        },
+      },
+    },
+    {
+      $sort: {
+        ...(isAdminSearch
+          ? { isAdminRoom: -1 } // Sort rooms where the user is an admin to the top
+          : { updatedAt: -1 }), // Sort by updatedAt descending if no admin search
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        updatedAt: 0,
+      },
+    },
+    {
+      $facet: {
+        metadata: [
+          {
+            $count: "total", // Total number of rooms without pagination
+          },
+        ],
+        rooms: [
+          {
+            $skip: (page - 1) * pageSize, // Skip documents based on the page number
+          },
+          {
+            $limit: pageSize, // Limit the number of results per page
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        total: { $arrayElemAt: ["$metadata.total", 0] }, // Retrieve total count
+        rooms: 1, // Keep the rooms field with paginated results
+      },
+    },
+  ];
+};
 
 let ytInstance: Innertube | null = null;
 export const getInnertubeInstance = async () => {

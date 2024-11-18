@@ -7,7 +7,7 @@ export interface CustomRequest extends Request {
 }
 export const authMiddleware = (
   req: CustomRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   const session =

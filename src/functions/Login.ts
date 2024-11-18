@@ -11,9 +11,19 @@ export const login = async (
   req: CustomRequest,
   res: Response
 ): Promise<Response> => {
+  const session =
+    req.cookies.vibeIdR || req.headers.authorization?.split(" ")[1];
+
+  if (session) {
+    const decoded: any = jwt.verify(session, process.env.JWT_SECRET || "");
+    if (decoded) {
+      return res.status(200).send("Already Logged in");
+    }
+  }
+
   const { token } = req.body;
 
-  if (!token) throw new ApiError("Gotach u", 403);
+  if (!token) throw new ApiError("Gotch u", 403);
 
   const verify = await admin.auth().verifyIdToken(token);
 
@@ -59,5 +69,5 @@ const proceed = (res: Response, saved: any) => {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
 
-  return res.json({ success: true, data: {}, token: accessToken });
+  return res.json({ token: accessToken });
 };
