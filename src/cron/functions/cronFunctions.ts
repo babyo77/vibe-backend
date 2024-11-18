@@ -25,19 +25,14 @@ async function deleteEmptyRooms() {
 
 async function deleteDeletedQueue() {
   try {
-    // Find all rooms
-    const rooms = await Room.find();
+    // Delete all rooms marked as deleted in one operation
+    const result = await Room.deleteMany({ deleted: true });
+    console.log(`Deleted ${result.deletedCount} rooms marked as deleted.`);
 
-    // Loop through each room to check if it has songs in the queue
-    for (const room of rooms) {
-      await Room.findByIdAndDelete(room._id);
-      console.log(`Deleted queue with ID: ${room.roomId}`);
-    }
-
-    console.log("Completed empty room deletion process.");
+    console.log("Completed deleted room cleanup process.");
   } catch (error) {
-    console.error("Error deleting empty rooms:", error);
+    console.error("Error deleting deleted rooms:", error);
   }
 }
 
-export default deleteEmptyRooms;
+export { deleteEmptyRooms, deleteDeletedQueue };
