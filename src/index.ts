@@ -6,7 +6,7 @@ import { CustomSocket } from "../types";
 import { handleDisconnect } from "./handlers/handleDisconnect";
 import { sendMessage } from "./handlers/sendMessage";
 import { middleware } from "./handlers/middleware";
-import { cors, getFormattedDateTime } from "./lib/utils";
+import { cors } from "./lib/utils";
 import { sendHeart } from "./handlers/sendHeart";
 import { handleProgress } from "./handlers/handleProgress";
 import { handleSeek } from "./handlers/handleSeek";
@@ -27,7 +27,7 @@ import { handleUpdateStatus } from "./handlers/handleUpdateStatus";
 import emitUpdates from "./handlers/emitUpdates";
 import { errorHandler } from "./functions/apiError";
 import { asyncHandlerSocket } from "./handlers/error";
-
+import { collectDefaultMetrics, register } from "prom-client";
 const limiter = rateLimit({
   windowMs: 2 * 60 * 1000,
   limit: 100,
@@ -52,7 +52,13 @@ app.use(
     credentials: true,
   })
 );
-
+collectDefaultMetrics({ register });
+app.get("/metrics", async (req, res) => {
+  const key = req.query.key;
+  if (!key || key !== process.env.LOGS_KEY) return res.status(403).send();
+  res.setHeader("content-type", register.contentType);
+  res.send(await register.metrics());
+});
 app.use(limiter);
 app.use(express.json());
 app.use(cookieParser());

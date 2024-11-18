@@ -16,9 +16,14 @@ export async function deleteAll(
     if (userInfo?.role !== "admin")
       throw new Error("only admins can delete all songs");
     await Promise.all([
-      await Queue.deleteMany({
-        roomId: roomInfo._id,
-      }),
+      await Queue.updateMany(
+        {
+          roomId: roomInfo._id,
+        },
+        {
+          $set: { roomId: `_deleted_${roomInfo._id}` },
+        }
+      ),
       await Vote.deleteMany({
         roomId: roomInfo._id,
       }),
