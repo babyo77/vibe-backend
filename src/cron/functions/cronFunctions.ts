@@ -26,7 +26,7 @@ async function deleteEmptyRooms() {
 async function deleteDeletedQueue() {
   try {
     // Delete all rooms marked as deleted in one operation
-    const result = await Room.deleteMany({ deleted: true });
+    const result = await Queue.deleteMany({ deleted: true });
     console.log(`Deleted ${result.deletedCount} rooms marked as deleted.`);
 
     console.log("Completed deleted room cleanup process.");
