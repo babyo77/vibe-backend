@@ -7,6 +7,6 @@ export const tempCache = new NodeCache({
   stdTTL: 1,
 });
 export const roomCache = new NodeCache({
-  stdTTL: 10 * 60 * 60,
+  stdTTL: 172800,
 });
 export const tnzara = new NodeCache();
