@@ -60,6 +60,7 @@ export function setSocketListeners(
       status: async (status: any) =>
         asyncHandlerSocket(socket, handleUpdateStatus, socket, status),
       profile: async () => asyncHandlerSocket(socket, emitUpdates, socket),
+      event: async (roomId?: string) => io.to(roomId || "").emit("update"),
     };
 
     for (const [event, handler] of Object.entries(eventHandlers)) {
