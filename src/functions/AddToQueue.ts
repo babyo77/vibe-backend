@@ -80,7 +80,7 @@ export const addToQueue = async (
       );
 
       if (songsToAdd.length === 0) {
-        throw new ApiError("All songs already exist in queue.", 409);
+        throw new ApiError("songs already exist in queue.", 409);
       }
 
       // Get starting order number atomically
