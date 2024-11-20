@@ -9,6 +9,10 @@ export const discordLogin = async (
   req: CustomRequest,
   res: Response
 ): Promise<Response> => {
+  const login = req.query.login;
+  if (login) {
+    return res.redirect(process.env.DISCORD_URI || "") as any;
+  }
   const token = req.query.access_token;
   const roomId = req.cookies.room;
   let redirectUrl = `${process.env.ALLOWED_URL}/v?room=${roomId}`;
