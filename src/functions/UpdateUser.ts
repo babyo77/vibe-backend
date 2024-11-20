@@ -16,15 +16,12 @@ export const updateUser = async (
   if (!userId) throw new ApiError("Login required");
   if (!data.username || !data.name)
     throw new ApiError(`username or name is required`, 400);
-  const isValidName =
-    /^[a-zA-Z0-9_ ]+$/.test(data.name) && /[^_ ]+/.test(data.name);
+
   const isValidUserName =
     /^[a-z0-9_]+$/.test(data.username) &&
     /[^_]+/.test(data.username) &&
     data.username === data.username.toLowerCase();
-  if (!isValidName) {
-    throw new ApiError("Special characters not allowed in name", 400);
-  }
+
   if (!isValidUserName) {
     throw new ApiError(
       "Special characters not allowed in username and must be in lowercase",
