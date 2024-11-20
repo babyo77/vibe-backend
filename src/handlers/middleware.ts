@@ -2,7 +2,6 @@
 
 import { CustomSocket } from "../../types";
 import { ExtendedError } from "socket.io/dist/namespace";
-import { errorHandler } from "./error";
 import Room from "../models/roomModel";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel";
