@@ -16,10 +16,7 @@ export const queue = async (
   const limit = Number(req.query.limit) || 50;
   const name = String(req.query.name) || "";
   const roomId = String(req.query.room) || "";
-  if (
-    tempCache.has(`${page}_${limit}_${name}_${roomId}_${userId}`) &&
-    !req.headers.nocache
-  ) {
+  if (tempCache.has(`${page}_${limit}_${name}_${roomId}_${userId}`)) {
     return res.json(
       tempCache.get(`${page}_${limit}_${name}_${roomId}_${userId}`)
     );
