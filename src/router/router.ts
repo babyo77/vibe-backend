@@ -18,6 +18,7 @@ import { updateUser } from "../functions/UpdateUser";
 import { updateUserDp } from "../functions/updateUserDP";
 import asyncHandler from "../lib/asyncHandler";
 import { getSpotifyTrack } from "../functions/getSpotifyTrack";
+import { discordLogin } from "../functions/discordLogin";
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.get("/", (_req, res) => {
 });
 
 router.post("/api/auth", asyncHandler(login));
+router.get("/api/auth/discord", asyncHandler(discordLogin));
 router.get("/api/checkroom", asyncHandler(checkRoom));
 
 // unauthorized users api

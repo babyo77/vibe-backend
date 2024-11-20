@@ -21,7 +21,7 @@ export async function SongEnded(
     if (VibeCache.has(roomInfo._id + "isaAminOnline")) {
       isAdminOnline = VibeCache.get(roomInfo._id + "isaAminOnline");
     } else {
-      isAdminOnline = await RoomUser.findOne({
+      isAdminOnline = await RoomUser.exists({
         roomId: roomInfo?._id,
         role: "admin",
         active: true,

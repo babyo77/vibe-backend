@@ -14,7 +14,7 @@ export async function checkVibe(
     req.cookies.vibeIdR || req.headers.authorization?.split(" ")[1]; // Get cookies from the request
   const roomId = req.cookies?.room; // Get room ID from cookies
 
-  if (!userId) res.status(401).json({ message: "Unauthorized" });
+  if (!userId) throw new ApiError("Unauthorized", 401);
   const [user, room] = await Promise.all([
     User.findById(userId), // Fetch the user by ID
     Room.findOne({ roomId }), // Fetch the room by roomId

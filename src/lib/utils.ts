@@ -219,7 +219,7 @@ export const homeResponse = {
 };
 
 export const cors = {
-  origin: true,
+  origin: process.env.ALLOWED_URL,
   credentials: true,
 };
 

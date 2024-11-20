@@ -31,9 +31,9 @@ export const login = async (
     throw new ApiError("Invalid token 🤡", 403);
   }
 
-  const isAlready = await User.findOne({ email: verify.email });
+  const isAlready = await User.findOne({ email: verify.email }).select("_id");
   if (isAlready) {
-    return proceed(res, isAlready);
+    return setJWTTokens(res, isAlready);
   } else {
     if (!verify.name || !verify.email || !verify.picture)
       throw new ApiError("Invalid data", 403);
@@ -41,20 +41,24 @@ export const login = async (
       username: verify.email
         ?.split("@gmail.com")[0]
         ?.replace(/[^a-zA-Z0-9]/g, ""),
-      name: verify?.name,
-      email: verify?.email,
-      imageUrl: verify?.picture,
+      name: verify.name,
+      email: verify.email,
+      imageUrl: verify.picture,
     });
 
     if (user) {
-      return proceed(res, user);
+      return setJWTTokens(res, user);
     } else {
       throw new ApiError("Unable to create user", 500);
     }
   }
 };
 
-const proceed = (res: Response, saved: any) => {
+export const setJWTTokens = (
+  res: Response,
+  saved: any,
+  redirectUrl: string | null = null
+): any => {
   const accessToken = jwt.sign({ userId: saved._id }, jwt_secret, {
     expiresIn: "7d",
   });
@@ -68,6 +72,8 @@ const proceed = (res: Response, saved: any) => {
 
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
-
+  if (redirectUrl) {
+    return res.redirect(redirectUrl + "&vibe_token=" + accessToken);
+  }
   return res.json({ token: accessToken });
 };

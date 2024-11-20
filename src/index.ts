@@ -19,12 +19,7 @@ const io = new Server(server, {
   httpCompression: true,
 });
 
-app.use(
-  useCors({
-    origin: true,
-    credentials: true,
-  })
-);
+app.use(useCors(cors));
 
 app.get("/metrics", async (req, res) => {
   const key = req.query.key;

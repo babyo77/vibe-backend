@@ -46,7 +46,7 @@ export const updateUser = async (
 
   const isAlreadyUsernameExist = await User.findOne({
     username: data.username,
-  });
+  }).select("_id");
   if (
     isAlreadyUsernameExist &&
     isAlreadyUsernameExist?._id.toString() !== userId

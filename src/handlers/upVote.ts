@@ -22,7 +22,7 @@ export default async function upVote(
       throw new Error("Queue ID is missing in the data.");
     }
 
-    const isAlreadyVoted = await Vote.findOne({
+    const isAlreadyVoted = await Vote.exists({
       roomId: roomInfo._id,
       userId: userInfo.id,
       queueId: value.queueId,
