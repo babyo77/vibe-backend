@@ -11,7 +11,7 @@ export const discordLogin = async (
 ): Promise<Response> => {
   const token = req.query.access_token;
   const roomId = req.cookies.room;
-
+  let redirectUrl = `${process.env.ALLOWED_URL}/v?room=${roomId}`;
   if (token) {
     const response = await fetch("https://discord.com/api/users/@me", {
       headers: {
@@ -20,7 +20,7 @@ export const discordLogin = async (
     });
     if (!response.ok) throw new ApiError("invalid access token");
     const verify = (await response.json()) as discordUser;
-    const redirectUrl = `${process.env.ALLOWED_URL}/v?room=${
+    redirectUrl = `${process.env.ALLOWED_URL}/v?room=${
       roomId ? roomId : verify.global_name
     }`;
     const isAlready = await User.findOne({
@@ -62,7 +62,7 @@ export const discordLogin = async (
           const currentUrl = window.location.origin + window.location.pathname; // Get current base URL
           window.location.href = currentUrl + '?access_token=' + accessToken; // Redirect with token in the query
         } else {
-          alert("No access token found in URL fragment.");
+          window.location.href = "${redirectUrl}"
         }
       </script>
     </body>
