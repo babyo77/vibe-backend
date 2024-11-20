@@ -1077,7 +1077,7 @@ async function fetchSuggestedSongs(
 ): Promise<searchResults[] | null> {
   try {
     let suggestionId =
-      currentSong.downloadUrl[currentSong.downloadUrl.length - 1].url;
+      currentSong?.downloadUrl[currentSong?.downloadUrl?.length - 1]?.url;
 
     if (suggestionId.startsWith("http")) {
       const searchResults = await ytmusic.searchSongs(
