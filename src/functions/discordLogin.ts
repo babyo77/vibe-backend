@@ -11,10 +11,12 @@ export const discordLogin = async (
 ): Promise<Response> => {
   const login = req.query.login;
   if (login) {
-    return res.redirect(process.env.DISCORD_URI || "") as any;
+    return res.redirect(
+      process.env.DISCORD_URI + "&state=" + login || ""
+    ) as any;
   }
   const token = req.query.access_token;
-  const roomId = req.cookies.room;
+  const roomId = req.query.state;
   let redirectUrl = `${process.env.ALLOWED_URL}/v?room=${roomId}`;
   if (token) {
     const response = await fetch("https://discord.com/api/users/@me", {
@@ -60,11 +62,12 @@ export const discordLogin = async (
         const params = new URLSearchParams(fragment); // Parse the fragment as query parameters
 
         const accessToken = params.get('access_token'); // Get the access_token
+        const state = params.get('state'); // Get the access_token
 
         if (accessToken) {
           // Redirect to the same URL with the token as a query parameter
           const currentUrl = window.location.origin + window.location.pathname; // Get current base URL
-          window.location.href = currentUrl + '?access_token=' + accessToken; // Redirect with token in the query
+          window.location.href = currentUrl + '?access_token=' + accessToken + "&state=" + state ; // Redirect with token in the query
         } else {
           window.location.href = "${redirectUrl}"
         }
