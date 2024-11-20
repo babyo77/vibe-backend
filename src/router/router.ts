@@ -47,7 +47,7 @@ router.get("/api/vibe", asyncHandler(checkVibe));
 router.post("/api/add", asyncHandler(addToQueue));
 router.get("/api/@me", asyncHandler(getMe));
 router.get("/api/rooms/:type", asyncHandler(getRooms));
-router.put("/api/update", asyncHandler(updateUser));
-router.put("/api/dp", asyncHandler(updateUserDp));
+router.patch("/api/update", asyncHandler(updateUser));
+router.patch("/api/dp", asyncHandler(updateUserDp));
 
 export default router;

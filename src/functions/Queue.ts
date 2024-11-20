@@ -11,7 +11,8 @@ export const queue = async (
   res: Response
 ): Promise<Response> => {
   const userId = req.userId;
-
+  // &&
+  // !req.headers.nocache
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 50;
   const name = String(req.query.name) || "";
