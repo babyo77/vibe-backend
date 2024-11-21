@@ -19,6 +19,13 @@ export async function handleDisconnect(socket: CustomSocket) {
     )
       .populate("userId")
       .select("username");
+
+    if (userInfo?.role == "admin") {
+      VibeCache.del(roomInfo._id + "isaAminOnline");
+      socket.to(roomInfo.roomId).emit("seekable", true);
+    }
+    socket.removeAllListeners();
+    socket.leave(roomInfo.roomId);
     if (roomInfo.roomId) {
       emitMessage(
         socket,
@@ -27,12 +34,6 @@ export async function handleDisconnect(socket: CustomSocket) {
         data?.userId || { username: "@Someone" }
       );
     }
-    if (userInfo?.role == "admin") {
-      VibeCache.del(roomInfo._id + "isaAminOnline");
-      socket.to(roomInfo.roomId).emit("seekable", true);
-    }
-    socket.removeAllListeners();
-    socket.leave(roomInfo.roomId);
   } catch (error) {
     console.log(error);
   }
