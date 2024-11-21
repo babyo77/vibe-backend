@@ -19,7 +19,6 @@ const io = new Server(server, {
   httpCompression: true,
   pingInterval: 25000,
   pingTimeout: 5000,
-  transports: ["websocket"],
 });
 
 app.use(useCors(cors));
