@@ -16,9 +16,9 @@ export async function middleware(
 ) {
   try {
     let user = null;
-    const token = socket.handshake.headers["authorization"];
-    const roomId = socket.handshake.headers["room"];
-    if (!roomId || typeof roomId !== "string")
+    const token = socket.handshake.query["authorization"];
+    const roomId = socket.handshake.query["room"];
+    if (!roomId || typeof roomId !== "string" || typeof token !== "string")
       throw new Error("Invalid roomId");
     const isValidRoomId = /^[a-zA-Z0-9]+$/.test(roomId);
 
