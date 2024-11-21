@@ -103,7 +103,8 @@ export async function middleware(
     if (currentSong) {
       socket.emit("isplaying", encrypt(currentSong));
     }
-
+    socket.emit("profile");
+    socket.emit("update");
     emitMessage(
       socket,
       roomId,
