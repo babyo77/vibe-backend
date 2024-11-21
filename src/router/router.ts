@@ -35,7 +35,7 @@ router.post("/api/metadata", asyncHandler(getMetadata));
 router.get("/api/spotify/:id", asyncHandler(getSpotifyTrack));
 router.get("/api/search", asyncHandler(search));
 router.get("/api/upNextSong", asyncHandler(upNextSong));
-router.get("/api/listeners", asyncHandler(roomListeners));
+router.get("/api/listeners", queueMiddleware, asyncHandler(roomListeners));
 router.get("/api/youtube", asyncHandler(getPlaylist));
 
 // both  authorized n unauthorized users api

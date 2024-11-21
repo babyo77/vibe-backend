@@ -11,7 +11,7 @@ export const roomListeners = async (
 ): Promise<Response> => {
   const roomId = String(req.query.room) || "";
   if (!roomId) throw new Error("Invalid roomId");
-
+  const userId = req.userId;
   const cacheKey = roomId + "listeners";
   if (VibeCache.has(cacheKey)) {
     return res.json(VibeCache.get(cacheKey));
@@ -23,7 +23,11 @@ export const roomListeners = async (
   if (!room) throw new ApiError("Invalid roomId", 400);
 
   const [roomUsers, totalListeners] = await Promise.all([
-    RoomUser.find({ roomId: room._id, active: true })
+    RoomUser.find({
+      roomId: room._id,
+      active: true,
+      userId: { $nin: userId },
+    })
       .populate({
         path: "userId",
         select: "name username imageUrl -_id",
@@ -34,7 +38,7 @@ export const roomListeners = async (
   ]);
 
   const payload = {
-    totalUsers: totalListeners,
+    totalUsers: totalListeners - 1,
     currentPage: 1,
     roomUsers,
   };
