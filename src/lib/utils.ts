@@ -1001,9 +1001,6 @@ export const roomPipeline = (
           },
         },
         updatedAt: 1,
-        isAdminRoom: {
-          $in: [new mongoose.Types.ObjectId(userId), "$admins.userId"], // Check if the user is an admin in the room
-        },
         isAdmin: {
           $cond: {
             if: {
@@ -1024,9 +1021,7 @@ export const roomPipeline = (
     },
     {
       $sort: {
-        ...(isAdminSearch
-          ? { isAdminRoom: -1 } // Sort rooms where the user is an admin to the top
-          : { updatedAt: -1 }), // Sort by updatedAt descending if no admin search
+        updatedAt: -1, // Sort by updatedAt descending if no admin search
       },
     },
     {
