@@ -20,7 +20,7 @@ export async function getPlaylist(
   if (!songs) throw new ApiError("Cant get playlist", 400);
   const playload = songs?.contents?.map((s, i) => ({
     id: s.id,
-    name: s?.name,
+    name: s.title,
     artists: {
       primary: [
         {
@@ -35,7 +35,6 @@ export async function getPlaylist(
       : false,
     image: [
       {
-        d: s.thumbnails,
         quality: "500x500",
         url: `https://wsrv.nl/?url=${s.thumbnails
           .at(-1)
