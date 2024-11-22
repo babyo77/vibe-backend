@@ -20,11 +20,11 @@ export async function getPlaylist(
   if (!songs) throw new ApiError("Cant get playlist", 400);
   const playload = songs?.contents?.map((s, i) => ({
     id: s.id,
-    name: s.name,
+    name: s?.name,
     artists: {
       primary: [
         {
-          name: s.artists ? s.artists[0].name : "Unknown",
+          name: s.artists ? s.artists[0]?.name : "Unknown",
         },
       ],
     },
