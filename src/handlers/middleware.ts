@@ -39,9 +39,9 @@ export async function middleware(
       user = await User.findById(decode.userId).select("username");
     }
 
-    // const room = await Room.findOne({ roomId });
+    const room = await Room.findOne({ roomId });
 
-    // if (!room && !user) throw new Error("Login to claim this Room");
+    if (!room && !user) throw new Error("Login to claim this Room");
 
     const newRoom = await Room.findOneAndUpdate(
       { roomId },
