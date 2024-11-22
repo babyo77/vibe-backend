@@ -20,6 +20,7 @@ export async function middleware(
     const roomId = socket.handshake.query["room"];
     if (!roomId || typeof roomId !== "string" || typeof token !== "string")
       throw new Error("Invalid roomId");
+    socket.join(roomId);
     const isValidRoomId = /^[a-zA-Z0-9]+$/.test(roomId);
 
     if (roomId.length <= 3) {
@@ -40,7 +41,7 @@ export async function middleware(
     }
 
     const room = await Room.findOne({ roomId });
-    socket.join(roomId);
+
     if (!room && !user) throw new Error("Login to claim this Room");
 
     const newRoom = await Room.findOneAndUpdate(
