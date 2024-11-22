@@ -2,8 +2,8 @@ import { encrypt } from "tanmayo7lock";
 import { CustomRequest } from "../middleware/auth";
 import { Response } from "express";
 import { VibeCache } from "../cache/cache";
-import ytmusic from "../lib/ytMusic";
 import { ApiError } from "./apiError";
+import { getInnertubeInstance } from "../lib/utils";
 export async function getPlaylist(
   req: CustomRequest,
   res: Response
@@ -13,18 +13,18 @@ export async function getPlaylist(
   if (VibeCache.has(id)) {
     return res.json(VibeCache.get(id));
   }
-
-  const songs = await ytmusic.getPlaylistVideos(id).catch(() => {
+  const ytmusic = await getInnertubeInstance();
+  const songs = await ytmusic.music.getPlaylist(id).catch(() => {
     throw new ApiError("Cant get playlist", 400);
   });
   if (!songs) throw new ApiError("Cant get playlist", 400);
-  const playload = songs?.map((s, i) => ({
-    id: s.videoId,
+  const playload = songs?.contents?.map((s, i) => ({
+    id: s.id,
     name: s.name,
     artists: {
       primary: [
         {
-          name: s.artist.name || "Unknown",
+          name: s.artists ? s.artists[0].name : "Unknown",
         },
       ],
     },
@@ -47,7 +47,7 @@ export async function getPlaylist(
     downloadUrl: [
       {
         quality: "320kbps",
-        url: `${encrypt(s?.videoId)}`,
+        url: `${encrypt(s?.id || "")}`,
       },
     ],
   }));
