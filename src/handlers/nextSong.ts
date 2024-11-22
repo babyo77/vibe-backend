@@ -2,7 +2,6 @@
 import { Server } from "socket.io";
 import { CustomSocket, searchResults } from "../../types";
 import { getCurrentlyPlaying, getSongByOrder } from "../lib/utils";
-import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { broadcast } from "../lib/customEmit";
 import Queue from "../models/queueModel";
@@ -36,6 +35,7 @@ export async function PlayNextSong(
       value
     );
   }
+  if (nextSong.length == 0) throw new Error("Queue is empty");
   if (!nextSong[0].suggestedOrder) {
     await Promise.all([
       Queue.updateOne(
