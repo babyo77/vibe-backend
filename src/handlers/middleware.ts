@@ -20,7 +20,6 @@ export async function middleware(
     const roomId = socket.handshake.query["room"];
     if (!roomId || typeof roomId !== "string" || typeof token !== "string")
       throw new Error("Invalid roomId");
-    socket.join(roomId);
     const isValidRoomId = /^[a-zA-Z0-9]+$/.test(roomId);
 
     if (roomId.length <= 3) {
@@ -40,9 +39,9 @@ export async function middleware(
       user = await User.findById(decode.userId).select("username");
     }
 
-    const room = await Room.findOne({ roomId });
+    // const room = await Room.findOne({ roomId });
 
-    if (!room && !user) throw new Error("Login to claim this Room");
+    // if (!room && !user) throw new Error("Login to claim this Room");
 
     const newRoom = await Room.findOneAndUpdate(
       { roomId },
@@ -50,6 +49,7 @@ export async function middleware(
       { new: true, upsert: true }
     );
 
+    socket.join(roomId);
     VibeCache.set(roomId + "roomId", { _id: newRoom._id.toString() });
     socket.roomInfo = {
       roomId: newRoom.roomId,
