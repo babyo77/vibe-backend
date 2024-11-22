@@ -30,6 +30,7 @@ export const errorHandler = (
   const randomEmoji = getRandomEmoji(emojiArray);
 
   let message = err.message || "Internal Server Error";
+  console.log(err);
 
   if (err instanceof MongooseError) {
     // Handle MongoDB-specific errors
