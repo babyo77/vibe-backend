@@ -40,7 +40,7 @@ export async function middleware(
     }
 
     const room = await Room.findOne({ roomId });
-
+    socket.join(roomId);
     if (!room && !user) throw new Error("Login to claim this Room");
 
     const newRoom = await Room.findOneAndUpdate(
@@ -49,7 +49,6 @@ export async function middleware(
       { new: true, upsert: true }
     );
 
-    socket.join(roomId);
     VibeCache.set(roomId + "roomId", { _id: newRoom._id.toString() });
     socket.roomInfo = {
       roomId: newRoom.roomId,
