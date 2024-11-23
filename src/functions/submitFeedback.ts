@@ -45,8 +45,8 @@ export const submitFeedback = async (
             inline: false,
           },
           {
-            name: "📱 Request Info",
-            value: `\`${req.headers.referer}\``,
+            name: "📱 Request referer",
+            value: `\`${req.headers?.referer}\``,
             inline: false,
           },
         ],
