@@ -2,55 +2,51 @@ import { encrypt } from "tanmayo7lock";
 import { CustomRequest } from "../middleware/auth";
 import { Response } from "express";
 import { VibeCache } from "../cache/cache";
+import ytpl from "ytpl";
 import { ApiError } from "./apiError";
-import { getInnertubeInstance } from "../lib/utils";
 export async function getPlaylist(
   req: CustomRequest,
   res: Response
 ): Promise<Response> {
   const id = req.query.id;
-  if (!id || typeof id !== "string") throw new Error("Invalid song ID");
+
+  if (!id || typeof id !== "string") throw new ApiError("Invalid song ID");
   if (VibeCache.has(id)) {
     return res.json(VibeCache.get(id));
   }
-  const ytmusic = await getInnertubeInstance();
-  const songs = await ytmusic.music.getPlaylist(id).catch(() => {
-    throw new ApiError("Cant get playlist", 400);
+
+  const playlist = await ytpl(id, {
+    pages: Infinity,
+    requestOptions: { headers: { Cookie: process.env.COOKIES || "" } },
   });
-  if (!songs) throw new ApiError("Cant get playlist", 400);
-  const playload = songs?.contents
-    ?.map((s, i) => ({
-      id: s.id,
-      name: s.title,
-      artists: {
-        primary: [
-          {
-            name: s.artists ? s.artists[0]?.name : "Unknown",
-          },
-        ],
+  if (!playlist.items) throw new ApiError("Unable to get playlist");
+  const tracks = playlist.items.map((s) => ({
+    id: s.id,
+    name: s.title,
+    artists: {
+      primary: [
+        {
+          name: s.author.name,
+        },
+      ],
+    },
+    video: !s.bestThumbnail?.url?.includes("i.ytimg.com") ? true : false,
+    image: [
+      {
+        quality: "500x500",
+        url: `https://wsrv.nl/?url=${s.thumbnails[
+          s.thumbnails.length - 1
+        ].url?.replace("hqdefault", "maxresdefault")}`,
       },
-      video: !s.thumbnails
-        .at(-1)
-        ?.url.includes("https://lh3.googleusercontent.com")
-        ? true
-        : false,
-      image: [
-        {
-          quality: "500x500",
-          url: `https://wsrv.nl/?url=${s.thumbnails
-            .at(-1)
-            ?.url.replace("w60-h60", "w500-h500")}`,
-        },
-      ],
-      source: "youtube",
-      downloadUrl: [
-        {
-          quality: "320kbps",
-          url: `${encrypt(s?.id || "")}`,
-        },
-      ],
-    }))
-    .filter((r) => r.id);
-  VibeCache.set(id, playload);
-  return res.json(playload);
+    ],
+    source: "youtube",
+    downloadUrl: [
+      {
+        quality: "320kbps",
+        url: `${encrypt(s.id)}`,
+      },
+    ],
+  }));
+  VibeCache.set(id, tracks);
+  return res.json(tracks);
 }

@@ -33,6 +33,7 @@
     "spotify-web-api-node": "^5.0.2",
     "tanmayo7lock": "^1.0.18",
     "youtubei.js": "^11.0.1",
-    "ytmusic-api": "^5.2.2"
+    "ytmusic-api": "^5.2.2",
+    "ytpl": "^2.3.0"
   }
 }
