@@ -44,6 +44,11 @@ export const submitFeedback = async (
             value: `\`${userDetails.device}\``,
             inline: false,
           },
+          {
+            name: "🔫 Message",
+            value: `\`${userDetails.message}\``,
+            inline: false,
+          },
         ],
       },
     ],
