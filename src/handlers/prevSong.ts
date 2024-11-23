@@ -26,7 +26,7 @@ export async function PlayPrevSong(
       isPlaying: false,
     }
   );
-  if (!value?.order) throw new Error("Queue is empty");
+
   nextSong = await getPreviousSongByOrder(
     roomInfo?._id,
     value?.order,
