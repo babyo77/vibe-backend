@@ -19,6 +19,7 @@ import { updateUserDp } from "../functions/updateUserDP";
 import asyncHandler from "../lib/asyncHandler";
 import { getSpotifyTrack } from "../functions/getSpotifyTrack";
 import { discordLogin } from "../functions/discordLogin";
+import { submitFeedback } from "../functions/submitFeedback";
 
 const router = express.Router();
 
@@ -26,20 +27,22 @@ router.get("/", (_req, res) => {
   res.json(homeResponse);
 });
 
+//auth
 router.post("/api/auth", asyncHandler(login));
 router.get("/api/auth/discord", asyncHandler(discordLogin));
-router.get("/api/checkroom", asyncHandler(checkRoom));
 
 // unauthorized users api
+router.get("/api/checkroom", asyncHandler(checkRoom));
 router.post("/api/metadata", asyncHandler(getMetadata));
 router.get("/api/spotify/:id", asyncHandler(getSpotifyTrack));
 router.get("/api/search", asyncHandler(search));
 router.get("/api/upNextSong", asyncHandler(upNextSong));
-router.get("/api/listeners", queueMiddleware, asyncHandler(roomListeners));
 router.get("/api/youtube", asyncHandler(getPlaylist));
 
 // both  authorized n unauthorized users api
+router.get("/api/listeners", queueMiddleware, asyncHandler(roomListeners));
 router.get("/api/queue", queueMiddleware, asyncHandler(queue));
+router.post("/api/feedback", queueMiddleware, asyncHandler(submitFeedback));
 
 // authorized users api
 router.use(authMiddleware);
