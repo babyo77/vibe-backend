@@ -18,38 +18,39 @@ export async function getPlaylist(
     throw new ApiError("Cant get playlist", 400);
   });
   if (!songs) throw new ApiError("Cant get playlist", 400);
-  const playload = songs?.contents?.map((s, i) => ({
-    id: s.id,
-    name: s.title,
-    artists: {
-      primary: [
+  const playload = songs?.contents
+    ?.map((s, i) => ({
+      id: s.id,
+      name: s.title,
+      artists: {
+        primary: [
+          {
+            name: s.artists ? s.artists[0]?.name : "Unknown",
+          },
+        ],
+      },
+      video: !s.thumbnails
+        .at(-1)
+        ?.url.includes("https://lh3.googleusercontent.com")
+        ? true
+        : false,
+      image: [
         {
-          name: s.artists ? s.artists[0]?.name : "Unknown",
+          quality: "500x500",
+          url: `https://wsrv.nl/?url=${s.thumbnails
+            .at(-1)
+            ?.url.replace("w60-h60", "w500-h500")}`,
         },
       ],
-    },
-    video: !s.thumbnails
-      .at(-1)
-      ?.url.includes("https://lh3.googleusercontent.com")
-      ? true
-      : false,
-    image: [
-      {
-        quality: "500x500",
-        url: `https://wsrv.nl/?url=${s.thumbnails
-          .at(-1)
-          ?.url.replace(/w\\d+-h\\d+/, "w500-h500")
-          .replace("w120-h120", "w500-h500")}`,
-      },
-    ],
-    source: "youtube",
-    downloadUrl: [
-      {
-        quality: "320kbps",
-        url: `${encrypt(s?.id || "")}`,
-      },
-    ],
-  }));
+      source: "youtube",
+      downloadUrl: [
+        {
+          quality: "320kbps",
+          url: `${encrypt(s?.id || "")}`,
+        },
+      ],
+    }))
+    .filter((r) => !r.id);
   VibeCache.set(id, playload);
   return res.json(playload);
 }
