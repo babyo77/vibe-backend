@@ -50,7 +50,7 @@ export async function getPlaylist(
         },
       ],
     }))
-    .filter((r) => !r.id);
+    .filter((r) => r.id);
   VibeCache.set(id, playload);
   return res.json(playload);
 }
