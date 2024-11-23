@@ -11,6 +11,7 @@ export const submitFeedback = async (
   const payload = req.body;
   const data = decryptObjectValues(payload);
   const webhookUrl = process.env.FEEDBACK_WEBHOOK_URL || "";
+  if (!data.log || data.nxt || data.xhr) return res.status(204).send();
   if (data.log.length > 170) throw new ApiError("Message too long");
   const userDetails = {
     id: userId || "@someone",
