@@ -2,7 +2,7 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import Room from "../models/roomModel";
 import RoomUser from "../models/roomUsers";
-import { VibeCache } from "../cache/cache";
+import { tempCache as VibeCache } from "../cache/cache";
 import { ApiError } from "./apiError";
 
 export const roomListeners = async (
