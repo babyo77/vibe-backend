@@ -20,6 +20,7 @@ import asyncHandler from "../lib/asyncHandler";
 import { getSpotifyTrack } from "../functions/getSpotifyTrack";
 import { discordLogin } from "../functions/discordLogin";
 import { submitFeedback } from "../functions/submitFeedback";
+import { getSpotifyPlaylist } from "../functions/getSpotifyPlaylist";
 
 const router = express.Router();
 
@@ -34,12 +35,15 @@ router.get("/api/auth/discord", asyncHandler(discordLogin));
 // unauthorized users api
 router.get("/api/checkroom", asyncHandler(checkRoom));
 router.post("/api/metadata", asyncHandler(getMetadata));
-router.get("/api/spotify/:id", asyncHandler(getSpotifyTrack));
 router.get("/api/search", asyncHandler(search));
 router.get("/api/upNextSong", asyncHandler(upNextSong));
-router.get("/api/youtube", asyncHandler(getPlaylist));
+router.get("/api/youtube/:id", asyncHandler(getPlaylist));
 
-// both  authorized n unauthorized users api
+//spotify api
+router.get("/api/spotify/:id", asyncHandler(getSpotifyTrack));
+router.get("/api/spotify/playlist/:id", asyncHandler(getSpotifyPlaylist));
+
+// both authorized n unauthorized users api
 router.get("/api/listeners", queueMiddleware, asyncHandler(roomListeners));
 router.get("/api/queue", queueMiddleware, asyncHandler(queue));
 router.post("/api/feedback", queueMiddleware, asyncHandler(submitFeedback));

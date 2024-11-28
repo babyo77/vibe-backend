@@ -8,7 +8,7 @@ export async function getPlaylist(
   req: CustomRequest,
   res: Response
 ): Promise<Response> {
-  const id = req.query.id;
+  const id = req.params.id;
 
   if (!id || typeof id !== "string") throw new ApiError("Invalid song ID");
   if (VibeCache.has(id)) {
