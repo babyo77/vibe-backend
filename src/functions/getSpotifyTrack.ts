@@ -14,7 +14,8 @@ export const getSpotifyTrack = async (
   if (tnzara.has(key)) {
     return res.json(tnzara.get(key));
   }
-
+  const token = await Spotify.clientCredentialsGrant();
+  Spotify.setAccessToken(token.body["access_token"]);
   const song = await Spotify.getTrack(id);
   const artist = song.body.artists[0].name;
   const name = song.body.name;

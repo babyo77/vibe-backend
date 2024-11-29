@@ -21,7 +21,8 @@ export const getSpotifyPlaylist = async (
     if (tnzara.has(cache_key)) {
       return res.json(tnzara.get(cache_key));
     }
-
+    const token = await Spotify.clientCredentialsGrant();
+    Spotify.setAccessToken(token.body["access_token"]);
     const song = await Spotify.getPlaylistTracks(id, {
       limit: pageSize,
       offset: offset,

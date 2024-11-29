@@ -5,8 +5,4 @@ const Spotify = new spotifyWebApi({
   clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
 });
 
-(async () => {
-  const token = await Spotify.clientCredentialsGrant();
-  Spotify.setAccessToken(token.body["access_token"]);
-})();
 export default Spotify;
