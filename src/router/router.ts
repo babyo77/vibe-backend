@@ -21,6 +21,8 @@ import { getSpotifyTrack } from "../functions/getSpotifyTrack";
 import { discordLogin } from "../functions/discordLogin";
 import { submitFeedback } from "../functions/submitFeedback";
 import { getSpotifyPlaylist } from "../functions/getSpotifyPlaylist";
+import { saveBookmark } from "../functions/saveBookmark";
+import { deleteBookmark } from "../functions/deleteBookmark";
 
 const router = express.Router();
 
@@ -56,5 +58,6 @@ router.get("/api/@me", asyncHandler(getMe));
 router.get("/api/rooms/:type", asyncHandler(getRooms));
 router.patch("/api/update", asyncHandler(updateUser));
 router.patch("/api/dp", asyncHandler(updateUserDp));
-
+router.post("/api/bookmark", asyncHandler(saveBookmark));
+router.delete("/api/bookmark", asyncHandler(deleteBookmark));
 export default router;

@@ -3,6 +3,7 @@ import { CustomRequest } from "../middleware/auth";
 import { decryptObjectValues } from "../lib/utils";
 import User from "../models/userModel";
 import { ApiError } from "./apiError";
+import { tnzara } from "../cache/cache";
 
 export const updateUser = async (
   req: CustomRequest,
@@ -54,5 +55,6 @@ export const updateUser = async (
     username: data.username.toLocaleLowerCase(),
     name: data.name,
   });
+  tnzara.del(userId + "userInfo");
   return res.status(204).send();
 };
