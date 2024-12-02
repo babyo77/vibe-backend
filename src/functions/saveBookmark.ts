@@ -11,7 +11,7 @@ export const saveBookmark = async (
 ): Promise<Response> => {
   const { type } = req.body;
   const userId = req.userId;
-  const roomId = req.cookies.room;
+  const roomId = req.cookies.room || req.headers.room;
   if (!userId) throw new ApiError("Login required", 401);
   if (!roomId) throw new ApiError("RoomId is missing", 400);
   if (!type) throw new ApiError("Type is missing", 400);
