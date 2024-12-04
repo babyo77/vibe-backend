@@ -24,7 +24,7 @@ export const authMiddleware = (
 
     // Check if the decoded token contains a valid userId
     if (!decoded || !decoded.userId) {
-      throw new ApiError("Invalid token", 401); // Use 401 for invalid token
+      throw new ApiError("Invalid credentials", 401); // Use 401 for invalid token
     }
 
     // Attach userId to the request object for further use

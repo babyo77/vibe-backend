@@ -13,7 +13,7 @@ export const errorHandler = (
   const { method, route } = req;
   const errorMessage = err.message || "Unknown error";
 
-  const statusCode = err.statusCode || 500;
+  let statusCode = err.statusCode || 500;
   const emojiArray = [
     "😂",
     "😎",
@@ -33,13 +33,19 @@ export const errorHandler = (
   console.log(err);
 
   if (err instanceof MongooseError) {
-    // Handle MongoDB-specific errors
     if (process.env.NODE_ENV === "production") {
       message = "Fuck 😭, An unexpected error occurred";
     } else {
       message = `MongoDB Error: ${err.message}`;
     }
+  } else if (err.name === "TokenExpiredError") {
+    message = "Your session has expired. Please log in again.";
+    statusCode = 401;
+  } else if (err.name === "JsonWebTokenError") {
+    message = "Invalid credentials. Please log in again.";
+    statusCode = 401;
   }
+
   httpRequestErrorCounter.inc({
     method,
     route: route?.path || "unknown",
