@@ -35,11 +35,11 @@ export const updateUser = async (
       400
     );
   }
-  if (data.username.length > 15 || data.name.length > 15) {
-    throw new ApiError(
-      "Name or username  is too large, maximum 15 characters",
-      400
-    );
+  if (data.name.length > 25) {
+    throw new ApiError("Name is too large, maximum 25 characters", 400);
+  }
+  if (data.username.length > 25) {
+    throw new ApiError("Username  is too large, maximum 25 characters", 400);
   }
 
   const isAlreadyUsernameExist = await User.findOne({
