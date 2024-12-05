@@ -60,7 +60,7 @@ export const setJWTTokens = (
   redirectUrl: string | null = null
 ): any => {
   const accessToken = jwt.sign({ userId: saved._id }, jwt_secret, {
-    expiresIn: "7d",
+    expiresIn: "30d",
   });
 
   VibeCache.del(saved._id.toString());
