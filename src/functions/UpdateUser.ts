@@ -29,9 +29,9 @@ export const updateUser = async (
       400
     );
   }
-  if (data.username.length <= 3 || data.name.length <= 3) {
+  if (data.username.length <= 2 || data.name.length <= 2) {
     throw new ApiError(
-      "Name or username is too short, minimum 4 characters",
+      "Name or username is too short, minimum 3 characters",
       400
     );
   }
