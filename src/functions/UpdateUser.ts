@@ -35,10 +35,10 @@ export const updateUser = async (
       400
     );
   }
-  if (data.name.length > 25) {
+  if (data.name.length > 26) {
     throw new ApiError("Name is too large, maximum 25 characters", 400);
   }
-  if (data.username.length > 25) {
+  if (data.username.length > 26) {
     throw new ApiError("Username  is too large, maximum 25 characters", 400);
   }
 
