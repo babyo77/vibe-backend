@@ -2,7 +2,6 @@
 
 import { CustomSocket } from "../../types";
 import { ExtendedError } from "socket.io/dist/namespace";
-import { errorHandler } from "./error";
 import Room from "../models/roomModel";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel";
@@ -17,9 +16,9 @@ export async function middleware(
 ) {
   try {
     let user = null;
-    const token = socket.handshake.headers["authorization"];
-    const roomId = socket.handshake.headers["room"];
-    if (!roomId || typeof roomId !== "string")
+    const token = socket.handshake.query["authorization"];
+    const roomId = socket.handshake.query["room"];
+    if (!roomId || typeof roomId !== "string" || typeof token !== "string")
       throw new Error("Invalid roomId");
     const isValidRoomId = /^[a-zA-Z0-9]+$/.test(roomId);
 
@@ -51,11 +50,13 @@ export async function middleware(
     );
 
     socket.join(roomId);
-
+    VibeCache.set(roomId + "roomId", { _id: newRoom._id.toString() });
     socket.roomInfo = {
       roomId: newRoom.roomId,
       _id: newRoom._id.toString(),
-      progress: newRoom.progress,
+      progress: VibeCache.has(newRoom._id.toString() + "progress")
+        ? (VibeCache.get(newRoom._id.toString() + "progress") as number)
+        : 0,
     };
 
     if (user) {
@@ -79,6 +80,7 @@ export async function middleware(
           active: true,
           socketid: socket.id,
           role: userRole,
+          status: false,
         },
         { upsert: true, new: true }
       );
@@ -93,18 +95,21 @@ export async function middleware(
       encrypt({ ...socket.roomInfo, role: socket.userInfo?.role })
     );
 
-    const currentSong = (
-      await getCurrentlyPlaying(socket.roomInfo._id, socket.userInfo?.id)
-    )[0];
+    const currentSong = VibeCache.has(socket.roomInfo.roomId + "isplaying")
+      ? VibeCache.get(socket.roomInfo.roomId + "isplaying")
+      : (
+          await getCurrentlyPlaying(socket.roomInfo._id, socket.userInfo?.id)
+        )[0];
     if (currentSong) {
       socket.emit("isplaying", encrypt(currentSong));
     }
-
+    socket.emit("profile");
+    socket.emit("update");
     emitMessage(
       socket,
       roomId,
       "userJoinedRoom",
-      user || { username: "someone" }
+      user || { username: "@someone" }
     );
     VibeCache.del(socket.userInfo?.id + "room");
     VibeCache.del(socket.roomInfo?.roomId + "listeners");

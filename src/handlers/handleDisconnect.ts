@@ -19,15 +19,21 @@ export async function handleDisconnect(socket: CustomSocket) {
     )
       .populate("userId")
       .select("username");
+
+    if (userInfo?.role == "admin") {
+      VibeCache.del(roomInfo._id + "isaAminOnline");
+      socket.to(roomInfo.roomId).emit("seekable", true);
+    }
+    socket.removeAllListeners();
+    socket.leave(roomInfo.roomId);
     if (roomInfo.roomId) {
       emitMessage(
         socket,
         roomInfo.roomId,
         "userLeftRoom",
-        data?.userId || { username: "Someone" }
+        data?.userId || { username: "@Someone" }
       );
     }
-    socket.leave(roomInfo.roomId);
   } catch (error) {
     console.log(error);
   }

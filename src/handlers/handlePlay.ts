@@ -6,6 +6,7 @@ import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Queue from "../models/queueModel";
 import { errorHandler } from "./error";
 import Vote from "../models/voteModel";
+import { VibeCache } from "../cache/cache";
 
 export async function handlePlay(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -15,7 +16,7 @@ export async function handlePlay(
   try {
     const { roomInfo, userInfo } = socket;
     if (!roomInfo || !song) return;
-    if (userInfo?.role !== "admin") return;
+    if (userInfo?.role !== "admin") throw new Error("Only admin can play");
     const value = decrypt(song);
 
     await Queue.updateOne(
@@ -35,7 +36,8 @@ export async function handlePlay(
         roomId: roomInfo._id,
         queueId: value.currentQueueId,
       });
-
+    VibeCache.del(`${roomInfo.roomId}suggestion`);
+    VibeCache.set(roomInfo.roomId + "isplaying", value);
     broadcast(io, roomInfo.roomId, "play", value);
     broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {

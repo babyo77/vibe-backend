@@ -22,7 +22,7 @@ export default async function upVote(
       throw new Error("Queue ID is missing in the data.");
     }
 
-    const isAlreadyVoted = await Vote.findOne({
+    const isAlreadyVoted = await Vote.exists({
       roomId: roomInfo._id,
       userId: userInfo.id,
       queueId: value.queueId,
@@ -30,11 +30,13 @@ export default async function upVote(
 
     if (!isAlreadyVoted) {
       console.log(`User ${userInfo.id} is voting for queueId ${value.queueId}`);
-      await Vote.create({
-        roomId: roomInfo._id,
-        userId: userInfo.id,
-        queueId: value.queueId,
-      });
+      await Vote.insertMany([
+        {
+          roomId: roomInfo._id,
+          userId: userInfo.id,
+          queueId: value.queueId,
+        },
+      ]);
     } else {
       console.log(
         `User ${userInfo.id} is un-voting for queueId ${value.queueId}`

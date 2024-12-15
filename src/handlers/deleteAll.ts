@@ -5,6 +5,7 @@ import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import mongoose from "mongoose";
 
 export async function deleteAll(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -16,9 +17,17 @@ export async function deleteAll(
     if (userInfo?.role !== "admin")
       throw new Error("only admins can delete all songs");
     await Promise.all([
-      await Queue.deleteMany({
-        roomId: roomInfo._id,
-      }),
+      await Queue.updateMany(
+        {
+          roomId: roomInfo._id,
+        },
+        {
+          $set: {
+            roomId: new mongoose.Types.ObjectId(),
+            deleted: true,
+          },
+        }
+      ),
       await Vote.deleteMany({
         roomId: roomInfo._id,
       }),

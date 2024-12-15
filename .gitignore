@@ -8,12 +8,12 @@
 
 # testing
 /coverage
-
+/etc
 # next.js
 /.next/
 /out/
 /dist
-
+firebase.json
 # production
 /build
 
@@ -35,3 +35,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/logs

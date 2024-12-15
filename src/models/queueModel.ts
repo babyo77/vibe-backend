@@ -9,6 +9,10 @@ const queueSchema = new mongoose.Schema(
       ref: Room,
       required: true,
     },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
     isPlaying: {
       type: Boolean,
       default: false,
@@ -37,6 +41,10 @@ const queueSchema = new mongoose.Schema(
         },
         image: {
           type: mongoose.Schema.Types.Mixed,
+        },
+        video: {
+          type: Boolean,
+          default: false,
         },
         source: {
           type: String,

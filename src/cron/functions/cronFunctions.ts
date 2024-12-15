@@ -23,4 +23,16 @@ async function deleteEmptyRooms() {
   }
 }
 
-export default deleteEmptyRooms;
+async function deleteDeletedQueue() {
+  try {
+    // Delete all rooms marked as deleted in one operation
+    const result = await Queue.deleteMany({ deleted: true });
+    console.log(`Deleted ${result.deletedCount} rooms marked as deleted.`);
+
+    console.log("Completed deleted room cleanup process.");
+  } catch (error) {
+    console.error("Error deleting deleted rooms:", error);
+  }
+}
+
+export { deleteEmptyRooms, deleteDeletedQueue };

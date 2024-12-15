@@ -7,10 +7,6 @@ const roomUserSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    socketid: {
-      type: String,
-      required: true,
-    },
     active: {
       type: Boolean,
       default: true,
@@ -19,6 +15,9 @@ const roomUserSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Room",
       required: true,
+    },
+    status: {
+      type: Boolean,
     },
     role: {
       type: String,

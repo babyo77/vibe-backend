@@ -46,6 +46,7 @@ export interface searchResults {
   addedBy?: string;
   queueId?: string;
   voteCount: number;
+  suggestedOrder: number;
 }
 
 export interface updateDetailsT {
@@ -53,4 +54,12 @@ export interface updateDetailsT {
   payload: {
     text: string;
   };
+}
+
+export interface discordUser {
+  id: string;
+  username: string;
+  avatar: string;
+  global_name: string;
+  email: string;
 }

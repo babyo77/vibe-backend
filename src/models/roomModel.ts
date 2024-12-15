@@ -8,14 +8,6 @@ const roomSchema = new mongoose.Schema(
       unique: true,
       maxLength: 8,
     },
-    progress: {
-      type: Number,
-      default: 0,
-    },
-    name: {
-      type: String,
-      maxLength: 50,
-    },
   },
   { timestamps: true }
 );

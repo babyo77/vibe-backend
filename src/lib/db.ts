@@ -8,9 +8,7 @@ export function runServer(app: any) {
     .then(() => {
       cronsJobs();
       app.listen(process.env.PORT, () => {
-        console.log(
-          `db connected - Server is running on port ${process.env.PORT}`
-        );
+        console.log(`DB CONNECTED ⚡️ - http://localhost:${process.env.PORT}`);
       });
     })
     .catch(() => {

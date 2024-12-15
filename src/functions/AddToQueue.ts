@@ -4,30 +4,15 @@ import mongoose from "mongoose";
 import Queue from "../models/queueModel";
 import Room from "../models/roomModel";
 import { searchResults } from "../../types";
-
-// Define Counter Schema if not already defined
-const counterSchema = new mongoose.Schema({
-  _id: String,
-  seq: { type: Number, default: 0 },
-});
-
-// Create Counter model if not exists
-const Counter =
-  mongoose.models.Counter || mongoose.model("Counter", counterSchema);
-
-class QueueError extends Error {
-  constructor(message: string, public statusCode: number = 500) {
-    super(message);
-    this.name = "QueueError";
-  }
-}
+import { VibeCache } from "../cache/cache";
+import { Counter } from "../models/counterModel";
+import { ApiError } from "./apiError";
 
 const MAX_RETRIES = 100;
-const RETRY_DELAY = 100; // milliseconds
+const RETRY_DELAY = 100;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Function to get next sequence of orders atomically
 const getNextSequence = async (
   roomId: string,
   count: number,
@@ -44,10 +29,13 @@ const getNextSequence = async (
     }
   );
 
-  return counter.seq - count + 1; // Return the starting sequence
+  return counter.seq - count + 1;
 };
 
-export const addToQueue = async (req: CustomRequest, res: Response) => {
+export const addToQueue = async (
+  req: CustomRequest,
+  res: Response
+): Promise<Response> => {
   let retryCount = 0;
 
   while (retryCount < MAX_RETRIES) {
@@ -62,16 +50,18 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
       } = req;
 
       if (!userId || !roomId) {
-        throw new QueueError(
+        throw new ApiError(
           !userId ? "Invalid userId" : "Room ID is required",
           400
         );
       }
 
-      const room = await Room.findOne({ roomId }).session(session);
+      const room = VibeCache.has(roomId + "roomId")
+        ? VibeCache.get(roomId + "roomId")
+        : await Room.findOne({ roomId }).session(session);
 
       if (!room) {
-        throw new QueueError("Invalid roomId", 404);
+        throw new ApiError("Invalid roomId", 404);
       }
 
       // Get existing songs to check for duplicates
@@ -90,10 +80,10 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
       );
 
       if (songsToAdd.length === 0) {
-        await session.commitTransaction();
-        return res.status(400).json({
-          message: "All songs already exist in queue.",
-        });
+        throw new ApiError(
+          `${data.length == 1 ? "song" : "songs"} already exist in queue.`,
+          409
+        );
       }
 
       // Get starting order number atomically
@@ -156,25 +146,14 @@ export const addToQueue = async (req: CustomRequest, res: Response) => {
         }
       }
 
-      if (error instanceof QueueError) {
-        return res.status(error.statusCode).json({ error: error.message });
+      if (error instanceof Error) {
+        throw new ApiError(error.message, 409);
       }
 
-      console.error("Queue error:", error.message, error.stack);
-      return res.status(500).json({
-        error: "Operation failed after retries",
-        details: error.message,
-      });
+      throw new ApiError("Write conflict");
     } finally {
       session.endSession();
     }
   }
+  throw new ApiError("Max retries reached. Could not add songs to queue.", 500);
 };
-
-// Required indexes
-/*
-await Queue.collection.createIndex({ roomId: 1, order: 1 });
-await Queue.collection.createIndex({ "songData.id": 1 });
-await Room.collection.createIndex({ roomId: 1 }, { unique: true });
-await Counter.collection.createIndex({ _id: 1 }, { unique: true });
-*/
