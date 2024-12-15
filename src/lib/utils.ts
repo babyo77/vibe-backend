@@ -7,6 +7,7 @@ import ytmusic from "./ytMusic";
 import { decrypt, encrypt } from "tanmayo7lock";
 import { VibeCache } from "../cache/cache";
 import rateLimit from "express-rate-limit";
+import { ApiError } from "../functions/apiError";
 
 export const parseCookies = (cookieHeader?: string) => {
   const cookies: any = {};
@@ -1183,6 +1184,9 @@ export function getRandomEmoji(emojis: string[]): string {
 }
 
 export const limiter = rateLimit({
+  handler: (_req, res) => {
+    throw new ApiError("wow wow! hold on babe", 429);
+  },
   windowMs: 2 * 60 * 1000,
   limit: 100,
   standardHeaders: "draft-7",
