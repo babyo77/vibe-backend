@@ -4,6 +4,7 @@ import Room from "../models/roomModel";
 import RoomUser from "../models/roomUsers";
 import { tempCache as VibeCache } from "../cache/cache";
 import { ApiError } from "./apiError";
+import mongoose from "mongoose";
 
 export const roomListeners = async (
   req: CustomRequest,
@@ -26,7 +27,7 @@ export const roomListeners = async (
     RoomUser.find({
       roomId: room._id,
       active: true,
-      userId: { $nin: userId },
+      userId: { $nin: new mongoose.Types.ObjectId(userId) },
     })
       .populate({
         path: "userId",

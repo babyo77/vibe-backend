@@ -89,7 +89,8 @@ export async function middleware(
         role: addedUser.role,
       };
     }
-
+    VibeCache.del(socket.userInfo?.id + "room");
+    VibeCache.del(roomId + "listeners");
     socket.emit(
       "joined",
       encrypt({ ...socket.roomInfo, role: socket.userInfo?.role })
@@ -111,8 +112,7 @@ export async function middleware(
       "userJoinedRoom",
       user || { username: "@someone" }
     );
-    VibeCache.del(socket.userInfo?.id + "room");
-    VibeCache.del(socket.roomInfo?.roomId + "listeners");
+
     next();
   } catch (error: any) {
     console.log("MIDDLEWARE ERROR:", error);
