@@ -38,7 +38,7 @@ export async function middleware(
       const decode: any = jwt.verify(token, process.env.JWT_SECRET || "");
       user = await User.findById(decode.userId).select("username");
     }
-
+    socket.join(roomId);
     const room = await Room.findOne({ roomId });
 
     if (!room && !user) throw new Error("Login to claim this Room");
@@ -49,7 +49,6 @@ export async function middleware(
       { new: true, upsert: true }
     );
 
-    socket.join(roomId);
     VibeCache.set(roomId + "roomId", { _id: newRoom._id.toString() });
     socket.roomInfo = {
       roomId: newRoom.roomId,
