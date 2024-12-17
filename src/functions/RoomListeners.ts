@@ -41,6 +41,7 @@ export const roomListeners = async (
   const totalListeners = RoomUser.countDocuments({
     roomId: room._id,
     active: true,
+    userId: { $nin: new mongoose.Types.ObjectId(userId) },
   });
   const payload = {
     totalUsers: totalListeners,
