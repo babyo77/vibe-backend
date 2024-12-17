@@ -37,7 +37,7 @@ export const roomListeners = async (
       .select("userId -_id"),
   ]);
 
-  const totalListeners = RoomUser.countDocuments({
+  const totalListeners = await RoomUser.countDocuments({
     roomId: room._id,
     active: true,
     userId: { $nin: new mongoose.Types.ObjectId(userId) },
