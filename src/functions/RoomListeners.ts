@@ -2,7 +2,7 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import Room from "../models/roomModel";
 import RoomUser from "../models/roomUsers";
-import { tempCache as VibeCache } from "../cache/cache";
+import { tempCache } from "../cache/cache";
 import { ApiError } from "./apiError";
 import mongoose from "mongoose";
 
@@ -14,12 +14,12 @@ export const roomListeners = async (
   if (!roomId) throw new Error("Invalid roomId");
   const userId = req.userId;
   const cacheKey = roomId + "listeners";
-  // if (VibeCache.has(cacheKey)) {
-  //   return res.json(VibeCache.get(cacheKey));
-  // }
+  if (tempCache.has(cacheKey)) {
+    return res.json(tempCache.get(cacheKey));
+  }
 
-  const room = VibeCache.has(roomId + "roomId")
-    ? VibeCache.get(roomId + "roomId")
+  const room = tempCache.has(roomId + "roomId")
+    ? tempCache.get(roomId + "roomId")
     : await Room.findOne({ roomId }).select("_id");
   if (!room) throw new ApiError("Invalid roomId", 400);
 
@@ -34,8 +34,7 @@ export const roomListeners = async (
         select: "name username imageUrl -_id",
       })
       .limit(17)
-      .select("userId -_id")
-      .lean(),
+      .select("userId -_id"),
   ]);
 
   const totalListeners = RoomUser.countDocuments({
@@ -49,6 +48,6 @@ export const roomListeners = async (
     roomUsers,
   };
 
-  VibeCache.set(cacheKey, payload);
+  tempCache.set(cacheKey, payload);
   return res.json(payload);
 };
