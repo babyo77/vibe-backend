@@ -14,16 +14,16 @@ export const roomListeners = async (
   if (!roomId) throw new Error("Invalid roomId");
   const userId = req.userId;
   const cacheKey = roomId + "listeners";
-  if (VibeCache.has(cacheKey)) {
-    return res.json(VibeCache.get(cacheKey));
-  }
+  // if (VibeCache.has(cacheKey)) {
+  //   return res.json(VibeCache.get(cacheKey));
+  // }
 
   const room = VibeCache.has(roomId + "roomId")
     ? VibeCache.get(roomId + "roomId")
     : await Room.findOne({ roomId }).select("_id");
   if (!room) throw new ApiError("Invalid roomId", 400);
 
-  const [roomUsers, totalListeners] = await Promise.all([
+  const [roomUsers] = await Promise.all([
     RoomUser.find({
       roomId: room._id,
       active: true,
@@ -34,12 +34,16 @@ export const roomListeners = async (
         select: "name username imageUrl -_id",
       })
       .limit(17)
-      .select("userId -_id"),
-    RoomUser.countDocuments({ roomId: room._id, active: true }),
+      .select("userId -_id")
+      .lean(),
   ]);
 
+  const totalListeners = RoomUser.countDocuments({
+    roomId: room._id,
+    active: true,
+  });
   const payload = {
-    totalUsers: totalListeners - 1,
+    totalUsers: totalListeners,
     currentPage: 1,
     roomUsers,
   };
