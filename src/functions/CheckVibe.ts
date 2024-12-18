@@ -12,8 +12,7 @@ export async function checkVibe(
   res: Response
 ): Promise<Response> {
   const userId = req.userId;
-  const session =
-    req.cookies.vibeIdR || req.headers.authorization?.split(" ")[1]; // Get cookies from the request
+  const session = req.cookies.vibeIdR || req.headers.authorization; // Get cookies from the request
   const roomId = req.cookies?.room; // Get room ID from cookies
   const bookmarkedCacheKey = userId + "isBookmarked";
   const userInfoCacheKey = userId + "userInfo";

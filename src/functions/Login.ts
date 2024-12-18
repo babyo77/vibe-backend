@@ -11,8 +11,7 @@ export const login = async (
   req: CustomRequest,
   res: Response
 ): Promise<Response> => {
-  const session =
-    req.cookies.vibeIdR || req.headers.authorization?.split(" ")[1];
+  const session = req.cookies.vibeIdR || req.headers.authorization;
 
   if (session) {
     const decoded: any = jwt.verify(session, process.env.JWT_SECRET || "");

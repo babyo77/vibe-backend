@@ -10,8 +10,7 @@ export const authMiddleware = (
   _res: Response,
   next: NextFunction
 ) => {
-  const session =
-    req.cookies.vibeIdR || req.headers.authorization?.split(" ")[1]; // Access the session cookie
+  const session = req.cookies.vibeIdR || req.headers.authorization; // Access the session cookie
 
   // Check if the session cookie is present
   if (!session) {
