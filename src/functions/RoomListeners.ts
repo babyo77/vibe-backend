@@ -14,9 +14,9 @@ export const roomListeners = async (
   if (!roomId) throw new Error("Invalid roomId");
   const userId = req.userId;
   const cacheKey = roomId + "listeners";
-  if (tempCache.has(cacheKey)) {
-    return res.json(tempCache.get(cacheKey));
-  }
+  // if (tempCache.has(cacheKey)) {
+  //   return res.json(tempCache.get(cacheKey));
+  // }
 
   const room = tempCache.has(roomId + "roomId")
     ? tempCache.get(roomId + "roomId")
