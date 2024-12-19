@@ -33,12 +33,11 @@ export async function middleware(
     if (!isValidRoomId) {
       throw new Error("Special characters not allowed");
     }
-
+    socket.join(roomId);
     if (token && token.length > 0) {
       const decode: any = jwt.verify(token, process.env.JWT_SECRET || "");
       user = await User.findById(decode.userId).select("username");
     }
-    socket.join(roomId);
     const room = await Room.findOne({ roomId });
 
     if (!room && !user) throw new Error("Login to claim this Room");
