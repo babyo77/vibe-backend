@@ -1072,26 +1072,40 @@ async function fetchSuggestedSongs(
   currentSong: searchResults
 ): Promise<searchResults[] | null> {
   try {
-    let suggestionId =
-      currentSong?.downloadUrl[currentSong?.downloadUrl?.length - 1]?.url;
+    let suggestionId = currentSong?.downloadUrl.at(-1)?.url;
 
-    if (suggestionId.startsWith("http")) {
+    if (suggestionId && suggestionId.startsWith("http")) {
       const searchResults = await ytmusic.searchSongs(
         `${currentSong.name} ${currentSong.artists.primary[0]?.name}`
       );
       suggestionId = encrypt(searchResults[0]?.videoId || "");
     }
 
-    const response = await fetch(
+    const response1 = await fetch(
       `${process.env.SUGGESTION_API}/vibe/${suggestionId}`
     );
-    if (response.ok) {
-      const songs = await response.json();
-      VibeCache.set(`${roomId}suggestion`, songs);
-      return songs;
+    if (response1.ok) {
+      const array = await response1.json(); // Parse the JSON response
+
+      if (Array.isArray(array) && array.length > 0) {
+        const randomIndex = Math.floor(Math.random() * array.length);
+        suggestionId = array[randomIndex]?.downloadUrl.at(-1)?.url;
+        const response = await fetch(
+          `${process.env.SUGGESTION_API}/vibe/${suggestionId}`
+        );
+        if (response.ok) {
+          const songs = await response.json();
+          VibeCache.set(`${roomId}suggestion`, songs);
+          return songs;
+        }
+      } else {
+        console.error("The response is not an array or the array is empty.");
+        return null;
+      }
     }
   } catch (error) {
     console.log("SUGGESTION ERROR:", error, roomId);
+    return null;
   }
   return null;
 }
