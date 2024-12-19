@@ -49,7 +49,7 @@ export const updateUser = async (
     isAlreadyUsernameExist &&
     isAlreadyUsernameExist?._id.toString() !== userId
   ) {
-    throw new ApiError("Username already taken", 409);
+    throw new ApiError("Deja vu! Username already taken", 409);
   }
   await User.findByIdAndUpdate(userId, {
     username: data.username.toLocaleLowerCase(),
