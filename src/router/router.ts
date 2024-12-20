@@ -23,6 +23,7 @@ import { submitFeedback } from "../functions/submitFeedback";
 import { getSpotifyPlaylist } from "../functions/getSpotifyPlaylist";
 import { saveBookmark } from "../functions/saveBookmark";
 import { deleteBookmark } from "../functions/deleteBookmark";
+import { pingVibe } from "../functions/pingVibe";
 
 const router = express.Router();
 
@@ -52,6 +53,7 @@ router.post("/api/feedback", queueMiddleware, asyncHandler(submitFeedback));
 
 // authorized users api
 router.use(authMiddleware);
+router.get("/api/ping", asyncHandler(pingVibe));
 router.get("/api/vibe", asyncHandler(checkVibe));
 router.post("/api/add", asyncHandler(addToQueue));
 router.get("/api/@me", asyncHandler(getMe));
