@@ -1202,7 +1202,7 @@ export const limiter = rateLimit({
     throw new ApiError("wow wow! hold on babe", 429);
   },
   windowMs: 2 * 60 * 1000,
-  limit: 100,
+  limit: 400,
   standardHeaders: "draft-7",
   legacyHeaders: false,
   validate: {
