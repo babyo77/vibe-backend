@@ -33,7 +33,7 @@ export const roomListeners = async (
         path: "userId",
         select: "name username imageUrl -_id",
       })
-      .limit(17)
+      .limit(11)
       .select("userId -_id"),
   ]);
 
