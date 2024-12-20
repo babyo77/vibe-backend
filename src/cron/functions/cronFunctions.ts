@@ -48,5 +48,6 @@ async function deleteTempLinks() {
       }
     })
   );
+  redisClient.del("tempUploadFileInChat");
 }
 export { deleteEmptyRooms, deleteDeletedQueue, deleteTempLinks };
