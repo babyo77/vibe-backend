@@ -41,7 +41,7 @@ export async function middleware(
     const room = await Room.findOne({ roomId });
 
     if (!room && !user) throw new Error("Login to claim this Room");
-
+    socket.join(roomId);
     const newRoom = await Room.findOneAndUpdate(
       { roomId },
       {},
@@ -89,7 +89,7 @@ export async function middleware(
     }
     VibeCache.del(socket.userInfo?.id + "room");
     VibeCache.del(roomId + "listeners");
-    socket.join(roomId);
+
     socket.emit(
       "joined",
       encrypt({ ...socket.roomInfo, role: socket.userInfo?.role })
