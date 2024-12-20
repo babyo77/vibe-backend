@@ -70,8 +70,8 @@ const queueSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-queueSchema.index({ roomId: 1, order: 1 });
-queueSchema.index({ "songData.id": 1 });
-queueSchema.index({ roomId: 1, order: 1 });
+// queueSchema.index({ roomId: 1, order: 1 });
+// queueSchema.index({ "songData.id": 1 });
+// queueSchema.index({ roomId: 1, order: 1 });
 const Queue = mongoose.models?.Queue || mongoose.model("Queue", queueSchema);
 export default Queue;
