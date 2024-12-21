@@ -38,6 +38,7 @@ async function deleteDeletedQueue() {
 
 async function deleteTempLinks() {
   const tempLinks = await redisClient.lrange("tempUploadFileInChat", 0, -1);
+  console.log("Temp links:", tempLinks);
   if (!tempLinks.length || tempLinks.length == 0) return;
   await Promise.all(
     tempLinks.map(async (url) => {
@@ -48,6 +49,7 @@ async function deleteTempLinks() {
       }
     })
   );
-  redisClient.del("tempUploadFileInChat");
+  await redisClient.del("tempUploadFileInChat");
+  console.log("Deleted all temp links.");
 }
 export { deleteEmptyRooms, deleteDeletedQueue, deleteTempLinks };
