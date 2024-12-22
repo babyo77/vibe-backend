@@ -8,13 +8,12 @@ export async function getLinkPreview(
   const url = req.query.url;
   if (typeof url !== "string" || !url)
     throw new ApiError("Missing URL query parameter", 400);
-  await fetch(`https://api.dub.co/metatags?url=${encodeURIComponent(url)}`);
-  const response2 = await fetch(
+  const response = await fetch(
     `https://api.dub.co/metatags?url=${encodeURIComponent(url)}`
   );
 
-  if (response2.ok) {
-    return res.json(await response2.json());
+  if (response.ok) {
+    return res.json(await response.json());
   }
 
   throw new ApiError();
