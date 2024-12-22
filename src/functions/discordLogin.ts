@@ -29,6 +29,9 @@ export const discordLogin = async (
     redirectUrl = `${process.env.ALLOWED_URL}/v?room=${
       roomId ? roomId : verify.global_name
     }`;
+
+    console.log("discord user data", verify);
+
     const isAlready = await User.findOne({
       email: verify.email,
       provider: "discord",
