@@ -1,3 +1,4 @@
+import redisClient from "../../cache/redis";
 import Queue from "../../models/queueModel";
 import Room from "../../models/roomModel";
 
@@ -35,4 +36,20 @@ async function deleteDeletedQueue() {
   }
 }
 
-export { deleteEmptyRooms, deleteDeletedQueue };
+async function deleteTempLinks() {
+  const tempLinks = await redisClient.lrange("tempUploadFileInChat", 0, -1);
+  console.log("Temp links:", tempLinks);
+  if (!tempLinks.length || tempLinks.length == 0) return;
+  await Promise.all(
+    tempLinks.map(async (url) => {
+      try {
+        await fetch(url);
+      } catch (error) {
+        console.error(`Error fetching URL: ${url}`, error);
+      }
+    })
+  );
+  await redisClient.del("tempUploadFileInChat");
+  console.log("Deleted all temp links.");
+}
+export { deleteEmptyRooms, deleteDeletedQueue, deleteTempLinks };

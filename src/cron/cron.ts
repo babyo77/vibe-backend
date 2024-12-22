@@ -2,6 +2,7 @@ import cron from "node-cron";
 import {
   deleteDeletedQueue,
   deleteEmptyRooms,
+  deleteTempLinks,
 } from "./functions/cronFunctions";
 export default function cronsJobs() {
   try {
@@ -10,6 +11,10 @@ export default function cronsJobs() {
     cron.schedule("0 * * * *", () => {
       console.log("Running scheduled task to delete empty rooms...");
       deleteEmptyRooms();
+    });
+    cron.schedule("0 0 * * *", () => {
+      console.log("Running scheduled task to delete all temp links...");
+      deleteTempLinks();
     });
     cron.schedule("0 0 */2 * *", () => {
       console.log("Running scheduled task to delete deleted queue rooms...");

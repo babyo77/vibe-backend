@@ -38,18 +38,16 @@ export async function middleware(
       const decode: any = jwt.verify(token, process.env.JWT_SECRET || "");
       user = await User.findById(decode.userId).select("username");
     }
-
     const room = await Room.findOne({ roomId });
 
     if (!room && !user) throw new Error("Login to claim this Room");
-
+    socket.join(roomId);
     const newRoom = await Room.findOneAndUpdate(
       { roomId },
       {},
       { new: true, upsert: true }
     );
 
-    socket.join(roomId);
     VibeCache.set(roomId + "roomId", { _id: newRoom._id.toString() });
     socket.roomInfo = {
       roomId: newRoom.roomId,
@@ -89,6 +87,8 @@ export async function middleware(
         role: addedUser.role,
       };
     }
+    VibeCache.del(socket.userInfo?.id + "room");
+    VibeCache.del(roomId + "listeners");
 
     socket.emit(
       "joined",
@@ -111,8 +111,7 @@ export async function middleware(
       "userJoinedRoom",
       user || { username: "@someone" }
     );
-    VibeCache.del(socket.userInfo?.id + "room");
-    VibeCache.del(socket.roomInfo?.roomId + "listeners");
+
     next();
   } catch (error: any) {
     console.log("MIDDLEWARE ERROR:", error);

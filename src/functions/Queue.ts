@@ -14,7 +14,7 @@ export const queue = async (
   // &&
   // !req.headers.nocache
   const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 50;
+  const limit = Number(req.query.limit) || 100;
   const name = String(req.query.name) || "";
   const roomId = String(req.query.room) || "";
   if (tempCache.has(`${page}_${limit}_${name}_${roomId}_${userId}`)) {

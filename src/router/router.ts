@@ -23,6 +23,8 @@ import { submitFeedback } from "../functions/submitFeedback";
 import { getSpotifyPlaylist } from "../functions/getSpotifyPlaylist";
 import { saveBookmark } from "../functions/saveBookmark";
 import { deleteBookmark } from "../functions/deleteBookmark";
+import { pingVibe } from "../functions/pingVibe";
+import { getLinkPreview } from "../functions/getLinkPreview";
 
 const router = express.Router();
 
@@ -39,7 +41,7 @@ router.get("/api/checkroom", asyncHandler(checkRoom));
 router.post("/api/metadata", asyncHandler(getMetadata));
 router.get("/api/search", asyncHandler(search));
 router.get("/api/upNextSong", asyncHandler(upNextSong));
-router.get("/api/youtube/:id", asyncHandler(getPlaylist));
+router.get("/api/youtube/playlist/:id", asyncHandler(getPlaylist));
 
 //spotify api
 router.get("/api/spotify/:id", asyncHandler(getSpotifyTrack));
@@ -52,6 +54,8 @@ router.post("/api/feedback", queueMiddleware, asyncHandler(submitFeedback));
 
 // authorized users api
 router.use(authMiddleware);
+router.get("/api/ping", asyncHandler(pingVibe));
+router.get("/api/linkpreview", asyncHandler(getLinkPreview));
 router.get("/api/vibe", asyncHandler(checkVibe));
 router.post("/api/add", asyncHandler(addToQueue));
 router.get("/api/@me", asyncHandler(getMe));

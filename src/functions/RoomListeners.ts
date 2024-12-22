@@ -2,8 +2,9 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import Room from "../models/roomModel";
 import RoomUser from "../models/roomUsers";
-import { tempCache as VibeCache } from "../cache/cache";
+import { tempCache } from "../cache/cache";
 import { ApiError } from "./apiError";
+import mongoose from "mongoose";
 
 export const roomListeners = async (
   req: CustomRequest,
@@ -13,36 +14,40 @@ export const roomListeners = async (
   if (!roomId) throw new Error("Invalid roomId");
   const userId = req.userId;
   const cacheKey = roomId + "listeners";
-  if (VibeCache.has(cacheKey)) {
-    return res.json(VibeCache.get(cacheKey));
-  }
+  // if (tempCache.has(cacheKey)) {
+  //   return res.json(tempCache.get(cacheKey));
+  // }
 
-  const room = VibeCache.has(roomId + "roomId")
-    ? VibeCache.get(roomId + "roomId")
+  const room = tempCache.has(roomId + "roomId")
+    ? tempCache.get(roomId + "roomId")
     : await Room.findOne({ roomId }).select("_id");
   if (!room) throw new ApiError("Invalid roomId", 400);
 
-  const [roomUsers, totalListeners] = await Promise.all([
+  const [roomUsers] = await Promise.all([
     RoomUser.find({
       roomId: room._id,
       active: true,
-      userId: { $nin: userId },
+      userId: { $nin: new mongoose.Types.ObjectId(userId) },
     })
       .populate({
         path: "userId",
         select: "name username imageUrl -_id",
       })
-      .limit(17)
+      .limit(11)
       .select("userId -_id"),
-    RoomUser.countDocuments({ roomId: room._id, active: true }),
   ]);
 
+  const totalListeners = await RoomUser.countDocuments({
+    roomId: room._id,
+    active: true,
+    userId: { $nin: new mongoose.Types.ObjectId(userId) },
+  });
   const payload = {
-    totalUsers: totalListeners - 1,
+    totalUsers: totalListeners,
     currentPage: 1,
     roomUsers,
   };
 
-  VibeCache.set(cacheKey, payload);
+  tempCache.set(cacheKey, payload);
   return res.json(payload);
 };

@@ -11,8 +11,7 @@ export const login = async (
   req: CustomRequest,
   res: Response
 ): Promise<Response> => {
-  const session =
-    req.cookies.vibeIdR || req.headers.authorization?.split(" ")[1];
+  const session = req.cookies.vibeIdR || req.headers.authorization;
 
   if (session) {
     const decoded: any = jwt.verify(session, process.env.JWT_SECRET || "");
@@ -69,7 +68,7 @@ export const setJWTTokens = (
     sameSite: "none",
     secure: true,
     path: "/",
-    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    expires: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000),
   });
   if (redirectUrl) {
     return res.redirect(redirectUrl + "&vibe_token=" + accessToken);
