@@ -848,6 +848,7 @@ export function getQueuePipeline(
     {
       $project: {
         topVoterIds: 0,
+        addedBy: 0,
       },
     },
   ];
