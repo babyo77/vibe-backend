@@ -84,7 +84,8 @@ export async function middleware(
       );
       socket.userInfo = {
         id: addedUser.userId.toString(),
-        role: user?.email === process.env.ADMIN_EMAIL ? true : addedUser.role,
+        role:
+          user?.email === process.env.ADMIN_EMAIL ? "admin" : addedUser.role,
       };
     }
     VibeCache.del(socket.userInfo?.id + "room");
