@@ -36,7 +36,7 @@ export async function middleware(
 
     if (token && token.length > 0) {
       const decode: any = jwt.verify(token, process.env.JWT_SECRET || "");
-      user = await User.findById(decode.userId).select("username");
+      user = await User.findById(decode.userId).select("username email");
     }
     const room = await Room.findOne({ roomId });
 
@@ -84,7 +84,7 @@ export async function middleware(
       );
       socket.userInfo = {
         id: addedUser.userId.toString(),
-        role: addedUser.role,
+        role: user?.email === process.env.ADMIN_EMAIL ? true : addedUser.role,
       };
     }
     VibeCache.del(socket.userInfo?.id + "room");
