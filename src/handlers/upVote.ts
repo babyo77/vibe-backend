@@ -24,13 +24,19 @@ export default async function upVote(
 
     if (!value.queueId.startsWith("del")) {
       console.log(`User ${userInfo.id} is voting for queueId ${value.queueId}`);
-      await Vote.insertMany([
+      await Vote.findOneAndUpdate(
         {
           roomId: roomInfo._id,
           userId: userInfo.id,
           queueId: value.queueId,
         },
-      ]);
+        {
+          roomId: roomInfo._id,
+          userId: userInfo.id,
+          queueId: value.queueId,
+        },
+        { upsert: true }
+      );
     } else {
       console.log(
         `User ${userInfo.id} is un-voting for queueId ${value.queueId}`
