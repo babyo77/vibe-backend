@@ -4,13 +4,14 @@ import { Server } from "socket.io";
 import { runServer } from "./lib/db";
 import { CustomSocket } from "../types";
 import { middleware } from "./handlers/middleware";
-import { cors, limiter } from "./lib/utils";
+import { cors, limiter, socketRateLimiter } from "./lib/utils";
 import cookieParser from "cookie-parser";
 import useCors from "cors";
 import router from "./router/router";
 import { errorHandler } from "./functions/apiError";
 import { setSocketListeners } from "./register/sockets";
 import { httpRequestDurationHistogram, register } from "./metrics/metrics";
+
 const app = express();
 const server = createServer(app);
 
@@ -41,7 +42,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(router);
 app.use(errorHandler);
-
+io.use(socketRateLimiter);
 io.use(async (socket: CustomSocket, next) => {
   try {
     socket.compress(true);

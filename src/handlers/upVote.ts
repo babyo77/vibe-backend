@@ -17,18 +17,12 @@ export default async function upVote(
 
     if (!roomInfo || !userInfo || !data) throw new Error("Login required");
 
-    const value = decrypt(data);
+    const value = decrypt(data) as { queueId: string };
     if (!value.queueId) {
       throw new Error("Queue ID is missing in the data.");
     }
 
-    const isAlreadyVoted = await Vote.exists({
-      roomId: roomInfo._id,
-      userId: userInfo.id,
-      queueId: value.queueId,
-    });
-
-    if (!isAlreadyVoted) {
+    if (!value.queueId.startsWith("del")) {
       console.log(`User ${userInfo.id} is voting for queueId ${value.queueId}`);
       await Vote.insertMany([
         {
@@ -44,7 +38,7 @@ export default async function upVote(
       await Vote.deleteOne({
         roomId: roomInfo._id,
         userId: userInfo.id,
-        queueId: value.queueId,
+        queueId: value.queueId.replace("del", ""),
       });
     }
     broadcast(io, roomInfo.roomId, "update", "update");

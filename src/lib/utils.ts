@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Queue from "../models/queueModel";
 import RoomUser from "../models/roomUsers";
-import { searchResults } from "../../types";
+import { CustomSocket, searchResults } from "../../types";
 import { Innertube } from "youtubei.js";
 import ytmusic from "./ytMusic";
 import { decrypt, encrypt } from "tanmayo7lock";
@@ -1209,3 +1209,57 @@ export const limiter = rateLimit({
     xForwardedForHeader: false,
   },
 });
+
+import { RateLimiterMemory } from "rate-limiter-flexible";
+import { errorHandler } from "../handlers/error";
+
+const socketLimiter = new RateLimiterMemory({
+  points: 10, // Rate limit points
+  duration: 30, // Time window in seconds
+  blockDuration: 30, // Block duration in seconds
+});
+
+const clientLimits = new Map<string, number>();
+
+export const socketRateLimiter = async (
+  socket: CustomSocket,
+  next: (err?: Error) => void
+) => {
+  try {
+    // Get unique identifier for the client (IP or custom ID)
+    const clientId = socket.id || socket.handshake.address;
+
+    // Try to consume a point
+    await socketLimiter.consume(clientId);
+
+    // Track client's consumption
+    const currentCount = clientLimits.get(clientId) || 0;
+    clientLimits.set(clientId, currentCount + 1);
+
+    // Clean up when client disconnects
+    socket.on("disconnect", () => {
+      clientLimits.delete(clientId);
+    });
+
+    // Add rate limiting to individual events
+    const originalOn = socket.on;
+    socket.on = function (event: string, listener: Function) {
+      const wrappedListener = async (...args: any[]) => {
+        try {
+          await socketLimiter.consume(clientId);
+          await listener.apply(this, args);
+        } catch (error) {
+          errorHandler(socket, "wow wow! hold on babe");
+          return;
+        }
+      };
+      return originalOn.call(this, event, wrappedListener);
+    };
+
+    next();
+  } catch (error) {
+    // Rate limit exceeded
+    errorHandler(socket, "wow wow! hold on babe");
+    return;
+  }
+};

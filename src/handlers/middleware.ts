@@ -115,7 +115,7 @@ export async function middleware(
 
     next();
   } catch (error: any) {
-    console.log("MIDDLEWARE ERROR:", error);
+    console.log("MIDDLEWARE ERROR:", error.message);
 
     throw new Error(error.message);
   }

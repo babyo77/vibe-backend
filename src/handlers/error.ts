@@ -4,7 +4,7 @@ import { getRandomEmoji } from "../lib/utils";
 import { socketIoErrorCounter } from "../metrics/metrics";
 
 export async function errorHandler(socket: CustomSocket, err: any) {
-  const message = err.message;
+  const message = err.message || err;
   const emojiArray = [
     "😂",
     "😎",
