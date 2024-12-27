@@ -17,7 +17,7 @@ import { updateDetails } from "../handlers/updateDetails";
 import { handleUpdateStatus } from "../handlers/handleUpdateStatus";
 import emitUpdates from "../handlers/emitUpdates";
 import { handleDisconnect } from "../handlers/handleDisconnect";
-
+// const middlewareEvents = ["message", "heart"];
 export function setSocketListeners(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 ) {

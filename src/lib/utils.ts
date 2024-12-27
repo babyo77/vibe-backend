@@ -1022,7 +1022,7 @@ export const roomPipeline = (
     },
     {
       $sort: {
-        updatedAt: -1, // Sort by updatedAt descending if no admin search
+        updatedAt: 1, // Sort by updatedAt descending if no admin search
       },
     },
     {
@@ -1236,11 +1236,6 @@ export const socketRateLimiter = async (
     const currentCount = clientLimits.get(clientId) || 0;
     clientLimits.set(clientId, currentCount + 1);
 
-    // Clean up when client disconnects
-    socket.on("disconnect", () => {
-      clientLimits.delete(clientId);
-    });
-
     // Add rate limiting to individual events
     const originalOn = socket.on;
     socket.on = function (event: string, listener: Function) {
@@ -1258,7 +1253,6 @@ export const socketRateLimiter = async (
 
     next();
   } catch (error) {
-    // Rate limit exceeded
     errorHandler(socket, "wow wow! hold on babe");
     return;
   }
