@@ -13,9 +13,6 @@ RUN npm install
 # Build the TypeScript code
 RUN npm run build
 
-# Remove unnecessary files after build
-RUN rm -rf node_modules src
-
 # Expose the port on which the app will run
 EXPOSE 4000
 

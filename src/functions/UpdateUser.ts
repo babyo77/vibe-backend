@@ -16,7 +16,10 @@ export const updateUser = async (
   const userId = req.userId;
   if (!userId) throw new ApiError("Login required");
   if (!data.username || !data.name)
-    throw new ApiError(`username or name is required`, 400);
+    throw new ApiError(
+      `Yo, both username and name are a must, no exceptions!`,
+      400
+    );
 
   const isValidUserName =
     /^[a-z0-9_]+$/.test(data.username) &&
@@ -25,21 +28,27 @@ export const updateUser = async (
 
   if (!isValidUserName) {
     throw new ApiError(
-      "Special characters not allowed in username and must be in lowercase",
+      "No symbols, just lowercase & numbers. Keep it real, you're special.",
       400
     );
   }
   if (data.username.length <= 2 || data.name.length <= 2) {
     throw new ApiError(
-      "Name or username is too short, minimum 3 characters",
+      "Name & username need to be 3+ chars. Show us who you really are.",
       400
     );
   }
   if (data.name.length > 26) {
-    throw new ApiError("Name is too large, maximum 25 characters", 400);
+    throw new ApiError(
+      "Name’s too extra! Max 25 chars, gotta keep it sharp.",
+      400
+    );
   }
   if (data.username.length > 26) {
-    throw new ApiError("Username  is too large, maximum 25 characters", 400);
+    throw new ApiError(
+      "Username’s too long! Max 25 chars, don’t lose the vibe.",
+      400
+    );
   }
 
   const isAlreadyUsernameExist = await User.findOne({
