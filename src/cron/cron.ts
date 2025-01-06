@@ -16,7 +16,7 @@ export default function cronsJobs() {
       console.log("Running scheduled task to delete all temp links...");
       deleteTempLinks();
     });
-    cron.schedule("0 0 */2 * *", () => {
+    cron.schedule("0 0 * * 0", () => {
       console.log("Running scheduled task to delete deleted queue rooms...");
       deleteDeletedQueue();
     });
