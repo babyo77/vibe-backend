@@ -1022,7 +1022,7 @@ export const roomPipeline = (
     },
     {
       $sort: {
-        updatedAt: 1, // Sort by updatedAt descending if no admin search
+        updatedAt: -1, // Sort by updatedAt descending if no admin search
       },
     },
     {
