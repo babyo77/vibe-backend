@@ -63,12 +63,16 @@ export const setJWTTokens = (
   });
 
   VibeCache.del(saved._id.toString());
+
+  const cookieExpirationDate = new Date();
+  cookieExpirationDate.setDate(cookieExpirationDate.getDate() + 30);
+
   res.cookie("vibeIdR", accessToken, {
     httpOnly: true,
     sameSite: "none",
     secure: true,
     path: "/",
-    expires: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000),
+    expires: cookieExpirationDate,
   });
   if (redirectUrl) {
     return res.redirect(redirectUrl + "&vibe_token=" + accessToken);
