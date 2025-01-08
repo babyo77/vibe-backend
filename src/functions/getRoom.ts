@@ -28,7 +28,7 @@ export async function getRooms(
       return res.json(VibeCache.get(baseKey));
     }
 
-    const roomAdmins = await RoomUser.aggregate(roomPipeline(userId, 1, 4));
+    const roomAdmins = await RoomUser.aggregate(roomPipeline(userId, 1, 6));
     VibeCache.set(baseKey, roomAdmins[0].rooms);
 
     return res.json(roomAdmins[0].rooms);
