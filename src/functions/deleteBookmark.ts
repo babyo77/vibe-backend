@@ -2,26 +2,35 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import { ApiError } from "./apiError";
 import { Bookmark, BookmarkType } from "../models/bookmarkModel";
-import { tnzara } from "../cache/cache";
+import { tnzara, VibeCache } from "../cache/cache";
+import RoomUser from "../models/roomUsers";
 
 export const deleteBookmark = async (
   req: CustomRequest,
   res: Response
 ): Promise<Response> => {
-  const { type } = req.query;
+  const { type, roomId } = req.query;
   const userId = req.userId;
   if (!userId) throw new ApiError("Login required", 401);
+  if (!roomId) throw new ApiError("RoomId is missing", 400);
   if (!type || typeof type !== "string")
     throw new ApiError("Type is missing", 400);
   if (!Object.values(BookmarkType).includes(type as BookmarkType))
     throw new ApiError("Invalid bookmark type", 400);
+  const roomCacheKey = roomId + "roomId";
 
   if (type == "room") {
-    await Bookmark.deleteOne({
-      userId,
-      name: `Room #${req.cookies.room}`,
-      type,
-    });
+    // await Bookmark.deleteOne({
+    //   userId,
+    //   name: `Room #${req.cookies.room}`,
+    //   type,
+    // });
+    await RoomUser.findOneAndUpdate(
+      { userId: userId, roomId: VibeCache.get(roomCacheKey) },
+      {
+        saved: false,
+      }
+    );
     const bookmarkedCacheKey = userId + "isBookmarked";
     tnzara.set(bookmarkedCacheKey, false);
   }

@@ -868,12 +868,13 @@ export const roomPipeline = (
   userId: string,
   page: number = 1, // Default to page 1 if not provided
   pageSize: number = 10, // Default to 10 results per page if not provided
-  isAdminSearch: boolean = false,
-  searchRoomId?: string // Optional search criteria for roomId
+  searchRoomId?: string, // Optional search criteria for roomId
+  saved?: boolean
 ): mongoose.PipelineStage[] => {
   const matchStage: mongoose.PipelineStage = {
     $match: {
       userId: new mongoose.Types.ObjectId(userId),
+      ...(saved !== undefined && { saved: saved }),
     },
   };
 
