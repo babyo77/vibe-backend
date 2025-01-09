@@ -4,7 +4,6 @@ import RoomUser from "../models/roomUsers";
 import User from "../models/userModel";
 import Room from "../models/roomModel";
 import { ApiError } from "./apiError";
-import { Bookmark } from "../models/bookmarkModel";
 import { tnzara, VibeCache } from "../cache/cache";
 
 export async function checkVibe(
@@ -27,18 +26,14 @@ export async function checkVibe(
       : Room.findOne({ roomId }), // Fetch the room by roomId
   ]);
 
-  const roleData = await RoomUser.findOne({
-    userId: userId,
+  const metaData = await RoomUser.findOne({
+    userId,
     roomId: room?._id,
-  }).select("role");
+  }).select("role saved");
 
   const isBookmarked = tnzara.has(bookmarkedCacheKey)
     ? tnzara.get(bookmarkedCacheKey)
-    : await Bookmark.exists({
-        type: "room",
-        uri: roomId,
-        userId: userId,
-      });
+    : metaData.saved;
 
   if (!user) throw new ApiError("Unauthorized", 401);
   const userData = {
@@ -46,7 +41,7 @@ export async function checkVibe(
     token: session,
     roomId,
     isBookmarked,
-    role: roleData?.role || "guest",
+    role: metaData?.role || "guest",
   };
   tnzara.set(bookmarkedCacheKey, isBookmarked);
   tnzara.set(userInfoCacheKey, user);
