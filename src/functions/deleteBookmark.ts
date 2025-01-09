@@ -2,7 +2,7 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import { ApiError } from "./apiError";
 import { Bookmark, BookmarkType } from "../models/bookmarkModel";
-import { tnzara, VibeCache } from "../cache/cache";
+import { roomCache, tnzara, VibeCache } from "../cache/cache";
 import RoomUser from "../models/roomUsers";
 
 export const deleteBookmark = async (
@@ -18,7 +18,7 @@ export const deleteBookmark = async (
   if (!Object.values(BookmarkType).includes(type as BookmarkType))
     throw new ApiError("Invalid bookmark type", 400);
   const roomCacheKey = roomId + "roomId";
-
+  const savedKey = userId + "room" + "saved";
   if (type == "room") {
     // await Bookmark.deleteOne({
     //   userId,
@@ -32,6 +32,7 @@ export const deleteBookmark = async (
       }
     );
     const bookmarkedCacheKey = userId + "isBookmarked";
+    roomCache.del(savedKey);
     tnzara.set(bookmarkedCacheKey, false);
   }
   return res.status(204).send();
