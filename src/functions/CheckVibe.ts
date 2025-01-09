@@ -33,7 +33,7 @@ export async function checkVibe(
 
   const isBookmarked = tnzara.has(bookmarkedCacheKey)
     ? tnzara.get(bookmarkedCacheKey)
-    : metaData.saved;
+    : metaData?.saved;
 
   if (!user) throw new ApiError("Unauthorized", 401);
   const userData = {
