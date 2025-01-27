@@ -15,6 +15,6 @@
     "strict": true,
     "skipLibCheck": true
   },
-
-  "exclude": ["firebase/firebase.ts", "src/functions/Login.ts"]
+  "include": ["src/**/*"],
+  "exclude": ["firebase", "firebase.json", "src/functions/Login.ts"]
 }
