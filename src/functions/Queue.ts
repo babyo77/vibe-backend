@@ -7,6 +7,7 @@ import { VibeCache } from "../cache/cache";
 import { ApiError } from "./apiError";
 import { VibeCacheDb } from "../cache/cache-db";
 
+
 export const queue = async (
   req: CustomRequest,
   res: Response
@@ -22,6 +23,7 @@ export const queue = async (
     throw new ApiError("Invalid roomId");
 
   VibeCacheDb[GET_UP_NEXT_SONG_CACHE_KEY(roomId)].delete();
+
   if (VibeCacheDb[userQueueCacheKey].has()) {
     return res.json(VibeCacheDb[userQueueCacheKey].get()[0]);
   }
@@ -42,7 +44,6 @@ export const queue = async (
     results,
   };
 
-  VibeCacheDb[roomId + "queue" + "songs"].add(results);
   VibeCacheDb[userQueueCacheKey].add(payload);
   return res.json(payload);
 };

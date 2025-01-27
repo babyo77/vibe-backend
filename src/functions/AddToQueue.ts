@@ -10,6 +10,7 @@ import { ApiError } from "./apiError";
 import { VibeCacheDb } from "../cache/cache-db";
 import { GET_UP_NEXT_SONG_CACHE_KEY } from "../lib/utils";
 
+
 const MAX_RETRIES = 100;
 const RETRY_DELAY = 11;
 
@@ -127,7 +128,9 @@ export const addToQueue = async (
         await Queue.bulkWrite(updates, { session });
       }
       await session.commitTransaction();
+
       VibeCacheDb[GET_UP_NEXT_SONG_CACHE_KEY(roomId)].delete();
+
       VibeCacheDb.userQueueCacheKey.deleteStartWithThisKey();
       return res.json({
         message: "Songs added to the queue successfully",

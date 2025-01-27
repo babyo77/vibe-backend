@@ -16,6 +16,7 @@ import {
 import { VibeCache } from "../cache/cache";
 import { VibeCacheDb } from "../cache/cache-db";
 
+
 export async function middleware(
   socket: CustomSocket,
   next: (err?: ExtendedError) => void

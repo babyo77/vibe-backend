@@ -6,6 +6,7 @@ import { VibeCacheDb } from "../cache/cache-db";
 import { emitMessage } from "../lib/customEmit";
 import { GET_ROOM_LISTENERS_CACHE_KEY } from "../lib/utils";
 
+
 export async function handleDisconnect(socket: CustomSocket) {
   try {
     const { userInfo, roomInfo } = socket;

@@ -24,6 +24,10 @@ export const getCurrentlyPlaying = async (
   userId?: string,
   isPlaying: boolean = true
 ) => {
+  if (VibeCacheDb[roomId + userId + isPlaying].has()) {
+    return VibeCacheDb[roomId + userId].get() as searchResults[];
+  }
+  let songs = [];
   try {
     const pipeline: any[] = [
       {
@@ -181,8 +185,8 @@ export const getCurrentlyPlaying = async (
       { $project: { topVoterIds: 0 } }
     );
 
-    const songs = (await Queue.aggregate(pipeline)) || [];
-
+    songs = (await Queue.aggregate(pipeline)) || [];
+    VibeCacheDb[roomId + userId + isPlaying].add(songs);
     return songs as searchResults[];
   } catch (error) {
     console.error("Error fetching songs with vote counts:", error);
@@ -1279,6 +1283,3 @@ export const GET_ROOM_LISTENERS_CACHE_KEY = (roomId: string) => {
   return roomId + "listeners";
 };
 
-export const GET_UP_NEXT_SONG_CACHE_KEY = (roomId: string) => {
-  return "upNextSong" + roomId;
-};

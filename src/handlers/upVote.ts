@@ -49,8 +49,8 @@ export default async function upVote(
         queueId: value.queueId.replace("del", ""),
       });
     }
+
     VibeCacheDb[GET_UP_NEXT_SONG_CACHE_KEY(roomInfo.roomId)].delete();
-    VibeCacheDb.userQueueCacheKey.deleteStartWithThisKey();
     broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {
     console.log("UPVOTE ERROR:", error.message);
