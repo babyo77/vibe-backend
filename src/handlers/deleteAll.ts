@@ -7,7 +7,10 @@ import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import mongoose from "mongoose";
 import { VibeCacheDb } from "../cache/cache-db";
-import { GET_UP_NEXT_SONG_CACHE_KEY } from "../lib/utils";
+import {
+  DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID,
+  GET_UP_NEXT_SONG_CACHE_KEY,
+} from "../lib/utils";
 
 export async function deleteAll(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -36,7 +39,7 @@ export async function deleteAll(
     ]);
     VibeCacheDb[GET_UP_NEXT_SONG_CACHE_KEY(roomInfo.roomId)].delete();
 
-    VibeCacheDb.userQueueCacheKey.deleteStartWithThisKey();
+    DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID(roomInfo.roomId);
     broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {
     console.log("DELETE ALL ERROR:", error);

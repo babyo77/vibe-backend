@@ -9,7 +9,10 @@ import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import mongoose from "mongoose";
 import { VibeCacheDb } from "../cache/cache-db";
-import { GET_UP_NEXT_SONG_CACHE_KEY } from "../lib/utils";
+import {
+  DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID,
+  GET_UP_NEXT_SONG_CACHE_KEY,
+} from "../lib/utils";
 
 export default async function deleteSong(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -36,7 +39,7 @@ export default async function deleteSong(
 
       VibeCacheDb[GET_UP_NEXT_SONG_CACHE_KEY(roomInfo.roomId)].delete();
 
-      VibeCacheDb.userQueueCacheKey.deleteStartWithThisKey();
+      DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID(roomInfo.roomId);
       await Vote.deleteMany({ queueId: value.queueId });
       broadcast(io, roomInfo.roomId, "update", "update");
     } else {

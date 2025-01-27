@@ -1226,6 +1226,7 @@ export const detailsUpdateLimit = rateLimit({
 
 import { RateLimiterMemory } from "rate-limiter-flexible";
 import { errorHandler } from "../handlers/error";
+import { VibeCacheDb } from "../cache/cache-db";
 
 const socketLimiter = new RateLimiterMemory({
   points: 10, // Rate limit points
@@ -1281,4 +1282,8 @@ export const GET_ROOM_LISTENERS_CACHE_KEY = (roomId: string) => {
 
 export const GET_UP_NEXT_SONG_CACHE_KEY = (roomId: string) => {
   return "upNextSong" + roomId;
+};
+
+export const DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID = (roomId: string) => {
+  VibeCacheDb["userQueueCacheKey" + roomId].deleteStartWithThisKey();
 };
