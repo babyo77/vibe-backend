@@ -22,8 +22,8 @@ const io = new Server(server, {
 app.use(useCors(cors));
 
 app.get("/metrics", async (req, res) => {
-  const key = req.query.key;
-  if (!key || key !== process.env.LOGS_KEY) return res.status(403).send();
+  // const key = req.query.key;
+  // if (!key || key !== process.env.LOGS_KEY) return res.status(403).send();
   res.setHeader("content-type", register.contentType);
   res.send(await register.metrics());
 });
