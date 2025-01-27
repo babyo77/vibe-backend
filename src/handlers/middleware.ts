@@ -15,7 +15,7 @@ import {
 } from "../lib/utils";
 import { VibeCache } from "../cache/cache";
 import { VibeCacheDb } from "../cache/cache-db";
-const ADMIN_EMAILS = JSON.parse(process.env.ADMIN_EMAILS!);
+const ADMIN_EMAILS: [string] = JSON.parse(process.env.ADMIN_EMAILS!);
 
 export async function middleware(
   socket: CustomSocket,
@@ -102,7 +102,7 @@ export async function middleware(
       ).select("role userId");
       socket.userInfo = {
         id: addedUser.userId.toString(),
-        role: user?.email.includes(ADMIN_EMAILS) ? "admin" : addedUser.role,
+        role: ADMIN_EMAILS.includes(user?.email) ? "admin" : addedUser.role,
       };
 
       const userAsListener = {
