@@ -8,8 +8,14 @@ import User from "../models/userModel";
 import RoomUser from "../models/roomUsers";
 import { emitMessage } from "../lib/customEmit";
 import { encrypt } from "../lib/lock";
-import { getCurrentlyPlaying } from "../lib/utils";
+import {
+  DEFAULT_IMAGE_URL,
+  GET_ROOM_LISTENERS_CACHE_KEY,
+  getCurrentlyPlaying,
+} from "../lib/utils";
 import { VibeCache } from "../cache/cache";
+import { VibeCacheDb } from "../cache/cacheDB";
+
 export async function middleware(
   socket: CustomSocket,
   next: (err?: ExtendedError) => void
@@ -26,7 +32,7 @@ export async function middleware(
       throw new Error("Name is too short, minimum 4 characters");
     }
 
-    if (roomId.length > 11) {
+    if (roomId.length > 12) {
       throw new Error("Name is too large, maximum 11 characters");
     }
 
@@ -36,11 +42,22 @@ export async function middleware(
 
     if (token && token.length > 0) {
       const decode: any = jwt.verify(token, process.env.JWT_SECRET || "");
-      user = await User.findById(decode.userId).select("username email");
+      user = await User.findById(decode.userId).select(
+        "username email imageUrl name"
+      );
     }
     const room = await Room.findOne({ roomId });
 
     if (!room && !user) throw new Error("Login to claim this Room");
+
+    const roomDbKey = GET_ROOM_LISTENERS_CACHE_KEY(roomId);
+
+    if (
+      VibeCacheDb[roomDbKey].find({ userId: { username: user?.username } })
+        .length === 1
+    )
+      throw new Error("Connected with multiple devices");
+
     socket.join(roomId);
     const newRoom = await Room.findOneAndUpdate(
       { roomId },
@@ -49,6 +66,7 @@ export async function middleware(
     );
 
     VibeCache.set(roomId + "roomId", { _id: newRoom._id.toString() });
+
     socket.roomInfo = {
       roomId: newRoom.roomId,
       _id: newRoom._id.toString(),
@@ -68,7 +86,7 @@ export async function middleware(
       if (existingUser) {
         userRole = existingUser.role;
       } else {
-        const users = await RoomUser.countDocuments({ roomId: newRoom._id });
+        const users = VibeCacheDb[roomDbKey].get().length;
         userRole = users > 0 ? "listener" : "admin";
       }
 
@@ -76,20 +94,29 @@ export async function middleware(
         { userId: user._id.toString(), roomId: newRoom._id },
         {
           active: true,
-          socketid: socket.id,
           role: userRole,
           status: false,
         },
         { upsert: true, new: true }
-      );
+      ).select("role userId");
       socket.userInfo = {
         id: addedUser.userId.toString(),
         role:
           user?.email === process.env.ADMIN_EMAIL ? "admin" : addedUser.role,
       };
+
+      const userAsListener = {
+        userId: {
+          id: socket.id,
+          username: user?.username,
+          name: user?.name,
+          imageUrl: user?.imageUrl || DEFAULT_IMAGE_URL,
+        },
+      };
+      // add user to listeners
+      VibeCacheDb[roomDbKey].add(userAsListener);
     }
     VibeCache.del(socket.userInfo?.id + "room");
-    VibeCache.del(roomId + "listeners");
 
     socket.emit(
       "joined",

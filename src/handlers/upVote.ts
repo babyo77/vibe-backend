@@ -6,6 +6,7 @@ import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { broadcast } from "../lib/customEmit";
 import { decrypt } from "../lib/lock";
+import { VibeCacheDb } from "../cache/cacheDB";
 
 export default async function upVote(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -47,6 +48,7 @@ export default async function upVote(
         queueId: value.queueId.replace("del", ""),
       });
     }
+    VibeCacheDb.userQueueCacheKey.deleteStartWithThisKey();
     broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {
     console.log("UPVOTE ERROR:", error.message);

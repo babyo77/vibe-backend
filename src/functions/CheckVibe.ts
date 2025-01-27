@@ -31,9 +31,7 @@ export async function checkVibe(
     roomId: room?._id,
   }).select("role saved");
 
-  const isBookmarked = tnzara.has(bookmarkedCacheKey)
-    ? tnzara.get(bookmarkedCacheKey)
-    : metaData?.saved;
+  const isBookmarked = metaData?.saved;
 
   if (!user) throw new ApiError("Unauthorized", 401);
   const userData = {

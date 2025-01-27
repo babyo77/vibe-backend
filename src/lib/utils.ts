@@ -24,6 +24,10 @@ export const getCurrentlyPlaying = async (
   userId?: string,
   isPlaying: boolean = true
 ) => {
+  if (VibeCacheDb[roomId + userId + isPlaying].has()) {
+    return VibeCacheDb[roomId + userId].get() as searchResults[];
+  }
+  let songs = [];
   try {
     const pipeline: any[] = [
       {
@@ -181,8 +185,8 @@ export const getCurrentlyPlaying = async (
       { $project: { topVoterIds: 0 } }
     );
 
-    const songs = (await Queue.aggregate(pipeline)) || [];
-
+    songs = (await Queue.aggregate(pipeline)) || [];
+    VibeCacheDb[roomId + userId + isPlaying].add(songs);
     return songs as searchResults[];
   } catch (error) {
     console.error("Error fetching songs with vote counts:", error);
@@ -1211,8 +1215,22 @@ export const limiter = rateLimit({
   },
 });
 
+export const detailsUpdateLimit = rateLimit({
+  handler: (_req, res) => {
+    throw new ApiError("You can only update details 3 times per week.", 429);
+  },
+  windowMs: 7 * 24 * 60 * 60 * 1000,
+  limit: 3,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  validate: {
+    xForwardedForHeader: false,
+  },
+});
+
 import { RateLimiterMemory } from "rate-limiter-flexible";
 import { errorHandler } from "../handlers/error";
+import { VibeCacheDb } from "../cache/cacheDB";
 
 const socketLimiter = new RateLimiterMemory({
   points: 10, // Rate limit points
@@ -1257,4 +1275,11 @@ export const socketRateLimiter = async (
     errorHandler(socket, "wow wow! hold on babe");
     return;
   }
+};
+
+export const DEFAULT_IMAGE_URL =
+  "https://i.pinimg.com/736x/b3/c2/97/b3c297f0aad88b4ad336a45cf34071d6.jpg";
+
+export const GET_ROOM_LISTENERS_CACHE_KEY = (roomId: string) => {
+  return roomId + "listeners";
 };
