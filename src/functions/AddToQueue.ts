@@ -7,9 +7,10 @@ import { searchResults } from "../../types";
 import { VibeCache } from "../cache/cache";
 import { Counter } from "../models/counterModel";
 import { ApiError } from "./apiError";
+import { VibeCacheDb } from "../cache/cacheDB";
 
 const MAX_RETRIES = 100;
-const RETRY_DELAY = 100;
+const RETRY_DELAY = 11;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -120,7 +121,7 @@ export const addToQueue = async (
         await Queue.bulkWrite(updates, { session });
       }
       await session.commitTransaction();
-
+      VibeCacheDb.userQueueCacheKey.deleteStartWithThisKey();
       return res.json({
         message: "Songs added to the queue successfully",
         count: insertedSongs.length,

@@ -1,7 +1,11 @@
 import { Socket } from "socket.io";
 
 export interface CustomSocket extends Socket {
-  userInfo?: { id: string; role: "admin" | "listener" | string }; // Optional property
+  userInfo?: {
+    id: string;
+    role: "admin" | "listener" | string;
+    socketid?: string;
+  }; // Optional property
   roomInfo?: { roomId: string; _id: string; progress: number }; // Optional property
 }
 

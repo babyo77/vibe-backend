@@ -1,5 +1,5 @@
 import express from "express";
-import { homeResponse } from "../lib/utils";
+import { detailsUpdateLimit, homeResponse } from "../lib/utils";
 import { authMiddleware } from "../middleware/auth";
 import { search } from "../functions/Search";
 import { login } from "../functions/Login";
@@ -60,7 +60,7 @@ router.get("/api/vibe", asyncHandler(checkVibe));
 router.post("/api/add", asyncHandler(addToQueue));
 router.get("/api/@me", asyncHandler(getMe));
 router.get("/api/rooms/:type", asyncHandler(getRooms));
-router.patch("/api/update", asyncHandler(updateUser));
+router.patch("/api/update", detailsUpdateLimit, asyncHandler(updateUser));
 router.patch("/api/dp", asyncHandler(updateUserDp));
 router.post("/api/bookmark", asyncHandler(saveBookmark));
 router.delete("/api/bookmark", asyncHandler(deleteBookmark));

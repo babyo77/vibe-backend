@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Queue from "../models/queueModel";
 import RoomUser from "../models/roomUsers";
-import { searchResults } from "../../types";
+import { CustomSocket, searchResults } from "../../types";
 import { Innertube } from "youtubei.js";
 import ytmusic from "./ytMusic";
 import { decrypt, encrypt } from "tanmayo7lock";
@@ -24,6 +24,10 @@ export const getCurrentlyPlaying = async (
   userId?: string,
   isPlaying: boolean = true
 ) => {
+  if (VibeCacheDb[roomId + userId + isPlaying].has()) {
+    return VibeCacheDb[roomId + userId].get() as searchResults[];
+  }
+  let songs = [];
   try {
     const pipeline: any[] = [
       {
@@ -181,8 +185,8 @@ export const getCurrentlyPlaying = async (
       { $project: { topVoterIds: 0 } }
     );
 
-    const songs = (await Queue.aggregate(pipeline)) || [];
-
+    songs = (await Queue.aggregate(pipeline)) || [];
+    VibeCacheDb[roomId + userId + isPlaying].add(songs);
     return songs as searchResults[];
   } catch (error) {
     console.error("Error fetching songs with vote counts:", error);
@@ -868,12 +872,13 @@ export const roomPipeline = (
   userId: string,
   page: number = 1, // Default to page 1 if not provided
   pageSize: number = 10, // Default to 10 results per page if not provided
-  isAdminSearch: boolean = false,
-  searchRoomId?: string // Optional search criteria for roomId
+  searchRoomId?: string, // Optional search criteria for roomId
+  saved?: boolean
 ): mongoose.PipelineStage[] => {
   const matchStage: mongoose.PipelineStage = {
     $match: {
       userId: new mongoose.Types.ObjectId(userId),
+      ...(saved !== undefined && { saved: saved }),
     },
   };
 
@@ -1209,3 +1214,72 @@ export const limiter = rateLimit({
     xForwardedForHeader: false,
   },
 });
+
+export const detailsUpdateLimit = rateLimit({
+  handler: (_req, res) => {
+    throw new ApiError("You can only update details 3 times per week.", 429);
+  },
+  windowMs: 7 * 24 * 60 * 60 * 1000,
+  limit: 3,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  validate: {
+    xForwardedForHeader: false,
+  },
+});
+
+import { RateLimiterMemory } from "rate-limiter-flexible";
+import { errorHandler } from "../handlers/error";
+import { VibeCacheDb } from "../cache/cacheDB";
+
+const socketLimiter = new RateLimiterMemory({
+  points: 10, // Rate limit points
+  duration: 30, // Time window in seconds
+  blockDuration: 30, // Block duration in seconds
+});
+
+const clientLimits = new Map<string, number>();
+
+export const socketRateLimiter = async (
+  socket: CustomSocket,
+  next: (err?: Error) => void
+) => {
+  try {
+    // Get unique identifier for the client (IP or custom ID)
+    const clientId = socket.id || socket.handshake.address;
+
+    // Try to consume a point
+    await socketLimiter.consume(clientId);
+
+    // Track client's consumption
+    const currentCount = clientLimits.get(clientId) || 0;
+    clientLimits.set(clientId, currentCount + 1);
+
+    // Add rate limiting to individual events
+    const originalOn = socket.on;
+    socket.on = function (event: string, listener: Function) {
+      const wrappedListener = async (...args: any[]) => {
+        try {
+          await socketLimiter.consume(clientId);
+          await listener.apply(this, args);
+        } catch (error) {
+          errorHandler(socket, "wow wow! hold on babe");
+          return;
+        }
+      };
+      return originalOn.call(this, event, wrappedListener);
+    };
+
+    next();
+  } catch (error) {
+    errorHandler(socket, "wow wow! hold on babe");
+    return;
+  }
+};
+
+export const DEFAULT_IMAGE_URL =
+  "https://i.pinimg.com/736x/b3/c2/97/b3c297f0aad88b4ad336a45cf34071d6.jpg";
+
+export const GET_ROOM_LISTENERS_CACHE_KEY = (roomId: string) => {
+  return roomId + "listeners";
+};

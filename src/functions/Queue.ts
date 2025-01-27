@@ -3,24 +3,23 @@ import { getQueuePipeline } from "../lib/utils";
 import { CustomRequest } from "../middleware/auth";
 import Queue from "../models/queueModel";
 import Room from "../models/roomModel";
-import { tempCache, VibeCache } from "../cache/cache";
+import { VibeCache } from "../cache/cache";
 import { ApiError } from "./apiError";
+import { VibeCacheDb } from "../cache/cacheDB";
 
 export const queue = async (
   req: CustomRequest,
   res: Response
 ): Promise<Response> => {
   const userId = req.userId;
-  // &&
-  // !req.headers.nocache
+
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 100;
   const name = String(req.query.name) || "";
-  const roomId = String(req.query.room) || "";
-  if (tempCache.has(`${page}_${limit}_${name}_${roomId}_${userId}`)) {
-    return res.json(
-      tempCache.get(`${page}_${limit}_${name}_${roomId}_${userId}`)
-    );
+  const roomId = String(req.query.room) || req.headers.room || "";
+  const userQueueCacheKey = `userQueueCacheKey${userId}_${page}_${limit}_${name}`;
+  if (VibeCacheDb[userQueueCacheKey].has()) {
+    return res.json(VibeCacheDb[userQueueCacheKey].get()[0]);
   }
   if (!roomId) throw new ApiError("Invalid roomId");
 
@@ -40,6 +39,6 @@ export const queue = async (
     results,
   };
 
-  tempCache.set(`${page}_${limit}_${name}_${roomId}_${userId}`, payload);
+  VibeCacheDb[userQueueCacheKey].add(payload);
   return res.json(payload);
 };

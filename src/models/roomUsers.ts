@@ -11,6 +11,10 @@ const roomUserSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    saved: {
+      type: Boolean,
+      default: false,
+    },
     roomId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Room",

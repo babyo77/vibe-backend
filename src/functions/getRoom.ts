@@ -21,17 +21,23 @@ export async function getRooms(
   // Separate cache keys for "browse" and "all"
   const baseKey = userId + "room";
   const dataKey = `${baseKey}:data:${page}:${search}`;
-
+  const savedKey = userId + "room" + "saved";
   // If browsing, check cache for "browse" data
   if (type === "browse") {
     if (VibeCache.has(baseKey)) {
       return res.json(VibeCache.get(baseKey));
     }
 
-    const roomAdmins = await RoomUser.aggregate(roomPipeline(userId, 1, 4));
-    VibeCache.set(baseKey, roomAdmins[0].rooms);
+    const roomAdmins = await RoomUser.aggregate(roomPipeline(userId, 1, 11));
+    const result = {
+      total: 11,
+      start: page,
+      results: roomAdmins[0].rooms,
+    };
 
-    return res.json(roomAdmins[0].rooms);
+    VibeCache.set(baseKey, result);
+
+    return res.json(result);
   }
 
   // If fetching "all", check cache for "all" data
@@ -40,7 +46,7 @@ export async function getRooms(
       return res.json(roomCache.get(dataKey));
     }
     const allRooms = await RoomUser.aggregate(
-      roomPipeline(userId, page, 50, true, search)
+      roomPipeline(userId, page, 50, search)
     );
     const result = {
       total: allRooms[0].total,
@@ -49,6 +55,23 @@ export async function getRooms(
     };
 
     roomCache.set(dataKey, result);
+
+    return res.json(result);
+  }
+  if (type === "saved") {
+    if (roomCache.has(savedKey)) {
+      return res.json(roomCache.get(savedKey));
+    }
+    const allRooms = await RoomUser.aggregate(
+      roomPipeline(userId, page, 100, undefined, true)
+    );
+    const result = {
+      total: allRooms[0].total,
+      start: page,
+      results: allRooms[0].rooms,
+    };
+
+    roomCache.set(savedKey, result);
 
     return res.json(result);
   }

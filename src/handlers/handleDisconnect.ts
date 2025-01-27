@@ -2,23 +2,22 @@
 
 import { CustomSocket } from "../../types";
 import { VibeCache } from "../cache/cache";
+import { VibeCacheDb } from "../cache/cacheDB";
 import { emitMessage } from "../lib/customEmit";
-
+import { GET_ROOM_LISTENERS_CACHE_KEY } from "../lib/utils";
 import RoomUser from "../models/roomUsers";
 
 export async function handleDisconnect(socket: CustomSocket) {
   try {
     const { userInfo, roomInfo } = socket;
     if (!roomInfo || !userInfo) return;
-    VibeCache.del(roomInfo.roomId + "listeners");
-    const data = await RoomUser.findOneAndUpdate(
-      { userId: userInfo?.id, roomId: roomInfo?._id },
-      {
-        active: false,
-      }
-    )
-      .populate("userId")
-      .select("username");
+    const roomDbKey = GET_ROOM_LISTENERS_CACHE_KEY(roomInfo.roomId);
+    const data = VibeCacheDb[roomDbKey].find({
+      userId: { id: socket.id },
+    }) as any;
+    VibeCacheDb[roomDbKey].deleteWhere({
+      userId: { id: socket.id },
+    });
 
     if (userInfo?.role == "admin") {
       VibeCache.del(roomInfo._id + "isaAminOnline");

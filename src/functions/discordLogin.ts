@@ -29,6 +29,9 @@ export const discordLogin = async (
     redirectUrl = `${process.env.ALLOWED_URL}/v?room=${
       roomId ? roomId : verify.global_name
     }`;
+
+    console.log("discord user data", verify);
+
     const isAlready = await User.findOne({
       email: verify.email,
       provider: "discord",
@@ -39,7 +42,7 @@ export const discordLogin = async (
     }
     const user = await User.create({
       username: verify.username + "#" + verify.id.slice(0, 4),
-      name: verify.global_name,
+      name: verify.global_name || verify.username + "#" + verify.id.slice(0, 4),
       email: verify.email,
       imageUrl: `https://cdn.discordapp.com/avatars/${verify.id}/${verify.avatar}`,
       provider: "discord",

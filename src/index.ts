@@ -11,6 +11,7 @@ import router from "./router/router";
 import { errorHandler } from "./functions/apiError";
 import { setSocketListeners } from "./register/sockets";
 import { httpRequestDurationHistogram, register } from "./metrics/metrics";
+
 const app = express();
 const server = createServer(app);
 
