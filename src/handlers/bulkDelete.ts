@@ -7,6 +7,8 @@ import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
 import { Server } from "socket.io";
+import { GET_UP_NEXT_SONG_CACHE_KEY } from "../lib/utils";
+import { VibeCacheDb } from "../cache/cache-db";
 
 export async function bulkDelete(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -32,6 +34,9 @@ export async function bulkDelete(
         queueId: { $in: queueIds },
       }),
     ]);
+    VibeCacheDb[GET_UP_NEXT_SONG_CACHE_KEY(roomInfo.roomId)].delete();
+
+    VibeCacheDb.userQueueCacheKey.deleteStartWithThisKey();
     broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {
     console.log("BULK DELETE ERROR", error);
