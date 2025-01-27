@@ -38,6 +38,7 @@ export const upNextSong = async (
     const songs = VibeCacheDb[roomId + "queue" + "songs"].get()[0];
     const randomIndex = Math.floor(Math.random() * songs.length);
     const selectedSong = randomIndex ? songs[randomIndex] : currentSong;
+    console.log(songs[randomIndex]);
 
     nextSong = await getSongByOrder(
       room?._id,

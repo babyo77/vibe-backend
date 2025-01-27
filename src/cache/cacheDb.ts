@@ -61,7 +61,7 @@ class CacheHandler {
     if (cache.has(this.key)) {
       cache.del(this.key);
     } else {
-      throw new Error("Key does not exist.");
+      console.error("Key does not exist.");
     }
   }
 
