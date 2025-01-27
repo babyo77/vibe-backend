@@ -2,9 +2,7 @@
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/src/index.js",
-    "dev": "nodemon src/index.ts",
-    "vercel:run": "node dist/src/vercel_index.js",
-    "vercel:build": "npx tsc --project vercel.tsconfig.json"
+    "dev": "nodemon src/index.ts"
   },
   "devDependencies": {
     "@types/compression": "^1.7.5",
