@@ -7,6 +7,7 @@ import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { broadcast } from "../lib/customEmit";
 import { decrypt } from "../lib/lock";
 import { VibeCacheDb } from "../cache/cacheDB";
+import { GET_UP_NEXT_SONG_CACHE_KEY } from "../lib/utils";
 
 export default async function upVote(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -48,6 +49,7 @@ export default async function upVote(
         queueId: value.queueId.replace("del", ""),
       });
     }
+    VibeCacheDb[GET_UP_NEXT_SONG_CACHE_KEY(roomInfo.roomId)].delete();
     VibeCacheDb.userQueueCacheKey.deleteStartWithThisKey();
     broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {

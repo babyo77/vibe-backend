@@ -39,6 +39,7 @@ export const queue = async (
     results,
   };
 
+  VibeCacheDb[roomId + "queue" + "songs"].add(results);
   VibeCacheDb[userQueueCacheKey].add(payload);
   return res.json(payload);
 };

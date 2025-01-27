@@ -24,10 +24,6 @@ export const getCurrentlyPlaying = async (
   userId?: string,
   isPlaying: boolean = true
 ) => {
-  if (VibeCacheDb[roomId + userId + isPlaying].has()) {
-    return VibeCacheDb[roomId + userId].get() as searchResults[];
-  }
-  let songs = [];
   try {
     const pipeline: any[] = [
       {
@@ -185,8 +181,8 @@ export const getCurrentlyPlaying = async (
       { $project: { topVoterIds: 0 } }
     );
 
-    songs = (await Queue.aggregate(pipeline)) || [];
-    VibeCacheDb[roomId + userId + isPlaying].add(songs);
+    const songs = (await Queue.aggregate(pipeline)) || [];
+
     return songs as searchResults[];
   } catch (error) {
     console.error("Error fetching songs with vote counts:", error);
@@ -1230,7 +1226,6 @@ export const detailsUpdateLimit = rateLimit({
 
 import { RateLimiterMemory } from "rate-limiter-flexible";
 import { errorHandler } from "../handlers/error";
-import { VibeCacheDb } from "../cache/cacheDB";
 
 const socketLimiter = new RateLimiterMemory({
   points: 10, // Rate limit points
@@ -1282,4 +1277,8 @@ export const DEFAULT_IMAGE_URL =
 
 export const GET_ROOM_LISTENERS_CACHE_KEY = (roomId: string) => {
   return roomId + "listeners";
+};
+
+export const GET_UP_NEXT_SONG_CACHE_KEY = (roomId: string) => {
+  return "upNextSong" + roomId;
 };
