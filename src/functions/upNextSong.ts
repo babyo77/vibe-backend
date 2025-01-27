@@ -9,7 +9,7 @@ import Room from "../models/roomModel";
 import { VibeCache } from "../cache/cache";
 import { searchResults } from "../../types";
 import { ApiError } from "./apiError";
-import { VibeCacheDb } from "../cache/cacheDB";
+import { VibeCacheDb } from "../cache/cache-db";
 
 export const upNextSong = async (
   req: CustomRequest,
@@ -38,7 +38,6 @@ export const upNextSong = async (
     const songs = VibeCacheDb[roomId + "queue" + "songs"].get()[0];
     const randomIndex = Math.floor(Math.random() * songs.length);
     const selectedSong = randomIndex ? songs[randomIndex] : currentSong;
-    console.log(songs[randomIndex]);
 
     nextSong = await getSongByOrder(
       room?._id,

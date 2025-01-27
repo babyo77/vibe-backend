@@ -3,7 +3,7 @@ import { CustomRequest } from "../middleware/auth";
 import Room from "../models/roomModel";
 import { tempCache } from "../cache/cache";
 import { ApiError } from "./apiError";
-import { VibeCacheDb } from "../cache/cacheDB";
+import { VibeCacheDb } from "../cache/cache-db";
 import { GET_ROOM_LISTENERS_CACHE_KEY } from "../lib/utils";
 
 export const roomListeners = async (

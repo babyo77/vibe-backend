@@ -7,7 +7,7 @@ import {
 import User from "../models/userModel";
 import { ApiError } from "./apiError";
 import { tnzara } from "../cache/cache";
-import { VibeCacheDb } from "../cache/cacheDB";
+import { VibeCacheDb } from "../cache/cache-db";
 
 export const updateUser = async (
   req: CustomRequest,

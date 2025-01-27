@@ -6,7 +6,7 @@ import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { broadcast } from "../lib/customEmit";
 import { decrypt } from "../lib/lock";
-import { VibeCacheDb } from "../cache/cacheDB";
+import { VibeCacheDb } from "../cache/cache-db";
 import { GET_UP_NEXT_SONG_CACHE_KEY } from "../lib/utils";
 
 export default async function upVote(

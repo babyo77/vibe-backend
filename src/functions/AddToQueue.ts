@@ -7,7 +7,7 @@ import { searchResults } from "../../types";
 import { VibeCache } from "../cache/cache";
 import { Counter } from "../models/counterModel";
 import { ApiError } from "./apiError";
-import { VibeCacheDb } from "../cache/cacheDB";
+import { VibeCacheDb } from "../cache/cache-db";
 import { GET_UP_NEXT_SONG_CACHE_KEY } from "../lib/utils";
 
 const MAX_RETRIES = 100;

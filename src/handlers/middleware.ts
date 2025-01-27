@@ -14,7 +14,7 @@ import {
   getCurrentlyPlaying,
 } from "../lib/utils";
 import { VibeCache } from "../cache/cache";
-import { VibeCacheDb } from "../cache/cacheDB";
+import { VibeCacheDb } from "../cache/cache-db";
 
 export async function middleware(
   socket: CustomSocket,

@@ -5,7 +5,7 @@ import Queue from "../models/queueModel";
 import Room from "../models/roomModel";
 import { VibeCache } from "../cache/cache";
 import { ApiError } from "./apiError";
-import { VibeCacheDb } from "../cache/cacheDB";
+import { VibeCacheDb } from "../cache/cache-db";
 
 export const queue = async (
   req: CustomRequest,
