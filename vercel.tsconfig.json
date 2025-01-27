@@ -1,20 +1,14 @@
 {
   "compilerOptions": {
-    "resolveJsonModule": true,
-
-    "outDir": "./dist",
-
-    "target": "es2016",
-
-    "module": "commonjs",
-
-    "esModuleInterop": true,
-
-    "forceConsistentCasingInFileNames": true,
-
+    "target": "ESNext",
+    "module": "CommonJS",
+    "rootDir": "src",
+    "outDir": "dist",
     "strict": true,
-    "skipLibCheck": true
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*"],
-  "exclude": ["firebase", "firebase.json", "src/functions/Login.ts"]
+  "exclude": ["firebase", "firebase.json"]
 }
