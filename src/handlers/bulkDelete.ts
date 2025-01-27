@@ -7,11 +7,7 @@ import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
 import { Server } from "socket.io";
-import {
-  DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID,
-  GET_UP_NEXT_SONG_CACHE_KEY,
-} from "../lib/utils";
-import { VibeCacheDb } from "../cache/cache-db";
+import { DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID } from "../lib/utils";
 
 export async function bulkDelete(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -37,7 +33,6 @@ export async function bulkDelete(
         queueId: { $in: queueIds },
       }),
     ]);
-    VibeCacheDb[GET_UP_NEXT_SONG_CACHE_KEY(roomInfo.roomId)].delete();
 
     DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID(roomInfo.roomId);
     broadcast(io, roomInfo.roomId, "update", "update");

@@ -1286,4 +1286,5 @@ export const GET_UP_NEXT_SONG_CACHE_KEY = (roomId: string) => {
 
 export const DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID = (roomId: string) => {
   VibeCacheDb["userQueueCacheKey" + roomId].deleteStartWithThisKey();
+  VibeCacheDb[GET_UP_NEXT_SONG_CACHE_KEY(roomId)].delete();
 };
