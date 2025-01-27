@@ -7,7 +7,9 @@ import { searchResults } from "../../types";
 import { VibeCache } from "../cache/cache";
 import { Counter } from "../models/counterModel";
 import { ApiError } from "./apiError";
-import { VibeCacheDb } from "../cache/cacheDB";
+import { VibeCacheDb } from "../cache/cache-db";
+import { GET_UP_NEXT_SONG_CACHE_KEY } from "../lib/utils";
+
 
 const MAX_RETRIES = 100;
 const RETRY_DELAY = 11;
@@ -50,7 +52,12 @@ export const addToQueue = async (
         userId,
       } = req;
 
-      if (!userId || !roomId) {
+      if (
+        !userId ||
+        !roomId ||
+        typeof userId !== "string" ||
+        typeof roomId !== "string"
+      ) {
         throw new ApiError(
           !userId ? "Invalid userId" : "Room ID is required",
           400
@@ -121,6 +128,9 @@ export const addToQueue = async (
         await Queue.bulkWrite(updates, { session });
       }
       await session.commitTransaction();
+
+      VibeCacheDb[GET_UP_NEXT_SONG_CACHE_KEY(roomId)].delete();
+
       VibeCacheDb.userQueueCacheKey.deleteStartWithThisKey();
       return res.json({
         message: "Songs added to the queue successfully",

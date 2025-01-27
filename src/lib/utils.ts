@@ -1230,7 +1230,6 @@ export const detailsUpdateLimit = rateLimit({
 
 import { RateLimiterMemory } from "rate-limiter-flexible";
 import { errorHandler } from "../handlers/error";
-import { VibeCacheDb } from "../cache/cacheDB";
 
 const socketLimiter = new RateLimiterMemory({
   points: 10, // Rate limit points
@@ -1283,3 +1282,4 @@ export const DEFAULT_IMAGE_URL =
 export const GET_ROOM_LISTENERS_CACHE_KEY = (roomId: string) => {
   return roomId + "listeners";
 };
+

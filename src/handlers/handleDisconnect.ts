@@ -2,10 +2,10 @@
 
 import { CustomSocket } from "../../types";
 import { VibeCache } from "../cache/cache";
-import { VibeCacheDb } from "../cache/cacheDB";
+import { VibeCacheDb } from "../cache/cache-db";
 import { emitMessage } from "../lib/customEmit";
 import { GET_ROOM_LISTENERS_CACHE_KEY } from "../lib/utils";
-import RoomUser from "../models/roomUsers";
+
 
 export async function handleDisconnect(socket: CustomSocket) {
   try {
