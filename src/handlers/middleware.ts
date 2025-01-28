@@ -113,6 +113,7 @@ export async function middleware(
           name: user?.name,
           device: getDeviceType(socket),
           imageUrl: user?.imageUrl || DEFAULT_IMAGE_URL,
+          time: Date.now(),
         },
       };
       // add user to listeners

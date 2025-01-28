@@ -8,6 +8,7 @@ import {
   GET_ROOM_LISTENERS_CACHE_KEY,
   GET_SET_PROGRESS_STATUS,
 } from "../lib/utils";
+import RoomUser from "../models/roomUsers";
 
 export async function handleDisconnect(socket: CustomSocket) {
   try {
@@ -16,7 +17,7 @@ export async function handleDisconnect(socket: CustomSocket) {
     const roomDbKey = GET_ROOM_LISTENERS_CACHE_KEY(roomInfo.roomId);
     const data = VibeCacheDb[roomDbKey].find({
       userId: { id: socket.id },
-    }) as any;
+    })[0] as any;
     VibeCacheDb[roomDbKey].deleteWhere({
       userId: { id: socket.id },
     });
@@ -28,6 +29,7 @@ export async function handleDisconnect(socket: CustomSocket) {
     }
     socket.removeAllListeners();
     socket.leave(roomInfo.roomId);
+
     if (roomInfo.roomId) {
       emitMessage(
         socket,
@@ -36,6 +38,14 @@ export async function handleDisconnect(socket: CustomSocket) {
         data?.userId || { username: "@Someone" }
       );
     }
+    console.log(data);
+
+    const stayDuration = Date.now() - data.userId.time;
+
+    await RoomUser.updateOne(
+      { userId: userInfo.id, roomId: roomInfo._id },
+      { $max: { maxStayDuration: stayDuration } }
+    ).exec();
   } catch (error) {
     console.log(error);
   }

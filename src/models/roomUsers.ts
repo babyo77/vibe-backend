@@ -28,7 +28,7 @@ const roomUserSchema = new mongoose.Schema(
       enum: ["admin", "listener"],
       default: "listener",
     },
-    stayedFor: {
+    maxStayDuration: {
       type: Number,
       default: 0,
     },
