@@ -4,8 +4,10 @@ import { CustomSocket } from "../../types";
 import { VibeCache } from "../cache/cache";
 import { VibeCacheDb } from "../cache/cache-db";
 import { emitMessage } from "../lib/customEmit";
-import { GET_ROOM_LISTENERS_CACHE_KEY } from "../lib/utils";
-
+import {
+  GET_ROOM_LISTENERS_CACHE_KEY,
+  GET_SET_PROGRESS_STATUS,
+} from "../lib/utils";
 
 export async function handleDisconnect(socket: CustomSocket) {
   try {
@@ -21,6 +23,7 @@ export async function handleDisconnect(socket: CustomSocket) {
 
     if (userInfo?.role == "admin") {
       VibeCache.del(roomInfo._id + "isaAminOnline");
+      VibeCacheDb[GET_SET_PROGRESS_STATUS(roomInfo.roomId)].delete();
       socket.to(roomInfo.roomId).emit("seekable", true);
     }
     socket.removeAllListeners();

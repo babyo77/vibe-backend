@@ -1,6 +1,8 @@
 // used in new src
 import { CustomSocket } from "../../types";
 import { VibeCache } from "../cache/cache";
+import { VibeCacheDb } from "../cache/cache-db";
+import { GET_SET_PROGRESS_STATUS } from "../lib/utils";
 
 export async function handleProgress(socket: CustomSocket, progress: number) {
   try {
@@ -12,19 +14,19 @@ export async function handleProgress(socket: CustomSocket, progress: number) {
     } else {
       if (userInfo?.role == "admin") {
         isAdminOnline = true;
+        VibeCacheDb[GET_SET_PROGRESS_STATUS(roomInfo.roomId)].add({});
       } else {
+        VibeCacheDb[GET_SET_PROGRESS_STATUS(roomInfo.roomId)].delete();
         isAdminOnline = false;
       }
-      // isAdminOnline = await RoomUser.findOne({
-      //   roomId: roomInfo?._id,
-      //   role: "admin",
-      //   active: true,
-      //   status: true,
-      // });
     }
 
     VibeCache.set(roomInfo._id + "isaAminOnline", isAdminOnline);
-    if (isAdminOnline && userInfo?.role !== "admin") return;
+    if (
+      VibeCacheDb[GET_SET_PROGRESS_STATUS(roomInfo.roomId)].has() &&
+      userInfo?.role !== "admin"
+    )
+      return;
     if (userInfo?.role == "admin") {
       socket.to(roomInfo.roomId).emit("seekable", false);
     } else {
