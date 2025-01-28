@@ -1,7 +1,12 @@
 //used in new src
 import { Server } from "socket.io";
 import { CustomSocket, searchResults } from "../../types";
-import { getCurrentlyPlaying, getSongByOrder } from "../lib/utils";
+import {
+  GET_ROOM_LISTENERS_CACHE_KEY,
+  getCurrentlyPlaying,
+  getSongByOrder,
+  IS_EMITTER_ON,
+} from "../lib/utils";
 import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { broadcast } from "../lib/customEmit";
@@ -9,6 +14,7 @@ import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import RoomUser from "../models/roomUsers";
 import { VibeCache } from "../cache/cache";
+import { VibeCacheDb } from "../cache/cache-db";
 
 export async function SongEnded(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -17,19 +23,10 @@ export async function SongEnded(
   try {
     const { roomInfo, userInfo } = socket;
     if (!roomInfo) throw new Error("Login required");
-    let isAdminOnline = null;
-    if (VibeCache.has(roomInfo._id + "isaAminOnline")) {
-      isAdminOnline = VibeCache.get(roomInfo._id + "isaAminOnline");
-    } else {
-      isAdminOnline = await RoomUser.exists({
-        roomId: roomInfo?._id,
-        role: "admin",
-        active: true,
-        status: true,
-      });
-    }
-    VibeCache.set(roomInfo._id + "isaAminOnline", isAdminOnline);
-    if (isAdminOnline && userInfo?.role !== "admin") return;
+
+    const isEmitterOnline = IS_EMITTER_ON(roomInfo.roomId);
+
+    if (isEmitterOnline) return;
     let nextSong = [];
     const value = VibeCache.has(roomInfo.roomId + "isplaying")
       ? (VibeCache.get(roomInfo.roomId + "isplaying") as searchResults)

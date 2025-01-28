@@ -114,8 +114,17 @@ export async function middleware(
           device: getDeviceType(socket),
           imageUrl: user?.imageUrl || DEFAULT_IMAGE_URL,
           time: Date.now(),
+          emitter:
+            VibeCacheDb[roomDbKey].find({
+              userId: {
+                emitter: true,
+              },
+            }).length === 0,
+          pausedFor: null,
+          lastPauseStart: null,
         },
       };
+
       // add user to listeners
       VibeCacheDb[roomDbKey].add(userAsListener);
     }

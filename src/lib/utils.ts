@@ -1227,6 +1227,7 @@ export const detailsUpdateLimit = rateLimit({
 import { RateLimiterMemory } from "rate-limiter-flexible";
 import { errorHandler } from "../handlers/error";
 import { VibeCacheDb } from "../cache/cache-db";
+import { I } from "@upstash/redis/zmscore-Dc6Llqgr";
 
 const socketLimiter = new RateLimiterMemory({
   points: 10, // Rate limit points
@@ -1315,4 +1316,14 @@ export const DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID = (roomId: string) => {
 
 export const GET_SET_PROGRESS_STATUS = (roomId: string) => {
   return roomId + "progressStatus";
+};
+
+export const IS_EMITTER_ON = (roomId: string) => {
+  const emmer =
+    VibeCacheDb[GET_ROOM_LISTENERS_CACHE_KEY(roomId)].find({
+      userId: {
+        emitter: true,
+      },
+    }).length === 0;
+  return emmer;
 };

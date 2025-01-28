@@ -4,7 +4,6 @@ export interface CustomSocket extends Socket {
   userInfo?: {
     id: string;
     role: "admin" | "listener" | string;
-    socketid?: string;
   }; // Optional property
   roomInfo?: { roomId: string; _id: string; progress: number }; // Optional property
 }
