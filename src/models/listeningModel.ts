@@ -1,4 +1,12 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
+
+interface IListening extends Document {
+  userId: mongoose.Types.ObjectId;
+  songId: string;
+  playCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const listeningSchema = new mongoose.Schema(
   {
@@ -15,19 +23,12 @@ const listeningSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    source: {
-      type: String,
-      enum: ["youtube", "jio"],
-      required: true,
-      default: "jio",
-    },
-    lastPlayedAt: {
-      type: Date,
-      default: null,
-    },
   },
   { timestamps: true }
 );
 
-export const Listening =
-  mongoose.models.Listening || mongoose.model("listening", listeningSchema);
+export const Listening = (mongoose.models.Listening ||
+  mongoose.model<IListening>(
+    "listening",
+    listeningSchema
+  )) as mongoose.Model<IListening>;
