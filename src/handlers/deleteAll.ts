@@ -6,6 +6,7 @@ import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import mongoose from "mongoose";
+import { DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID } from "../lib/utils";
 
 export async function deleteAll(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -32,6 +33,8 @@ export async function deleteAll(
         roomId: roomInfo._id,
       }),
     ]);
+
+    DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID(roomInfo.roomId);
     broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {
     console.log("DELETE ALL ERROR:", error);

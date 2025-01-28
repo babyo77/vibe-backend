@@ -8,6 +8,7 @@ import Vote from "../models/voteModel";
 import { errorHandler } from "./error";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import mongoose from "mongoose";
+import { DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID } from "../lib/utils";
 
 export default async function deleteSong(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -31,6 +32,8 @@ export default async function deleteSong(
           deleted: true,
         }
       );
+
+      DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID(roomInfo.roomId);
       await Vote.deleteMany({ queueId: value.queueId });
       broadcast(io, roomInfo.roomId, "update", "update");
     } else {

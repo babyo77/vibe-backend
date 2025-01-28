@@ -7,7 +7,6 @@ import { VibeCache } from "../cache/cache";
 import { ApiError } from "./apiError";
 import { VibeCacheDb } from "../cache/cache-db";
 
-
 export const queue = async (
   req: CustomRequest,
   res: Response
@@ -18,7 +17,7 @@ export const queue = async (
   const limit = Number(req.query.limit) || 100;
   const name = String(req.query.name) || "";
   const roomId = String(req.query.room) || req.headers.room || "";
-  const userQueueCacheKey = `userQueueCacheKey${userId}_${page}_${limit}_${name}`;
+  const userQueueCacheKey = `userQueueCacheKey${roomId}${userId}_${page}_${limit}_${name}`;
   if (!roomId || typeof roomId !== "string")
     throw new ApiError("Invalid roomId");
 
