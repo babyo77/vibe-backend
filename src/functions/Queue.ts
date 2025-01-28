@@ -39,6 +39,7 @@ export const queue = async (
 
   const payload = {
     total,
+    next: total === results.length,
     start: page,
     results,
   };
