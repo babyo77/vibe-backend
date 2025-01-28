@@ -12,6 +12,7 @@ import {
   DEFAULT_IMAGE_URL,
   GET_ROOM_LISTENERS_CACHE_KEY,
   getCurrentlyPlaying,
+  getDeviceType,
 } from "../lib/utils";
 import { VibeCache } from "../cache/cache";
 import { VibeCacheDb } from "../cache/cache-db";
@@ -110,6 +111,7 @@ export async function middleware(
           id: socket.id,
           username: user?.username,
           name: user?.name,
+          device: getDeviceType(socket),
           imageUrl: user?.imageUrl || DEFAULT_IMAGE_URL,
         },
       };

@@ -67,3 +67,8 @@ export interface discordUser {
   global_name: string;
   email: string;
 }
+
+export interface analytics {
+  type: "stayedFor" | "listening" | "streak";
+  data: any;
+}

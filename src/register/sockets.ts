@@ -1,5 +1,5 @@
 import { DefaultEventsMap, Server } from "socket.io";
-import { CustomSocket } from "../../types";
+import { analytics, CustomSocket } from "../../types";
 import { sendMessage } from "../handlers/sendMessage";
 import { asyncHandlerSocket } from "../handlers/error";
 import { sendHeart } from "../handlers/sendHeart";
@@ -17,6 +17,7 @@ import { updateDetails } from "../handlers/updateDetails";
 import { handleUpdateStatus } from "../handlers/handleUpdateStatus";
 import emitUpdates from "../handlers/emitUpdates";
 import { handleDisconnect } from "../handlers/handleDisconnect";
+import { saveAnalytics } from "../handlers/saveAnalytics";
 // const middlewareEvents = ["message", "heart"];
 export function setSocketListeners(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
@@ -61,6 +62,8 @@ export function setSocketListeners(
         asyncHandlerSocket(socket, handleUpdateStatus, socket, status),
       profile: async () => asyncHandlerSocket(socket, emitUpdates, socket),
       event: async (roomId?: string) => io.to(roomId || "").emit("update"),
+      analytics: async (data: analytics) =>
+        asyncHandlerSocket(socket, saveAnalytics, socket, data),
     };
 
     for (const [event, handler] of Object.entries(eventHandlers)) {

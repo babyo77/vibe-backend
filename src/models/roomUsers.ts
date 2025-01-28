@@ -28,6 +28,10 @@ const roomUserSchema = new mongoose.Schema(
       enum: ["admin", "listener"],
       default: "listener",
     },
+    stayedFor: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

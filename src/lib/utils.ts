@@ -1273,6 +1273,30 @@ export const socketRateLimiter = async (
   }
 };
 
+export function getDeviceType(socket: CustomSocket) {
+  const userAgent = socket.handshake.headers["user-agent"];
+
+  if (!userAgent) {
+    return "unknown";
+  }
+
+  if (/iPhone|iPod/i.test(userAgent)) {
+    return "iPhone";
+  } else if (/iPad/i.test(userAgent)) {
+    return "iPad";
+  } else if (/Android/i.test(userAgent)) {
+    return "Android";
+  } else if (/Windows NT/i.test(userAgent)) {
+    return "Windows";
+  } else if (/Macintosh/i.test(userAgent)) {
+    return "Mac";
+  } else if (/Linux/i.test(userAgent)) {
+    return "Linux";
+  }
+
+  return "unknown";
+}
+
 export const DEFAULT_IMAGE_URL =
   "https://i.pinimg.com/736x/b3/c2/97/b3c297f0aad88b4ad336a45cf34071d6.jpg";
 
