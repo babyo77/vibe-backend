@@ -19,7 +19,9 @@ export async function handleDisconnect(socket: CustomSocket) {
     });
 
     if (IS_EMITTER_ON(roomInfo.roomId)) {
-      socket.to(roomInfo.roomId).emit("seekable", true);
+      socket
+        .to(roomInfo.roomId)
+        .emit("seekable", !IS_EMITTER_ON(roomInfo.roomId));
     }
     if (VibeCacheDb[roomDbKey].get().length === 0) {
       VibeCacheDb[roomDbKey].delete();
