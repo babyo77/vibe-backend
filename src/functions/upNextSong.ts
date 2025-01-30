@@ -35,15 +35,17 @@ export const upNextSong = async (
     : (await getCurrentlyPlaying(room._id))[0];
   nextSong = await getCurrentlyPlaying(room?._id, undefined, false);
   if (nextSong?.length == 0) {
-    // const songs = VibeCacheDb[roomId + "queue" + "songs"].get()[0];
-    // const randomIndex = Math.floor(Math.random() * songs?.length);
-    // const selectedSong = randomIndex ? songs[randomIndex] : currentSong;
+    const songs = VibeCacheDb[roomId + "queue" + "songs"]
+      .get()[0]
+      ?.slice(0, 11);
+    const randomIndex = Math.floor(Math.random() * songs?.length);
+    const selectedSong = randomIndex ? songs[randomIndex] : currentSong;
 
     nextSong = await getSongByOrder(
       room?._id,
       currentSong?.order,
       undefined,
-      currentSong
+      selectedSong
     );
   }
   VibeCacheDb[cacheDbKey].add(nextSong);
