@@ -153,7 +153,7 @@ export const addToQueue = async (
       }
 
       if (error instanceof Error) {
-        throw new ApiError(error.message, 409);
+        throw new ApiError(error.message, 400);
       }
 
       throw new ApiError("Write conflict");
