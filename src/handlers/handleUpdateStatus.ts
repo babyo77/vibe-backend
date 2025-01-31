@@ -40,7 +40,7 @@ export async function handleUpdateStatus(
         }
       );
     }
-    const progress = await redisClient.exists(roomInfo._id + "progress");
+    const progress = await redisClient.has(roomInfo._id + "progress");
     if (progress && status) {
       socket.emit("seek", await redisClient.get(roomInfo._id + "progress"));
     }

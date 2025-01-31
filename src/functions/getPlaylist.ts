@@ -11,7 +11,7 @@ export async function getPlaylist(
   const id = req.params.id;
 
   if (!id || typeof id !== "string") throw new ApiError("Invalid song ID");
-  if (await redisClient.exists(id)) {
+  if (await redisClient.has(id)) {
     return res.json(await redisClient.get(id));
   }
 

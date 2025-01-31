@@ -10,7 +10,7 @@ export const getMe = async (
 ): Promise<Response> => {
   const userId = req.userId;
   if (!userId) throw new ApiError("Unauthorized", 401);
-  if (await redisClient.exists(userId)) {
+  if (await redisClient.has(userId)) {
     return res.json(await redisClient.get(userId));
   }
   const user = await User.findById(userId);

@@ -14,7 +14,7 @@ export const search = async (
   const search = String(req.query.name || "").trim();
 
   if (!search) throw new ApiError("Search not found", 400);
-  if (await redisClient.exists(`${page + search}`)) {
+  if (await redisClient.has(`${page + search}`)) {
     return res.json({
       data: await redisClient.get(`${page + search}`),
     });

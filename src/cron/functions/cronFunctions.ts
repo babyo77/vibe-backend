@@ -1,4 +1,4 @@
-import redisClient from "../../cache/redis";
+import { upstashClient as redisClient } from "../../cache/redis";
 import Queue from "../../models/queueModel";
 import Room from "../../models/roomModel";
 

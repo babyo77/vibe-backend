@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
-import redisClient from "../cache/redis";
+import { upstashClient as redisClient } from "../cache/redis";
 
 export async function pingVibe(
   req: CustomRequest,

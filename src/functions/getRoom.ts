@@ -25,7 +25,7 @@ export async function getRooms(
   const savedKey = userId + "room" + "saved";
   // If browsing, check cache for "browse" data
   if (type === "browse") {
-    if (await redisClient.exists(baseKey)) {
+    if (await redisClient.has(baseKey)) {
       return res.json(await redisClient.get(baseKey));
     }
 
