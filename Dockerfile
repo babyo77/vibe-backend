@@ -1,43 +1,23 @@
-# ---- Base Image ----
-FROM node:20-alpine AS builder
+# Use an official Node.js runtime as a parent image
+FROM node:18-alpine
 
-# Set working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Install pnpm globally
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-# Copy package files first for efficient caching
+# Copy package.json and pnpm-lock.yaml
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies with pnpm
-RUN pnpm install --frozen-lockfile
+# Install dependencies using pnpm
+RUN corepack enable && pnpm install --frozen-lockfile
 
-# Copy rest of the application files
+# Copy the rest of the application files
 COPY . .
 
-# Build the application (adjust if needed)
+# Build the TypeScript project
 RUN pnpm run build
 
-# ---- Final Image ----
-FROM node:20-alpine
-
-WORKDIR /app
-
-# Install pnpm again for runtime
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-# Copy only necessary files from the builder stage
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./
-
-# Set a non-root user (optional, but recommended for security)
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
-
-# Expose the app's port (adjust if needed)
+# Expose port 4000
 EXPOSE 4000
 
-# Start the application
-CMD ["pnpm", "start"]
+# Command to run the application
+CMD ["node", "start"]
