@@ -58,7 +58,7 @@ export const addToQueue = async (
       ) {
         throw new ApiError(
           !userId ? "Invalid userId" : "Room ID is required",
-          400
+          404
         );
       }
 
@@ -153,7 +153,7 @@ export const addToQueue = async (
       }
 
       if (error instanceof Error) {
-        throw new ApiError(error.message, 400);
+        throw new ApiError(error.message, 409);
       }
 
       throw new ApiError("Write conflict");
