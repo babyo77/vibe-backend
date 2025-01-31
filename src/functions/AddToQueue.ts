@@ -43,33 +43,33 @@ export const addToQueue = async (
     const session = await mongoose.startSession();
     session.startTransaction();
 
+    const {
+      body: data,
+      query: { room: roomId },
+      userId,
+    } = req;
+
+    if (
+      !userId ||
+      !roomId ||
+      typeof userId !== "string" ||
+      typeof roomId !== "string"
+    ) {
+      throw new ApiError(
+        !userId ? "Invalid userId" : "Room ID is required",
+        404
+      );
+    }
+
+    const room = VibeCache.has(roomId + "roomId")
+      ? VibeCache.get(roomId + "roomId")
+      : await Room.findOne({ roomId }).session(session);
+
+    if (!room) {
+      throw new ApiError("Invalid roomId", 404);
+    }
+
     try {
-      const {
-        body: data,
-        query: { room: roomId },
-        userId,
-      } = req;
-
-      if (
-        !userId ||
-        !roomId ||
-        typeof userId !== "string" ||
-        typeof roomId !== "string"
-      ) {
-        throw new ApiError(
-          !userId ? "Invalid userId" : "Room ID is required",
-          404
-        );
-      }
-
-      const room = VibeCache.has(roomId + "roomId")
-        ? VibeCache.get(roomId + "roomId")
-        : await Room.findOne({ roomId }).session(session);
-
-      if (!room) {
-        throw new ApiError("Invalid roomId", 404);
-      }
-
       // Get existing songs to check for duplicates
       const existingSongs = await Queue.find(
         { roomId: room._id },
@@ -151,8 +151,9 @@ export const addToQueue = async (
           continue;
         }
       }
-
-      throw new ApiError("Write conflict");
+      if (error instanceof Error) {
+        throw new ApiError(error.message, 409);
+      }
     } finally {
       session.endSession();
     }
