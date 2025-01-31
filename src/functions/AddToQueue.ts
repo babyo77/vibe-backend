@@ -126,14 +126,15 @@ export const addToQueue = async (
       }
       await session.commitTransaction();
       DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID(roomId);
-      return res.json({
-        message: "Songs added to the queue successfully",
-        count: insertedSongs.length,
-        songs: insertedSongs.map((song) => ({
-          id: song._id,
-          order: song.order,
-        })),
-      });
+      // return res.json({
+      //   message: "Songs added to the queue successfully",
+      //   count: insertedSongs.length,
+      //   songs: insertedSongs.map((song) => ({
+      //     id: song._id,
+      //     order: song.order,
+      //   })),
+      // });
+      return res.status(201).send();
     } catch (error: any) {
       await session.abortTransaction();
 
