@@ -1,6 +1,6 @@
 // used in new src
 import { CustomSocket } from "../../types";
-import { VibeCache } from "../cache/cache";
+import redisClient from "../cache/redis";
 import { IS_EMITTER_ON } from "../lib/utils";
 
 export async function handleProgress(socket: CustomSocket, progress: number) {
@@ -16,7 +16,7 @@ export async function handleProgress(socket: CustomSocket, progress: number) {
       socket.to(roomInfo.roomId).emit("seekable", false);
     }
 
-    VibeCache.set(roomInfo._id + "progress", progress);
+    await redisClient.set(roomInfo._id + "progress", progress);
   } catch (error) {
     console.log(error);
   }

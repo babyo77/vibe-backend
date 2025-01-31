@@ -1,9 +1,9 @@
 import { encrypt } from "tanmayo7lock";
 import { CustomRequest } from "../middleware/auth";
 import { Response } from "express";
-import { VibeCache } from "../cache/cache";
 import ytpl from "ytpl";
 import { ApiError } from "./apiError";
+import redisClient from "../cache/redis";
 export async function getPlaylist(
   req: CustomRequest,
   res: Response
@@ -11,8 +11,8 @@ export async function getPlaylist(
   const id = req.params.id;
 
   if (!id || typeof id !== "string") throw new ApiError("Invalid song ID");
-  if (VibeCache.has(id)) {
-    return res.json(VibeCache.get(id));
+  if (await redisClient.exists(id)) {
+    return res.json(await redisClient.get(id));
   }
 
   const playlist = await ytpl(id, {
@@ -47,6 +47,6 @@ export async function getPlaylist(
       },
     ],
   }));
-  VibeCache.set(id, tracks);
+  await redisClient.set(id, tracks);
   return res.json(tracks);
 }

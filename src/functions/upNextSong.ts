@@ -1,15 +1,15 @@
 import { Response } from "express";
 import {
+  GET_ROOM_FROM_CACHE,
   GET_UP_NEXT_SONG_CACHE_KEY,
   getCurrentlyPlaying,
   getSongByOrder,
 } from "../lib/utils";
 import { CustomRequest } from "../middleware/auth";
-import Room from "../models/roomModel";
-import { VibeCache } from "../cache/cache";
 import { searchResults } from "../../types";
 import { ApiError } from "./apiError";
 import { VibeCacheDb } from "../cache/cache-db";
+import redisClient from "../cache/redis";
 
 export const upNextSong = async (
   req: CustomRequest,
@@ -24,15 +24,13 @@ export const upNextSong = async (
     return res.json(VibeCacheDb[cacheDbKey].get()[0]);
   }
 
-  const room = VibeCache.has(roomId + "roomId")
-    ? VibeCache.get(roomId + "roomId")
-    : await Room.findOne({ roomId });
+  const room = await GET_ROOM_FROM_CACHE(roomId);
   if (!room) throw new ApiError("Invalid roomId", 400);
 
   let nextSong = [];
-  const currentSong = VibeCache.has(roomId + "isplaying")
-    ? (VibeCache.get(roomId + "isplaying") as searchResults)
-    : (await getCurrentlyPlaying(room._id))[0];
+  const currentSong =
+    ((await redisClient.get(roomId + "isplaying")) as searchResults) ||
+    (await getCurrentlyPlaying(room._id))[0];
   nextSong = await getCurrentlyPlaying(room?._id, undefined, false);
   if (nextSong?.length == 0) {
     const songs = VibeCacheDb[roomId + "queue" + "songs"]

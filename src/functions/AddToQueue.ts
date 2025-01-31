@@ -4,10 +4,12 @@ import mongoose from "mongoose";
 import Queue from "../models/queueModel";
 import Room from "../models/roomModel";
 import { searchResults } from "../../types";
-import { VibeCache } from "../cache/cache";
 import { Counter } from "../models/counterModel";
 import { ApiError } from "./apiError";
-import { DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID } from "../lib/utils";
+import {
+  DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID,
+  GET_ROOM_FROM_CACHE,
+} from "../lib/utils";
 
 const MAX_RETRIES = 100;
 const RETRY_DELAY = 11;
@@ -61,10 +63,7 @@ export const addToQueue = async (
       );
     }
 
-    const room = VibeCache.has(roomId + "roomId")
-      ? VibeCache.get(roomId + "roomId")
-      : await Room.findOne({ roomId }).session(session);
-
+    const room = await GET_ROOM_FROM_CACHE(roomId);
     if (!room) {
       throw new ApiError("Invalid roomId", 404);
     }

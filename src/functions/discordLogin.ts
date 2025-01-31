@@ -38,7 +38,7 @@ export const discordLogin = async (
     }).select("_id");
 
     if (isAlready) {
-      return setJWTTokens(res, isAlready, redirectUrl);
+      return await setJWTTokens(res, isAlready, redirectUrl);
     }
     const user = await User.create({
       username: verify.username + "#" + verify.id.slice(0, 4),
@@ -48,7 +48,7 @@ export const discordLogin = async (
       provider: "discord",
     });
 
-    return setJWTTokens(res, user, redirectUrl);
+    return await setJWTTokens(res, user, redirectUrl);
   }
   const htmlContent = `
   <!DOCTYPE html>

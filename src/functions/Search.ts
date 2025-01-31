@@ -2,9 +2,9 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import ytmusic from "../lib/ytMusic";
 import { encrypt } from "../lib/lock";
-import { VibeCache } from "../cache/cache";
 import { getInnertubeInstance } from "../lib/utils";
 import { ApiError } from "./apiError";
+import redisClient from "../cache/redis";
 
 export const search = async (
   req: CustomRequest,
@@ -14,9 +14,9 @@ export const search = async (
   const search = String(req.query.name || "").trim();
 
   if (!search) throw new ApiError("Search not found", 400);
-  if (VibeCache.has(`${page + search}`)) {
+  if (await redisClient.exists(`${page + search}`)) {
     return res.json({
-      data: VibeCache.get(`${page + search}`),
+      data: await redisClient.get(`${page + search}`),
     });
   }
   const url = search.startsWith("http");
@@ -119,7 +119,7 @@ export const search = async (
     ...result.data,
     results: [...result.data.results.slice(0, 4), ...songs2, ...songs],
   };
-  VibeCache.set(`${page + search}`, payload);
+  await redisClient.set(`${page + search}`, payload);
   return res.json({
     data: payload,
   });

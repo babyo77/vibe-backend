@@ -4,7 +4,8 @@ import RoomUser from "../models/roomUsers";
 import User from "../models/userModel";
 import Room from "../models/roomModel";
 import { ApiError } from "./apiError";
-import { tnzara, VibeCache } from "../cache/cache";
+import { tnzara } from "../cache/cache";
+import { GET_ROOM_FROM_CACHE } from "../lib/utils";
 
 export async function checkVibe(
   req: CustomRequest,
@@ -15,15 +16,12 @@ export async function checkVibe(
   const roomId = req.cookies?.room; // Get room ID from cookies
   const bookmarkedCacheKey = userId + "isBookmarked";
   const userInfoCacheKey = userId + "userInfo";
-  const roomCacheKey = roomId + "roomId";
   if (!userId) throw new ApiError("Unauthorized", 401);
   const [user, room] = await Promise.all([
     tnzara.has(userInfoCacheKey)
       ? (tnzara.get(userInfoCacheKey) as any)
       : User.findById(userId), // Fetch the user by ID
-    VibeCache.has(roomCacheKey)
-      ? (VibeCache.get(roomCacheKey) as any)
-      : Room.findOne({ roomId }), // Fetch the room by roomId
+    await GET_ROOM_FROM_CACHE(roomId),
   ]);
 
   const metaData = await RoomUser.findOne({

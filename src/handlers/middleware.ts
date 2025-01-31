@@ -10,12 +10,13 @@ import { emitMessage } from "../lib/customEmit";
 import { encrypt } from "../lib/lock";
 import {
   DEFAULT_IMAGE_URL,
+  GET_CURRENTLY_PLAYING,
   GET_ROOM_LISTENERS_CACHE_KEY,
   getCurrentlyPlaying,
   getDeviceType,
 } from "../lib/utils";
-import { VibeCache } from "../cache/cache";
 import { VibeCacheDb } from "../cache/cache-db";
+import redisClient from "../cache/redis";
 const ADMIN_EMAILS: [string] = JSON.parse(process.env.ADMIN_EMAILS!);
 
 export async function middleware(
@@ -67,14 +68,13 @@ export async function middleware(
       { new: true, upsert: true }
     );
 
-    VibeCache.set(roomId + "roomId", { _id: newRoom._id.toString() });
+    await redisClient.set(roomId + "roomId", { _id: newRoom._id.toString() });
 
     socket.roomInfo = {
       roomId: newRoom.roomId,
       _id: newRoom._id.toString(),
-      progress: VibeCache.has(newRoom._id.toString() + "progress")
-        ? (VibeCache.get(newRoom._id.toString() + "progress") as number)
-        : 0,
+      progress:
+        (await redisClient.get(newRoom._id.toString() + "progress")) || 0,
     };
 
     if (user) {
@@ -128,18 +128,14 @@ export async function middleware(
       // add user to listeners
       VibeCacheDb[roomDbKey].add(userAsListener);
     }
-    VibeCache.del(socket.userInfo?.id + "room");
+    await redisClient.del(socket.userInfo?.id + "room");
 
     socket.emit(
       "joined",
       encrypt({ ...socket.roomInfo, role: socket.userInfo?.role })
     );
 
-    const currentSong = VibeCache.has(socket.roomInfo.roomId + "isplaying")
-      ? VibeCache.get(socket.roomInfo.roomId + "isplaying")
-      : (
-          await getCurrentlyPlaying(socket.roomInfo._id, socket.userInfo?.id)
-        )[0];
+    const currentSong = await GET_CURRENTLY_PLAYING(socket);
     if (currentSong) {
       socket.emit("isplaying", encrypt(currentSong));
     }

@@ -1,7 +1,8 @@
 // used in new src
 import { CustomSocket } from "../../types";
-import { VibeCache } from "../cache/cache";
+
 import { VibeCacheDb } from "../cache/cache-db";
+import redisClient from "../cache/redis";
 import { GET_ROOM_LISTENERS_CACHE_KEY, IS_EMITTER_ON } from "../lib/utils";
 
 export async function handleUpdateStatus(
@@ -39,9 +40,9 @@ export async function handleUpdateStatus(
         }
       );
     }
-    const progress = VibeCache.has(roomInfo._id + "progress");
+    const progress = await redisClient.exists(roomInfo._id + "progress");
     if (progress && status) {
-      socket.emit("seek", VibeCache.get(roomInfo._id + "progress"));
+      socket.emit("seek", await redisClient.get(roomInfo._id + "progress"));
     }
   } catch (error) {
     console.log(error);

@@ -6,7 +6,7 @@ import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Queue from "../models/queueModel";
 import { errorHandler } from "./error";
 import Vote from "../models/voteModel";
-import { VibeCache } from "../cache/cache";
+import redisClient from "../cache/redis";
 
 export async function handlePlay(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -36,8 +36,8 @@ export async function handlePlay(
         roomId: roomInfo._id,
         queueId: value.currentQueueId,
       });
-    VibeCache.del(`${roomInfo.roomId}suggestion`);
-    VibeCache.set(roomInfo.roomId + "isplaying", value);
+    await redisClient.del(`${roomInfo.roomId}suggestion`);
+    await redisClient.set(roomInfo.roomId + "isplaying", value);
     broadcast(io, roomInfo.roomId, "play", value);
     broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {

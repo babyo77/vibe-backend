@@ -5,7 +5,6 @@ import { CustomSocket, searchResults } from "../../types";
 import { Innertube } from "youtubei.js";
 import ytmusic from "./ytMusic";
 import { decrypt, encrypt } from "tanmayo7lock";
-import { VibeCache } from "../cache/cache";
 import rateLimit from "express-rate-limit";
 import { ApiError } from "../functions/apiError";
 
@@ -469,7 +468,7 @@ export const getSongByOrder = async (
     // Execute primary pipeline to get the next song
     let songs = await Queue.aggregate(primaryPipeline);
     if (songs.length !== 0) {
-      VibeCache.del(`${roomId}suggestion`);
+      await redisClient.del(`${roomId}suggestion`);
     }
     if (songs.length === 0) {
       songs = await getSongs(roomId, currentSong, "next", fallbackPipeline);
@@ -693,7 +692,7 @@ export const getPreviousSongByOrder = async (
     // Execute primary pipeline to get the previous song
     let songs = await Queue.aggregate(primaryPipeline);
     if (songs.length !== 0) {
-      VibeCache.del(`${roomId}suggestion`);
+      await redisClient.del(`${roomId}suggestion`);
     }
     if (songs.length === 0) {
       songs = await getSongs(roomId, currentSong, "prev", fallbackPipeline);
@@ -1096,7 +1095,7 @@ async function fetchSuggestedSongs(
         );
         if (response.ok) {
           const songs = await response.json();
-          VibeCache.set(`${roomId}suggestion`, songs);
+          await redisClient.set(`${roomId}suggestion`, songs);
           return songs;
         }
       } else {
@@ -1125,7 +1124,7 @@ async function getSongs(
   ) {
     return await Queue.aggregate(fallbackPipeline);
   }
-  let suggestedSongs = VibeCache.get(`${roomId}suggestion`) as
+  let suggestedSongs = (await redisClient.get(`${roomId}suggestion`)) as
     | searchResults[]
     | null;
   if (!suggestedSongs) {
@@ -1165,7 +1164,7 @@ async function getSongs(
     }
 
     // Reload suggestions if no valid next/prev song is found in cache
-    VibeCache.del(`${roomId}suggestion`);
+    await redisClient.del(`${roomId}suggestion`);
     suggestedSongs = await fetchSuggestedSongs(roomId, currentSong);
 
     if (suggestedSongs) {
@@ -1228,6 +1227,8 @@ import { RateLimiterMemory } from "rate-limiter-flexible";
 import { errorHandler } from "../handlers/error";
 import { VibeCacheDb } from "../cache/cache-db";
 import { I } from "@upstash/redis/zmscore-Dc6Llqgr";
+import redisClient from "../cache/redis";
+import Room from "../models/roomModel";
 
 const socketLimiter = new RateLimiterMemory({
   points: 10, // Rate limit points
@@ -1326,4 +1327,22 @@ export const IS_EMITTER_ON = (roomId: string) => {
       },
     }).length === 0;
   return emmer;
+};
+
+export const GET_ROOM_FROM_CACHE = async (roomId: string) => {
+  return (
+    (await redisClient.get(roomId + "roomId")) ||
+    (await Room.findOne({ roomId }).select("_id"))
+  );
+};
+
+export const GET_CURRENTLY_PLAYING = async (socket: CustomSocket) => {
+  if (!socket.roomInfo || !socket.userInfo)
+    throw new Error("Info not provided");
+  return (
+    ((await redisClient.get(
+      socket.roomInfo.roomId + "isplaying"
+    )) as searchResults) ||
+    (await getCurrentlyPlaying(socket.roomInfo._id, socket.userInfo?.id))[0]
+  );
 };

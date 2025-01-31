@@ -1,9 +1,10 @@
 import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import RoomUser from "../models/roomUsers";
-import { roomCache, VibeCache } from "../cache/cache";
+import { roomCache } from "../cache/cache";
 import { ApiError } from "./apiError";
 import { roomPipeline } from "../lib/utils";
+import redisClient from "../cache/redis";
 
 export async function getRooms(
   req: CustomRequest,
@@ -24,8 +25,8 @@ export async function getRooms(
   const savedKey = userId + "room" + "saved";
   // If browsing, check cache for "browse" data
   if (type === "browse") {
-    if (VibeCache.has(baseKey)) {
-      return res.json(VibeCache.get(baseKey));
+    if (await redisClient.exists(baseKey)) {
+      return res.json(await redisClient.get(baseKey));
     }
 
     const roomAdmins = await RoomUser.aggregate(roomPipeline(userId, 1, 11));
@@ -35,7 +36,7 @@ export async function getRooms(
       results: roomAdmins[0].rooms,
     };
 
-    VibeCache.set(baseKey, result);
+    await redisClient.set(baseKey, result);
 
     return res.json(result);
   }

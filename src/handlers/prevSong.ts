@@ -1,12 +1,16 @@
 //used in new src
 import { Server } from "socket.io";
 import { CustomSocket, searchResults } from "../../types";
-import { getCurrentlyPlaying, getPreviousSongByOrder } from "../lib/utils";
+import {
+  GET_CURRENTLY_PLAYING,
+  getCurrentlyPlaying,
+  getPreviousSongByOrder,
+} from "../lib/utils";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { broadcast } from "../lib/customEmit";
 import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
-import { VibeCache } from "../cache/cache";
+import redisClient from "../cache/redis";
 
 export async function PlayPrevSong(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -17,9 +21,7 @@ export async function PlayPrevSong(
   if (userInfo.role !== "admin")
     throw new Error("Only admin is allowed to play prev");
   let nextSong: any = [];
-  const value = VibeCache.has(roomInfo.roomId + "isplaying")
-    ? (VibeCache.get(roomInfo.roomId + "isplaying") as searchResults)
-    : (await getCurrentlyPlaying(roomInfo._id, userInfo.id))[0];
+  const value = await GET_CURRENTLY_PLAYING(socket);
   await Queue.updateOne(
     { roomId: roomInfo._id, isPlaying: true },
     {
@@ -47,7 +49,7 @@ export async function PlayPrevSong(
       queueId: nextSong[0].queueId,
     }),
   ]);
-  VibeCache.set(roomInfo.roomId + "isplaying", nextSong[0]);
+  await redisClient.set(roomInfo.roomId + "isplaying", nextSong[0]);
   broadcast(io, roomInfo.roomId, "play", nextSong[0]);
   broadcast(io, roomInfo.roomId, "update", "update");
 }

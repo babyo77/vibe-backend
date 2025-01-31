@@ -2,7 +2,7 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import { ApiError } from "./apiError";
 import { BookmarkType } from "../models/bookmarkModel";
-import { VibeCache } from "../cache/cache";
+import { roomCache as VibeCache } from "../cache/cache";
 import RoomUser from "../models/roomUsers";
 
 export const saveBookmark = async (

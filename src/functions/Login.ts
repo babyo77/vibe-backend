@@ -2,9 +2,9 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel";
-import { VibeCache } from "../cache/cache";
 import admin from "../../firebase/firebase";
 import { ApiError } from "./apiError";
+import redisClient from "../cache/redis";
 
 const jwt_secret = process.env.JWT_SECRET || "";
 export const login = async (
@@ -32,7 +32,7 @@ export const login = async (
 
   const isAlready = await User.findOne({ email: verify.email }).select("_id");
   if (isAlready) {
-    return setJWTTokens(res, isAlready);
+    return await setJWTTokens(res, isAlready);
   } else {
     if (!verify.name || !verify.email || !verify.picture)
       throw new ApiError("Invalid data", 403);
@@ -46,23 +46,23 @@ export const login = async (
     });
 
     if (user) {
-      return setJWTTokens(res, user);
+      return await setJWTTokens(res, user);
     } else {
       throw new ApiError("Unable to create user", 500);
     }
   }
 };
 
-export const setJWTTokens = (
+export const setJWTTokens = async (
   res: Response,
   saved: any,
   redirectUrl: string | null = null
-): any => {
+): Promise<any> => {
   const accessToken = jwt.sign({ userId: saved._id }, jwt_secret, {
     expiresIn: "30d",
   });
 
-  VibeCache.del(saved._id.toString());
+  await redisClient.del(saved._id.toString());
 
   const cookieExpirationDate = new Date();
   cookieExpirationDate.setDate(cookieExpirationDate.getDate() + 30);

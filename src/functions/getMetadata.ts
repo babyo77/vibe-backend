@@ -3,7 +3,7 @@ import { CustomRequest } from "../middleware/auth";
 import User from "../models/userModel";
 import Room from "../models/roomModel";
 import RoomUser from "../models/roomUsers";
-import { VibeCache } from "../cache/cache";
+import { roomCache as VibeCache } from "../cache/cache";
 import { ApiError } from "./apiError";
 
 export const getMetadata = async (

@@ -1,9 +1,11 @@
 import { Response } from "express";
-import { GET_UP_NEXT_SONG_CACHE_KEY, getQueuePipeline } from "../lib/utils";
+import {
+  GET_ROOM_FROM_CACHE,
+  GET_UP_NEXT_SONG_CACHE_KEY,
+  getQueuePipeline,
+} from "../lib/utils";
 import { CustomRequest } from "../middleware/auth";
 import Queue from "../models/queueModel";
-import Room from "../models/roomModel";
-import { VibeCache } from "../cache/cache";
 import { ApiError } from "./apiError";
 import { VibeCacheDb } from "../cache/cache-db";
 
@@ -27,9 +29,7 @@ export const queue = async (
     return res.json(VibeCacheDb[userQueueCacheKey].get()[0]);
   }
 
-  const room = VibeCache.has(roomId + "roomId")
-    ? VibeCache.get(roomId + "roomId")
-    : await Room.findOne({ roomId }).select("_id");
+  const room = await GET_ROOM_FROM_CACHE(roomId);
   if (!room) throw new ApiError("Room not found");
 
   const [total, results] = await Promise.all([
