@@ -1337,8 +1337,7 @@ export const GET_ROOM_FROM_CACHE = async (roomId: string) => {
 };
 
 export const GET_CURRENTLY_PLAYING = async (socket: CustomSocket) => {
-  if (!socket.roomInfo || !socket.userInfo)
-    throw new Error("Info not provided");
+  if (!socket.roomInfo) throw new Error("Info not provided");
   return (
     ((await redisClient.get(
       socket.roomInfo.roomId + "isplaying"
