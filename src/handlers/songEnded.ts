@@ -2,6 +2,7 @@
 import { Server } from "socket.io";
 import { CustomSocket } from "../../types";
 import {
+  DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID,
   GET_CURRENTLY_PLAYING,
   getCurrentlyPlaying,
   getSongByOrder,
@@ -61,6 +62,7 @@ export async function SongEnded(
         queueId: nextSong[0].queueId,
       }),
     ]);
+    DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID(roomInfo.roomId);
     await redisClient.set(roomInfo.roomId + "isplaying", nextSong[0]);
     broadcast(io, roomInfo.roomId, "play", nextSong[0]);
     broadcast(io, roomInfo.roomId, "update", "update");
