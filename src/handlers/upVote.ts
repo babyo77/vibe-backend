@@ -20,10 +20,10 @@ export default async function upVote(
     if (!roomInfo || !userInfo || !data) throw new Error("Login required");
 
     const value = decrypt(data) as { queueId: string };
+    DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID(roomInfo.roomId);
     if (!value.queueId) {
       throw new Error("Queue ID is missing in the data.");
     }
-
     if (!value.queueId.startsWith("del")) {
       console.log(`User ${userInfo.id} is voting for queueId ${value.queueId}`);
       await Vote.findOneAndUpdate(
@@ -49,7 +49,7 @@ export default async function upVote(
         queueId: value.queueId.replace("del", ""),
       });
     }
-    DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID(roomInfo.roomId);
+
     broadcast(io, roomInfo.roomId, "update", "update");
   } catch (error: any) {
     console.log("UPVOTE ERROR:", error.message);
