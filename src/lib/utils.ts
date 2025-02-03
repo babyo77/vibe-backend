@@ -1088,8 +1088,8 @@ async function fetchSuggestedSongs(
       const array = await response1.json(); // Parse the JSON response
 
       if (Array.isArray(array) && array.length > 0) {
-        const randomIndex = Math.floor(Math.random() * array.length);
-        suggestionId = array[randomIndex]?.downloadUrl.at(-1)?.url;
+        // const randomIndex = Math.floor(Math.random() * array.length);
+        // suggestionId = array[randomIndex]?.downloadUrl.at(-1)?.url;
         const response = await fetch(
           `${process.env.SUGGESTION_API}/vibe/${suggestionId}`
         );
