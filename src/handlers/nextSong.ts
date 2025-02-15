@@ -11,6 +11,7 @@ import { broadcast } from "../lib/customEmit";
 import Queue from "../models/queueModel";
 import Vote from "../models/voteModel";
 import redisClient from "../cache/redis";
+import { DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID } from "../lib/utils";
 
 export async function PlayNextSong(
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -22,6 +23,7 @@ export async function PlayNextSong(
     throw new Error("Only admin is allowed to play next");
   let nextSong: any = [];
   const value = await GET_CURRENTLY_PLAYING(socket);
+  DELETE_USER_CACHED_QUEUE_LIST_FOR_ROOM_ID(roomInfo.roomId);
   await Queue.updateOne(
     { roomId: roomInfo._id, isPlaying: true },
     {
