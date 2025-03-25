@@ -32,7 +32,14 @@ export const search = async (
           }/api/search/songs?query=${encodeURIComponent(
             search
           )}&page=${page}&limit=4`
-        ).then((res) => res.json())
+        )
+          .then((res) => {
+            console.log(res);
+
+            if (!res.ok) throw new Error("Search not found");
+            return res.json();
+          })
+          .catch(() => null)
       : null,
     page === 0 && !url ? ytmusic.searchSongs(search) : null,
     yt ? yt.search(search) : null,

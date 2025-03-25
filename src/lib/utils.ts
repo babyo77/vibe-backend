@@ -1226,7 +1226,6 @@ export const detailsUpdateLimit = rateLimit({
 import { RateLimiterMemory } from "rate-limiter-flexible";
 import { errorHandler } from "../handlers/error";
 import { VibeCacheDb } from "../cache/cache-db";
-import { I } from "@upstash/redis/zmscore-Dc6Llqgr";
 import redisClient from "../cache/redis";
 import Room from "../models/roomModel";
 
