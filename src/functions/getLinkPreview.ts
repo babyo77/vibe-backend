@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import { ApiError } from "./apiError";
+import * as cheerio from "cheerio";
 export async function getLinkPreview(
   req: CustomRequest,
   res: Response
@@ -8,13 +9,19 @@ export async function getLinkPreview(
   const url = req.query.url;
   if (typeof url !== "string" || !url)
     throw new ApiError("Missing URL query parameter", 400);
-  const response = await fetch(
-    `https://api.dub.co/metatags?url=${encodeURIComponent(url)}`
-  );
+  const body = await fetch(url);
+  if (!body.ok) throw new ApiError("Failed to fetch URL", 500);
+  const html = await body.text();
+  const $ = cheerio.load(html);
 
-  if (response.ok) {
-    return res.json(await response.json());
-  }
+  const title = $("title").text();
+  const description = $('meta[name="description"]').attr("content");
+  const ogImage = $('meta[property="og:image"]').attr("content");
 
-  throw new ApiError();
+  return res.json({
+    title,
+    description,
+    ogImage,
+  });
 }
+
