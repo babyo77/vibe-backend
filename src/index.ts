@@ -6,7 +6,7 @@ import { CustomSocket } from "../types";
 import { middleware } from "./handlers/middleware";
 import { cors, limiter } from "./lib/utils";
 import cookieParser from "cookie-parser";
-import cors from "cors";
+import corx from "cors";
 import router from "./router/router";
 import { errorHandler } from "./functions/apiError";
 import { setSocketListeners } from "./register/sockets";
@@ -22,7 +22,7 @@ const app = express();
 const server = createServer(app);
 
 app.use(
-  cors({
+  corx({
     origin: true,
     credentials: true,
   })
