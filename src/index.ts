@@ -12,6 +12,7 @@ import { errorHandler } from "./functions/apiError";
 import { setSocketListeners } from "./register/sockets";
 import { createClient } from "redis";
 import { createAdapter } from "@socket.io/redis-streams-adapter";
+import { createProxyMiddleware } from "http-proxy-middleware";
 
 const redisClient = createClient({
   url: process.env.REDIS_CONNECTION_URI,
@@ -20,7 +21,12 @@ const redisClient = createClient({
 const app = express();
 const server = createServer(app);
 
-app.use(useCors(cors));
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 
 // app.get("/metrics", async (req, res) => {
 //   // const key = req.query.key;
@@ -41,8 +47,41 @@ app.use(useCors(cors));
 app.use(limiter);
 app.use(express.json());
 app.use(cookieParser());
+app.post(
+  "/proxy",
+  createProxyMiddleware({
+    changeOrigin: true,
+    pathRewrite: (path, req) => {
+      return "";
+    },
+    router: (req) => {
+      const { bin, filename } = req.query;
+      if (!bin || !filename) {
+        return "http://localhost";
+      }
+      return `https://filebin.net/${bin}/${encodeURIComponent(filename)}`;
+    },
+    onProxyReq: (proxyReq, req, res) => {
+      const { bin, filename } = req.query;
+      if (!bin || !filename) {
+        res.statusCode = 400;
+        res.end(
+          JSON.stringify({ error: "Missing bin or filename query parameter" })
+        );
+        proxyReq.abort && proxyReq.abort();
+        return;
+      }
+    },
+    onError: (err, req, res) => {
+      res.statusCode = 500;
+      res.end(JSON.stringify({ error: err.message || "Proxy upload failed" }));
+    },
+  })
+);
+
 app.use(router);
 app.use(errorHandler);
+
 
 redisClient.connect().then(() => {
   const io = new Server(server, {
