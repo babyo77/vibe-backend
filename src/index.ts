@@ -6,7 +6,7 @@ import { CustomSocket } from "../types";
 import { middleware } from "./handlers/middleware";
 import { cors, limiter } from "./lib/utils";
 import cookieParser from "cookie-parser";
-import cors from "cors";
+import corx from "cors";
 import router from "./router/router";
 import { errorHandler } from "./functions/apiError";
 import { setSocketListeners } from "./register/sockets";
@@ -22,7 +22,7 @@ const app = express();
 const server = createServer(app);
 
 app.use(
-  cors({
+  corx({
     origin: true,
     credentials: true,
   })
@@ -45,7 +45,8 @@ app.use(
 //   next();
 // });
 app.use(limiter);
-app.use(express.json());
+app.use(express.json({ limit: "200mb" }));
+app.use(express.urlencoded({ limit: "200mb", extended: true }));
 app.use(cookieParser());
 
 app.post(

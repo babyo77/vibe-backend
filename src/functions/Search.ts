@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
-import ytmusic from "../lib/ytMusic";
+import { searchSongsSafe } from "../lib/ytMusic";
 import { encrypt } from "../lib/lock";
 import { getInnertubeInstance } from "../lib/utils";
 import { ApiError } from "./apiError";
@@ -34,14 +34,12 @@ export const search = async (
           )}&page=${page}&limit=4`
         )
           .then((res) => {
-            console.log(res);
-
             if (!res.ok) throw new Error("Search not found");
             return res.json();
           })
           .catch(() => null)
       : null,
-    page === 0 && !url ? ytmusic.searchSongs(search) : null,
+    page === 0 && !url ? searchSongsSafe(search) : null,
     yt ? yt.search(search) : null,
   ]);
 

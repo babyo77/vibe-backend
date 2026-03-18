@@ -2,7 +2,7 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import Spotify from "../lib/spotify";
 import { encrypt } from "tanmayo7lock";
-import ytmusic from "../lib/ytMusic";
+import { searchSongsSafe } from "../lib/ytMusic";
 import { tnzara } from "../cache/cache";
 
 export const getSpotifyTrack = async (
@@ -19,7 +19,7 @@ export const getSpotifyTrack = async (
   const song = await Spotify.getTrack(id);
   const artist = song.body.artists[0].name;
   const name = song.body.name;
-  const ytSongs = await ytmusic.searchSongs(`${name} ${artist}`);
+  const ytSongs = await searchSongsSafe(`${name} ${artist}`);
   const tracks =
     ytSongs?.slice(0, 1).map((s: any) => ({
       id: s.videoId,

@@ -2,7 +2,7 @@ import { Response } from "express";
 import { CustomRequest } from "../middleware/auth";
 import Spotify from "../lib/spotify";
 import { encrypt } from "tanmayo7lock";
-import ytmusic from "../lib/ytMusic";
+import { searchSongsSafe } from "../lib/ytMusic";
 import { ApiError } from "./apiError";
 import { tnzara } from "../cache/cache";
 
@@ -37,11 +37,12 @@ export const getSpotifyPlaylist = async (
       .filter((item): item is { search: string } => item !== null);
 
     const ytSongs = await Promise.all(
-      songsNameWithArtist.map(({ search }) => ytmusic.searchSongs(search))
+      songsNameWithArtist.map(({ search }) => searchSongsSafe(search))
     );
 
     const tracks = ytSongs
       .map((ytSongResults) => {
+        if (!ytSongResults) return null;
         const ytSong = ytSongResults[0];
         if (!ytSong) return null;
 

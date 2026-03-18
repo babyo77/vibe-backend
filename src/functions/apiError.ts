@@ -30,7 +30,12 @@ export const errorHandler = (
   const randomEmoji = getRandomEmoji(emojiArray);
 
   let message = err.message || "Internal Server Error";
-  console.log(err);
+  // Avoid dumping huge stack traces for expected client errors (e.g. 401s).
+  if (statusCode >= 500) {
+    console.error(err);
+  } else if (process.env.NODE_ENV !== "production") {
+    console.warn(`${statusCode} ${method} ${route?.path || "unknown"}: ${message}`);
+  }
 
   if (err instanceof MongooseError) {
     if (process.env.NODE_ENV === "production") {

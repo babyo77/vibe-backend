@@ -3,7 +3,7 @@ import Queue from "../models/queueModel";
 import RoomUser from "../models/roomUsers";
 import { CustomSocket, searchResults } from "../../types";
 import { Innertube } from "youtubei.js";
-import ytmusic from "./ytMusic";
+import { searchSongsSafe } from "./ytMusic";
 import { decrypt, encrypt } from "tanmayo7lock";
 import rateLimit from "express-rate-limit";
 import { ApiError } from "../functions/apiError";
@@ -1075,10 +1075,10 @@ async function fetchSuggestedSongs(
     let suggestionId = currentSong?.downloadUrl.at(-1)?.url;
 
     if (suggestionId && suggestionId.startsWith("http")) {
-      const searchResults = await ytmusic.searchSongs(
+      const searchResults = await searchSongsSafe(
         `${currentSong.name} ${currentSong.artists.primary[0]?.name}`
       );
-      suggestionId = encrypt(searchResults[0]?.videoId || "");
+      suggestionId = encrypt(searchResults?.[0]?.videoId || "");
     }
 
     const response1 = await fetch(
